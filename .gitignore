@@ -10,6 +10,9 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# Maven build output
+target/
+
 # Package Files #
 *.jar
 *.war
@@ -22,3 +25,13 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# Ignore Starting project idea
+/project
+
+
+# Env
+*.env
+
+#vscode
+.vscode/
