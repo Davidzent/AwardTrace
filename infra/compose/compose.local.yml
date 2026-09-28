@@ -1,0 +1,24 @@
+# Local development: docker compose -f infra/compose/compose.yml -f infra/compose/compose.local.yml up -d --wait
+
+services:
+  kafka:
+    ports:
+      - "9092:9092"
+
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: awardtrace
+    ports:
+      - "5432:5432"
+
+  elasticsearch:
+    environment:
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=5s'"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
