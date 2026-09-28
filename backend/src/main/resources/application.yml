@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: awardtrace
+  # Local development defaults matching infra/compose/compose.local.yml. Deployed environments override them.
+  datasource:
+    url: jdbc:postgresql://localhost:5432/awardtrace
+    username: awardtrace
+    password: awardtrace
