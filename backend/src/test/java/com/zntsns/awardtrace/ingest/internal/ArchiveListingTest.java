@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 class ArchiveListingTest {
 
-    private final FakeArchive archive = new FakeArchive()
+    private final FakeUsaspending archive = new FakeUsaspending()
             .put("FY(All)_012_Contracts_Delta_20260906.zip", new byte[0])
             .put("FY(All)_097_Contracts_Delta_20260906.zip", new byte[0])
             .put("FY2026_012_Assistance_Full_20260906.zip", new byte[0])

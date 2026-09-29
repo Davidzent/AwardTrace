@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -36,6 +37,16 @@ class SubawardDownloads {
         this.apiUrl = properties.apiUrl();
         this.pollInterval = properties.downloadPollInterval();
         this.deadline = properties.downloadDeadline();
+    }
+
+    /** Toptier agency names by code, such as 012 for the Department of Agriculture. Requests name the agency. */
+    Map<String, String> agencyNames() throws IOException, InterruptedException {
+        JsonNode agencies = send(HttpRequest.newBuilder(apiUrl.resolve("api/v2/references/toptier_agencies/")).GET());
+        var names = new TreeMap<String, String>();
+        for (JsonNode agency : agencies.path("results").values()) {
+            names.put(agency.path("toptier_code").asString(), agency.path("agency_name").asString());
+        }
+        return names;
     }
 
     /**

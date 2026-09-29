@@ -4,13 +4,17 @@ import com.zntsns.awardtrace.ingest.internal.ArchiveListing.ArchiveFile;
 import com.zntsns.awardtrace.ingest.internal.ArchiveListing.Kind;
 import com.zntsns.awardtrace.ingest.internal.StoredFilePublisher.Publication;
 import java.io.IOException;
+import java.net.URI;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +23,10 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 /**
- * Runs an ingest and records it in {@code ingest_run}. Backfill and delta store new archive files, then publish
- * every stored file not yet published; replay publishes every stored file again, from S3 alone. Files are published
- * in file-date order, so a later file's deletes land after the rows they delete (ADR 0012).
+ * Runs an ingest and records it in {@code ingest_run}. Backfill and delta store new archive files and freshly
+ * generated subaward files (ADR 0014), then publish every stored file not yet published; replay publishes every
+ * stored file again, from S3 alone. Contract files are published in file-date order, so a later file's deletes land
+ * after the rows they delete (ADR 0012).
  */
 @Component
 @EnableConfigurationProperties(IngestProperties.class)
@@ -39,18 +44,22 @@ class IngestRuns {
     }
 
     private final ArchiveListing archive;
+    private final SubawardDownloads subawards;
     private final SourceFileStore store;
     private final StoredFilePublisher publisher;
     private final IngestProperties properties;
     private final JdbcClient jdbc;
+    private final Clock clock;
 
-    IngestRuns(ArchiveListing archive, SourceFileStore store, StoredFilePublisher publisher,
-            IngestProperties properties, JdbcClient jdbc) {
+    IngestRuns(ArchiveListing archive, SubawardDownloads subawards, SourceFileStore store,
+            StoredFilePublisher publisher, IngestProperties properties, JdbcClient jdbc, Clock clock) {
         this.archive = archive;
+        this.subawards = subawards;
         this.store = store;
         this.publisher = publisher;
         this.properties = properties;
         this.jdbc = jdbc;
+        this.clock = clock;
     }
 
     Summary run(Mode mode) throws IOException, InterruptedException {
@@ -63,6 +72,7 @@ class IngestRuns {
                 for (ArchiveFile file : archiveFiles(mode)) {
                     store.store(file.url(), runId);
                 }
+                storeSubawardFiles(mode, runId);
             }
             List<String> keys = filesToPublish(mode == Mode.REPLAY);
             long published = 0;
@@ -100,14 +110,46 @@ class IngestRuns {
         if (mode == Mode.DELTA) {
             return archive.contractFiles("FY(All)_", Kind.Delta, properties.agencies());
         }
-        // Every fiscal year from FY2025, the start of scope, to the current one, which begins each October 1.
         var files = new ArrayList<ArchiveFile>();
-        int currentFiscalYear = LocalDate.now(ZoneOffset.UTC).plusMonths(3).getYear();
-        int firstFiscalYear = ContractFileParser.SCOPE_START.plusMonths(3).getYear();
-        for (int fiscalYear = firstFiscalYear; fiscalYear <= currentFiscalYear; fiscalYear++) {
+        for (int fiscalYear : fiscalYearsFrom(firstFiscalYear())) {
             files.addAll(archive.contractFiles("FY" + fiscalYear + "_", Kind.Full, properties.agencies()));
         }
         return files;
+    }
+
+    /**
+     * Has USAspending generate each agency's subaward file for each fiscal year, and stores it. A delta takes the
+     * previous fiscal year as well as the current one, because subawards are reported months after their actions.
+     */
+    private void storeSubawardFiles(Mode mode, UUID runId) throws IOException, InterruptedException {
+        Map<String, String> names = subawards.agencyNames();
+        Collection<String> agencies = properties.agencies().isEmpty() ? names.keySet() : properties.agencies();
+        int from = mode == Mode.DELTA ? Math.max(firstFiscalYear(), currentFiscalYear() - 1) : firstFiscalYear();
+        for (int fiscalYear : fiscalYearsFrom(from)) {
+            for (String agency : agencies) {
+                String name = names.get(agency);
+                if (name == null) {
+                    log.warn("USAspending lists no toptier agency {}, so its subawards are skipped", agency);
+                    continue;
+                }
+                URI file = subawards.generate(name, LocalDate.of(fiscalYear - 1, 10, 1),
+                        LocalDate.of(fiscalYear, 9, 30));
+                store.store(file, "subawards/" + fiscalYear, runId);
+            }
+        }
+    }
+
+    /** FY2025, the start of scope. A fiscal year begins on October 1 of the year before its number. */
+    private static int firstFiscalYear() {
+        return ContractFileParser.SCOPE_START.plusMonths(3).getYear();
+    }
+
+    private int currentFiscalYear() {
+        return LocalDate.now(clock).plusMonths(3).getYear();
+    }
+
+    private List<Integer> fiscalYearsFrom(int first) {
+        return IntStream.rangeClosed(first, currentFiscalYear()).boxed().toList();
     }
 
     private List<String> filesToPublish(boolean all) {
