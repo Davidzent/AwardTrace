@@ -153,6 +153,30 @@ class SearchControllerIT {
     }
 
     @Test
+    void limitsTheSameSearchToOneRecipient() {
+        var result = mvc.get().uri("/api/v1/recipients/{uei}/awards?state=ID", "mn5krx2w9r46").exchange();
+
+        assertThat(result).hasStatusOk();
+        assertThat(result).headers().hasValue(HttpHeaders.CACHE_CONTROL, "max-age=60, public");
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$.total").isEqualTo(1);
+        json.extractingPath("$.results[0].award_id").isEqualTo(AWARDS.get(1));
+        // The recipient filter narrows facet counts too; Skyline's Idaho award isn't counted.
+        json.extractingPath("$.facets.state[0].count").isEqualTo(1);
+    }
+
+    @Test
+    void checksTheUeiAndTheParametersOfARecipientSearch() {
+        var badUei = mvc.get().uri("/api/v1/recipients/{uei}/awards", "MN5KRX2W9").exchange();
+        var badSize = mvc.get().uri("/api/v1/recipients/{uei}/awards?size=0", "MN5KRX2W9R46").exchange();
+
+        assertThat(badUei).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(badUei).bodyJson().extractingPath("$.type").isEqualTo("invalid-uei");
+        assertThat(badSize).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(badSize).bodyJson().extractingPath("$.type").isEqualTo("invalid-search-parameters");
+    }
+
+    @Test
     void reportsEveryInvalidParameterAtOnce() {
         var result = mvc.get()
                 .uri("/api/v1/awards/search?page=abc&size=0&fiscal_year=abc&min_amount=500&max_amount=100&sort=cheapest")

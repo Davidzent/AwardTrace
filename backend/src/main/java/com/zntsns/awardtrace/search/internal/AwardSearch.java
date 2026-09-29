@@ -60,13 +60,15 @@ class AwardSearch {
     /**
      * Facet selections go in {@code post_filter}, so each facet can count its values without its own selection while
      * still applying every other one: selecting two agencies leaves the other agencies' counts visible.
+     *
+     * @param recipientUei limits the search to one recipient's awards, or null for everyone's
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    SearchResults search(SearchParams params) throws IOException {
+    SearchResults search(SearchParams params, String recipientUei) throws IOException {
         Map<String, Query> selections = selections(params);
         var response = elasticsearch.search(request -> request
                 .index(SearchIndexes.AWARDS)
-                .query(query(params))
+                .query(query(params, recipientUei))
                 .postFilter(all(selections.values()))
                 .sort(sort(params.effectiveSort()))
                 .from((params.page() - 1) * params.size())
@@ -167,8 +169,11 @@ class AwardSearch {
      * outranks them all. The filters here are the ones that aren't facets; they narrow results and facet counts
      * alike, without scoring.
      */
-    private static Query query(SearchParams params) {
+    private static Query query(SearchParams params, String recipientUei) {
         var filters = new ArrayList<Query>();
+        if (recipientUei != null) {
+            filters.add(Query.of(query -> query.term(term -> term.field("recipient_uei").value(recipientUei))));
+        }
         if (params.categorySource() != null) {
             filters.add(Query.of(query -> query.term(term -> term.field("category_source")
                     .value(params.categorySource()))));

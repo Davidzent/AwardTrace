@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("api")
 class SearchController {
 
-    private static final CacheControl CACHE = CacheControl.maxAge(Duration.ofMinutes(1)).cachePublic();
+    static final CacheControl CACHE = CacheControl.maxAge(Duration.ofMinutes(1)).cachePublic();
 
     private final AwardSearch search;
 
@@ -27,10 +27,15 @@ class SearchController {
         this.search = search;
     }
 
-    /** Binding errors, such as {@code page=abc}, and rule violations are reported together, one per field. */
     @GetMapping("/api/v1/awards/search")
     ResponseEntity<SearchResults> search(@ModelAttribute SearchParams params, BindingResult binding)
             throws IOException {
+        rejectInvalid(params, binding);
+        return ResponseEntity.ok().cacheControl(CACHE).body(search.search(params, null));
+    }
+
+    /** Binding errors, such as {@code page=abc}, and rule violations are reported together, one per field. */
+    static void rejectInvalid(SearchParams params, BindingResult binding) {
         var problems = new ArrayList<SearchParams.FieldError>();
         // Spring reports binding errors under the request parameter's name, such as fiscal_year.
         binding.getFieldErrors().forEach(error -> problems.add(new SearchParams.FieldError(error.getField(),
@@ -46,6 +51,5 @@ class SearchController {
             problem.setProperty("errors", problems);
             throw new ErrorResponseException(HttpStatus.BAD_REQUEST, problem, null);
         }
-        return ResponseEntity.ok().cacheControl(CACHE).body(search.search(params));
     }
 }
