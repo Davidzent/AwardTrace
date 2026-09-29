@@ -14,3 +14,5 @@ spring:
 awardtrace:
   s3:
     region: us-east-1
+  ingest:
+    archive-url: https://files.usaspending.gov/award_data_archive/

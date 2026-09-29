@@ -9,3 +9,6 @@ awardtrace:
   s3:
     bucket: awardtrace-raw
     endpoint: http://localhost:9090
+  ingest:
+    # The Department of Agriculture only: about 15 MB a fiscal year, instead of 3.3 GB for every agency.
+    agencies: "012"
