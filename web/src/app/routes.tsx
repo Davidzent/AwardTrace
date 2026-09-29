@@ -13,6 +13,11 @@ export const routes: RouteObject[] = [
         errorElement: <RouteError />,
         children: [
           { index: true, element: <SearchPage /> },
+          // Loaded on first visit, so the search page's bundle stays small (doc 08).
+          {
+            path: 'awards/:awardId',
+            lazy: async () => ({ Component: (await import('../pages/AwardPage')).AwardPage }),
+          },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

@@ -454,3 +454,142 @@ legend {
   border-color: var(--accent);
   color: #fff;
 }
+
+.back {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.award-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.award-header p {
+  margin: 0 0 1.25rem;
+}
+
+.award-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 900px) {
+  .award-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.panel {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.award > .panel {
+  margin-bottom: 1rem;
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.recipient-name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.modifications {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modifications th,
+.modifications td {
+  padding: 0.45rem 0.75rem 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.modifications th {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.modifications .num {
+  text-align: right;
+}
+
+.money {
+  white-space: nowrap;
+}
+
+/* Under the amount, so a narrow screen keeps room for the description. */
+.modifications .badge {
+  display: table;
+  margin: 0.2rem 0 0 auto;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.source {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.skeleton-block {
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.skeleton-title {
+  height: 3.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.skeleton-panel {
+  height: 12rem;
+  margin-bottom: 1rem;
+}
