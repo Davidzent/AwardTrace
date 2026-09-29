@@ -16,9 +16,11 @@ target/
 # Spring Modulith output when an IDE compiles outside the Maven project directory
 build/
 
-# Web dependencies and build output
+# Web dependencies, build output, and Playwright results
 node_modules/
 dist/
+test-results/
+playwright-report/
 
 # Generated from backend/openapi.json before every web build and test
 web/src/api/schema.ts

@@ -8,7 +8,8 @@ type Props = { transactions: Schemas['Modification'][]; truncated: boolean };
 export function ModificationsTable({ transactions, truncated }: Props) {
   return (
     <>
-      <div className="table-scroll">
+      {/* On a narrow screen the table scrolls sideways; focusable, so the keyboard can scroll it too. */}
+      <div className="table-scroll" tabIndex={0} role="region" aria-label="Modifications table">
         <table className="modifications">
           <caption className="visually-hidden">Modifications, newest first</caption>
           <thead>

@@ -52,7 +52,8 @@ export function SearchResults({ query, results, error, updating, lastFilter, onS
   const lastPage = Math.max(1, Math.min(Math.ceil(total / size), Math.floor(RESULT_WINDOW / size)));
   const sort = query.sort ?? (query.q ? 'relevance' : 'newest');
   return (
-    <div className={updating ? 'results is-updating' : 'results'}>
+    // aria-busy tells assistive technology, and tests, that dimmed results are about to be replaced.
+    <div className={updating ? 'results is-updating' : 'results'} aria-busy={updating || undefined}>
       <div className="results-header">
         <p aria-live="polite">
           <strong>
