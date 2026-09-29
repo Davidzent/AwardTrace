@@ -51,11 +51,12 @@ public final class AwardRows {
                 .update();
         jdbc.sql("""
                 INSERT INTO award (award_id, piid, award_type, description, awarding_toptier_code,
-                                   awarding_subtier_code, recipient_uei, naics_code, psc_code, pop_state_code,
-                                   total_obligated, first_action_date, last_action_date, source_modified_at,
-                                   index_version, transaction_count)
-                VALUES (:awardId, :piid, 'C', :description, '012', '12C2', :uei, '517810', 'F003', :state, :total,
-                        CAST(:lastActionDate AS date), CAST(:lastActionDate AS date), now(), 1, 1)
+                                   awarding_subtier_code, recipient_uei, naics_code, naics_description, psc_code,
+                                   pop_state_code, total_obligated, first_action_date, last_action_date,
+                                   source_modified_at, index_version, transaction_count)
+                VALUES (:awardId, :piid, 'C', :description, '012', '12C2', :uei, '517810',
+                        'ALL OTHER TELECOMMUNICATIONS', 'F003', :state, :total, CAST(:lastActionDate AS date),
+                        CAST(:lastActionDate AS date), now(), 1, 1)
                 """)
                 .param("awardId", awardId)
                 .param("piid", piid)

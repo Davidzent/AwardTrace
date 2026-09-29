@@ -5,13 +5,16 @@ import com.zntsns.awardtrace.search.internal.AwardDetail.RecipientRef;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
- * The body of {@code GET /api/v1/awards/search} (doc 07). Facets, categories, and subaward counts arrive with the
- * commits and phases that produce them.
+ * The body of {@code GET /api/v1/awards/search} (doc 07). Categories and subaward counts arrive with the phases that
+ * produce them.
  *
  * @param totalObligated the sum over every match, not just this page
  * @param totalIsCapped true when {@code total} is a lower bound
+ * @param facets for {@code agency}, {@code category}, {@code state}, {@code naics}, and {@code fiscal_year}, the most
+ *     common values, each counted under every selection but its facet's own
  */
 record SearchResults(
         long total,
@@ -20,7 +23,12 @@ record SearchResults(
         long tookMs,
         int page,
         int size,
-        List<Result> results) {
+        List<Result> results,
+        Map<String, List<FacetValue>> facets) {
+
+    /** @param label a display name, where the facet has one: agency names and NAICS descriptions */
+    record FacetValue(String value, String label, long count) {
+    }
 
     /** @param descriptionHighlight the description with matches wrapped in {@code <mark>}, around HTML-escaped text */
     record Result(

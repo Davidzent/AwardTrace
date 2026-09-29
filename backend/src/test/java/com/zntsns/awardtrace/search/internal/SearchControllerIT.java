@@ -64,7 +64,7 @@ class SearchControllerIT {
         saveSearchableAward(jdbc, AWARDS.get(1), "12024B26M0522", "Nomadic land camps for fire crews",
                 "MN5KRX2W9R46", "NOMADIC LAND CAMPS, LLC", "ID", "55000.00", "2026-08-24");
         saveSearchableAward(jdbc, AWARDS.get(2), "12318726F0042", "Cloud software licenses",
-                "BBBBBBBBBBB2", "ACME FEDERAL LLC", "VA", "950.00", "2025-11-03");
+                "BBBBBBBBBBB2", "ACME FEDERAL LLC", "VA", "950.00", "2025-06-03");
         for (String awardId : AWARDS) {
             var event = new AwardChanged(awardId, 1, "TRANSACTION");
             kafka.send(KafkaTopics.AWARDS_CHANGED, awardId, EventCodec.write(EventEnvelope.of(event, null))).get();
@@ -120,6 +120,36 @@ class SearchControllerIT {
         json.extractingPath("$.total_obligated").isEqualTo("4867000.00");
         json.extractingPath("$.page").isEqualTo(2);
         json.extractingPath("$.results[*].award_id").asArray().containsExactly(AWARDS.get(1));
+    }
+
+    @Test
+    void countsEachFacetWithoutItsOwnSelectionButWithEveryOther() {
+        var result = mvc.get().uri("/api/v1/awards/search?state=ID&fiscal_year=2026").exchange();
+
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$.total").isEqualTo(2);
+        json.extractingPath("$.total_obligated").isEqualTo("4867000.00");
+        // The state facet ignores state=ID, so Virginia still shows, but it applies fiscal_year=2026: 0 in VA.
+        json.extractingPath("$.facets.state[*].value").asArray().containsExactly("ID");
+        json.extractingPath("$.facets.state[0].count").isEqualTo(2);
+        // The fiscal-year facet ignores fiscal_year=2026 but applies state=ID: both Idaho awards are FY2026.
+        json.extractingPath("$.facets.fiscal_year[*].value").asArray().containsExactly("2026");
+        json.extractingPath("$.facets.agency[0].value").isEqualTo("012");
+        json.extractingPath("$.facets.agency[0].label").isEqualTo("Department of Agriculture");
+        json.extractingPath("$.facets.agency[0].count").isEqualTo(2);
+        json.extractingPath("$.facets.naics[0].label").isEqualTo("ALL OTHER TELECOMMUNICATIONS");
+        json.extractingPath("$.facets.category").asArray().isEmpty();
+    }
+
+    @Test
+    void keepsOtherValuesOfASelectedFacetCountable() {
+        var result = mvc.get().uri("/api/v1/awards/search?state=VA").exchange();
+
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$.total").isEqualTo(1);
+        json.extractingPath("$.facets.state[*].value").asArray().containsExactly("ID", "VA");
+        json.extractingPath("$.facets.state[*].count").asArray().containsExactly(2, 1);
+        json.extractingPath("$.facets.fiscal_year[*].value").asArray().containsExactly("2025");
     }
 
     @Test
