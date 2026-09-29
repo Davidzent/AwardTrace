@@ -2,6 +2,7 @@ package com.zntsns.awardtrace.pipeline.internal;
 
 import com.zntsns.awardtrace.ingest.ContractTransactionDeleted;
 import com.zntsns.awardtrace.ingest.ContractTransactionIngested;
+import com.zntsns.awardtrace.ingest.SubawardReported;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -13,6 +14,17 @@ final class TestEvents {
     static final String AWARD_ID = "CONT_AWD_12024B26M0522_12C2_12024B24T7051_12C2";
 
     private TestEvents() {
+    }
+
+    /**
+     * A subaward under {@link #AWARD_ID}'s prime recipient, reported at {@code modifiedAt}, such as
+     * {@code 2026-08-01}.
+     */
+    static SubawardReported subaward(String key, String primeAwardId, String subUei, String subName, String amount,
+            String modifiedAt) {
+        return new SubawardReported(key, Instant.parse(modifiedAt + "T00:00:00Z"), primeAwardId, "MN5KRX2W9R46",
+                "NOMADIC LAND CAMPS, LLC", subUei, subName, "SUB-" + key, new BigDecimal(amount),
+                LocalDate.parse(modifiedAt), "Tent rental");
     }
 
     /** A source file generated on {@code yyyymmdd}, which versions every row it holds. */

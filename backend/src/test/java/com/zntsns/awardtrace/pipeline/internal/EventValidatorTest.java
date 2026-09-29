@@ -2,6 +2,7 @@ package com.zntsns.awardtrace.pipeline.internal;
 
 import static com.zntsns.awardtrace.pipeline.internal.TestEvents.deletion;
 import static com.zntsns.awardtrace.pipeline.internal.TestEvents.file;
+import static com.zntsns.awardtrace.pipeline.internal.TestEvents.subaward;
 import static com.zntsns.awardtrace.pipeline.internal.TestEvents.transaction;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,5 +38,19 @@ class EventValidatorTest {
         String json = EventCodec.write(EventEnvelope.of(valid, null));
         assertThat(json).contains(from);
         return EventCodec.read(json.replace(from, to), ContractTransactionIngested.class).payload();
+    }
+
+    @Test
+    void checksASubawardAgainstTheSubawardTable() {
+        var valid = subaward("S1", TestEvents.AWARD_ID, "E2QCEKQXLN48", "DVORAK, LLC", "70321.95", "2026-08-01");
+
+        assertThat(EventValidator.problem(valid)).isEmpty();
+        // A subrecipient without a UEI is stored, just left out of the network.
+        assertThat(EventValidator.problem(subaward("S1", TestEvents.AWARD_ID, null, "DVORAK, LLC", "1.00",
+                "2026-08-01"))).isEmpty();
+        assertThat(EventValidator.problem(subaward("S1", TestEvents.AWARD_ID, "E2QCEK", "DVORAK, LLC", "1.00",
+                "2026-08-01"))).hasValue("INVALID_SUB_UEI");
+        assertThat(EventValidator.problem(subaward("S1", null, "E2QCEKQXLN48", "DVORAK, LLC", "1.00",
+                "2026-08-01"))).hasValue("MISSING_PRIME_AWARD_ID");
     }
 }

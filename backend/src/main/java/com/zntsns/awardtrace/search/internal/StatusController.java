@@ -40,7 +40,7 @@ class StatusController {
     /**
      * @param available false when Kafka didn't answer in time; lag and deadLetters are then null
      * @param lag events each consumer group has yet to read, keyed by group
-     * @param deadLetters events on the dead-letter topic, within its 30-day retention
+     * @param deadLetters events on the dead-letter topics, within their 30-day retention
      */
     record PipelineStatus(boolean available, Map<String, Long> lag, Long deadLetters, OutboxQueries.Backlog outboxBacklog) {
     }
@@ -98,7 +98,10 @@ class StatusController {
             var lag = new LinkedHashMap<String, Long>();
             lag.put(KafkaTopics.PIPELINE_GROUP, offsets.lag(KafkaTopics.PIPELINE_GROUP, KafkaTopics.AWARD_TRANSACTIONS));
             lag.put(KafkaTopics.INDEXER_GROUP, offsets.lag(KafkaTopics.INDEXER_GROUP, KafkaTopics.AWARDS_CHANGED));
-            return new PipelineStatus(true, lag, offsets.retained(KafkaTopics.AWARD_TRANSACTIONS_DLT), backlog);
+            lag.put(KafkaTopics.SUBAWARD_GROUP, offsets.lag(KafkaTopics.SUBAWARD_GROUP, KafkaTopics.SUBAWARDS));
+            long deadLetters = offsets.retained(KafkaTopics.AWARD_TRANSACTIONS_DLT)
+                    + offsets.retained(KafkaTopics.SUBAWARDS_DLT);
+            return new PipelineStatus(true, lag, deadLetters, backlog);
         } catch (ExecutionException | TimeoutException e) {
             log.warn("Kafka couldn't report consumer lag", e);
         } catch (InterruptedException e) {

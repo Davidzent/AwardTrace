@@ -2,8 +2,6 @@ package com.zntsns.awardtrace.pipeline.internal;
 
 import com.zntsns.awardtrace.ingest.ContractTransactionDeleted;
 import com.zntsns.awardtrace.ingest.ContractTransactionIngested;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -13,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SimplePropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -196,9 +193,9 @@ class TransactionWriter {
         jdbc.batchUpdate(INSERT_AGENCY, agencies(ingested));
         // Upserts run before deletes, so a delete in the same batch as its transaction still applies. The source
         // file version decides every conflict, so the order of events within the batch doesn't matter.
-        int[] upserts = jdbc.batchUpdate(UPSERT_TRANSACTION, ingested.stream().map(TransactionWriter::params)
+        int[] upserts = jdbc.batchUpdate(UPSERT_TRANSACTION, ingested.stream().map(EventParameters::of)
                 .toArray(SqlParameterSource[]::new));
-        int[] deletes = jdbc.batchUpdate(DELETE_TRANSACTION, deleted.stream().map(TransactionWriter::params)
+        int[] deletes = jdbc.batchUpdate(DELETE_TRANSACTION, deleted.stream().map(EventParameters::of)
                 .toArray(SqlParameterSource[]::new));
         var ids = new MapSqlParameterSource("awardIds", awardIds);
         jdbc.update(PROJECT_RECIPIENTS, ids);
@@ -228,16 +225,5 @@ class TransactionWriter {
                 .addValue("level", level)
                 .addValue("name", name == null ? code : name)
                 .addValue("parentCode", parentCode);
-    }
-
-    /** Record components as named parameters, with instants as UTC offsets, which the PostgreSQL driver binds. */
-    private static SqlParameterSource params(Object event) {
-        return new SimplePropertySqlParameterSource(event) {
-            @Override
-            public Object getValue(String name) {
-                Object value = super.getValue(name);
-                return value instanceof Instant instant ? instant.atOffset(ZoneOffset.UTC) : value;
-            }
-        };
     }
 }

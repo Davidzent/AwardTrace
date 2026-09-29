@@ -18,10 +18,12 @@ public class KafkaTopics {
     public static final String AWARD_TRANSACTIONS_DLT = AWARD_TRANSACTIONS + ".DLT";
     public static final String AWARDS_CHANGED = "awards.changed.v1";
     public static final String SUBAWARDS = "subawards.v1";
+    public static final String SUBAWARDS_DLT = SUBAWARDS + ".DLT";
 
     // Listener IDs, which Spring Kafka also uses as the consumer group IDs.
     public static final String PIPELINE_GROUP = "pipeline";
     public static final String INDEXER_GROUP = "indexer";
+    public static final String SUBAWARD_GROUP = "subawards";
 
     // Fixed once chosen: changing it remaps award IDs to partitions. Dead-letter topics need the same
     // count, because the dead-letter recoverer writes to the record's original partition number.
@@ -41,6 +43,11 @@ public class KafkaTopics {
     @Bean
     NewTopic subawardsTopic() {
         return deleteAfter(SUBAWARDS, Duration.ofDays(7));
+    }
+
+    @Bean
+    NewTopic subawardsDltTopic() {
+        return deleteAfter(SUBAWARDS_DLT, Duration.ofDays(30));
     }
 
     @Bean

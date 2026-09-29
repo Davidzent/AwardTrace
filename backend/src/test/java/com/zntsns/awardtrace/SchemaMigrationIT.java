@@ -40,7 +40,8 @@ class SchemaMigrationIT {
                 .list();
 
         assertThat(tables).containsExactlyInAnyOrder(
-                "agency", "recipient", "award", "award_transaction", "outbox", "ingest_run", "ingest_file");
+                "agency", "recipient", "award", "award_transaction", "outbox", "ingest_run", "ingest_file",
+                "subaward");
     }
 
     @Test

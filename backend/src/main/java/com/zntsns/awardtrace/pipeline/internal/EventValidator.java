@@ -2,6 +2,7 @@ package com.zntsns.awardtrace.pipeline.internal;
 
 import com.zntsns.awardtrace.ingest.ContractTransactionDeleted;
 import com.zntsns.awardtrace.ingest.ContractTransactionIngested;
+import com.zntsns.awardtrace.ingest.SubawardReported;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -54,6 +55,25 @@ final class EventValidator {
                 new Field("AWARD_ID", event.awardId()),
                 new Field("SOURCE_FILE", event.sourceFile()),
                 new Field("SOURCE_FILE_DATE", event.sourceFileDate()));
+    }
+
+    static Optional<String> problem(SubawardReported event) {
+        if (event.primeRecipientUei() != null && event.primeRecipientUei().length() != 12) {
+            return Optional.of("INVALID_PRIME_UEI");
+        }
+        // A subrecipient without a UEI is stored, but left out of the network.
+        if (event.subRecipientUei() != null && event.subRecipientUei().length() != 12) {
+            return Optional.of("INVALID_SUB_UEI");
+        }
+        return missing(
+                new Field("SUBAWARD_KEY", event.subawardKey()),
+                new Field("SOURCE_MODIFIED_AT", event.sourceModifiedAt()),
+                new Field("PRIME_AWARD_ID", event.primeAwardId()),
+                new Field("PRIME_UEI", event.primeRecipientUei()),
+                new Field("PRIME_RECIPIENT_NAME", event.primeRecipientName()),
+                new Field("SUB_RECIPIENT_NAME", event.subRecipientName()),
+                new Field("AMOUNT", event.amount()),
+                new Field("ACTION_DATE", event.actionDate()));
     }
 
     private static Optional<String> missing(Field... fields) {

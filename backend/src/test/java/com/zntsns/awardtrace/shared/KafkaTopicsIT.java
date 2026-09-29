@@ -4,6 +4,7 @@ import static com.zntsns.awardtrace.shared.KafkaTopics.AWARDS_CHANGED;
 import static com.zntsns.awardtrace.shared.KafkaTopics.AWARD_TRANSACTIONS;
 import static com.zntsns.awardtrace.shared.KafkaTopics.AWARD_TRANSACTIONS_DLT;
 import static com.zntsns.awardtrace.shared.KafkaTopics.SUBAWARDS;
+import static com.zntsns.awardtrace.shared.KafkaTopics.SUBAWARDS_DLT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.zntsns.awardtrace.TestcontainersConfiguration;
@@ -29,7 +30,7 @@ class KafkaTopicsIT {
 
     @Test
     void createsEveryTopicWithItsPartitionsAndRetention() throws Exception {
-        var topics = List.of(AWARD_TRANSACTIONS, AWARD_TRANSACTIONS_DLT, AWARDS_CHANGED, SUBAWARDS);
+        var topics = List.of(AWARD_TRANSACTIONS, AWARD_TRANSACTIONS_DLT, AWARDS_CHANGED, SUBAWARDS, SUBAWARDS_DLT);
 
         assertThat(kafkaAdmin.describeTopics(topics.toArray(String[]::new)).values())
                 .hasSize(topics.size())
@@ -41,6 +42,7 @@ class KafkaTopicsIT {
         assertThat(value(configs, AWARD_TRANSACTIONS_DLT, TopicConfig.RETENTION_MS_CONFIG)).isEqualTo("2592000000");
         assertThat(value(configs, AWARDS_CHANGED, TopicConfig.CLEANUP_POLICY_CONFIG)).isEqualTo("compact");
         assertThat(value(configs, SUBAWARDS, TopicConfig.RETENTION_MS_CONFIG)).isEqualTo("604800000");
+        assertThat(value(configs, SUBAWARDS_DLT, TopicConfig.RETENTION_MS_CONFIG)).isEqualTo("2592000000");
     }
 
     private Map<String, Config> describeConfigs(List<String> topics) throws Exception {
