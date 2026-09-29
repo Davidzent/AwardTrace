@@ -50,13 +50,19 @@ class SchemaMigrationIT {
         assertThat(fiscalYearOf(LocalDate.of(2026, 9, 30))).isEqualTo(2026);
     }
 
+    // SET CONSTRAINTS ALL IMMEDIATE runs the deferred checks now, as a commit would.
     @Test
-    void checksTheAwardOfATransactionAtCommitNotAtInsert() {
+    void acceptsATransactionWrittenBeforeItsAward() {
         insertTransaction("TXN_1", "AWARD_1");
         insertAward("AWARD_1", LocalDate.of(2026, 3, 2));
-        jdbc.sql("SET CONSTRAINTS ALL IMMEDIATE").update();
 
-        insertTransaction("TXN_2", "AWARD_WITHOUT_ROW");
+        jdbc.sql("SET CONSTRAINTS ALL IMMEDIATE").update();
+    }
+
+    @Test
+    void rejectsATransactionWhoseAwardIsNeverWritten() {
+        insertTransaction("TXN_1", "AWARD_WITHOUT_ROW");
+
         assertThatThrownBy(() -> jdbc.sql("SET CONSTRAINTS ALL IMMEDIATE").update())
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
