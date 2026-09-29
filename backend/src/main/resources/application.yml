@@ -6,3 +6,12 @@ spring:
     url: jdbc:postgresql://localhost:5432/awardtrace
     username: awardtrace
     password: awardtrace
+  kafka:
+    producer:
+      # acks=all is the default since Kafka 3.0; it is set explicitly so nobody lowers it.
+      acks: all
+      compression-type: zstd
+      batch-size: 128KB
+      properties:
+        enable.idempotence: true
+        linger.ms: 20
