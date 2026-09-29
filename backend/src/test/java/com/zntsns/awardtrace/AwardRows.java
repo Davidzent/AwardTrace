@@ -40,6 +40,33 @@ public final class AwardRows {
                 .update();
     }
 
+    /** A live award of the Department of Agriculture with the fields search ranks, filters, and sorts on. */
+    public static void saveSearchableAward(JdbcClient jdbc, String awardId, String piid, String description,
+            String recipientUei, String recipientName, String popStateCode, String totalObligated,
+            String lastActionDate) {
+        saveAward(jdbc, "CONT_AWD_SEED_AGENCIES", 1, "0.00", true);
+        jdbc.sql("INSERT INTO recipient (uei, name) VALUES (:uei, :name) ON CONFLICT DO NOTHING")
+                .param("uei", recipientUei)
+                .param("name", recipientName)
+                .update();
+        jdbc.sql("""
+                INSERT INTO award (award_id, piid, award_type, description, awarding_toptier_code,
+                                   awarding_subtier_code, recipient_uei, naics_code, psc_code, pop_state_code,
+                                   total_obligated, first_action_date, last_action_date, source_modified_at,
+                                   index_version, transaction_count)
+                VALUES (:awardId, :piid, 'C', :description, '012', '12C2', :uei, '517810', 'F003', :state, :total,
+                        CAST(:lastActionDate AS date), CAST(:lastActionDate AS date), now(), 1, 1)
+                """)
+                .param("awardId", awardId)
+                .param("piid", piid)
+                .param("description", description)
+                .param("uei", recipientUei)
+                .param("state", popStateCode)
+                .param("total", new BigDecimal(totalObligated))
+                .param("lastActionDate", lastActionDate)
+                .update();
+    }
+
     /** A live or deleted modification of an award saved with {@link #saveAward}. */
     public static void saveTransaction(JdbcClient jdbc, String awardId, String modification, String actionDate,
             String obligation, boolean deleted) {

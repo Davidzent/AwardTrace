@@ -1,6 +1,7 @@
 package com.zntsns.awardtrace.indexer.internal;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import com.zntsns.awardtrace.shared.SearchIndexes;
 import java.io.IOException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Profile;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Profile("indexer")
 class AwardsIndex implements InitializingBean {
 
-    static final String ALIAS = "awards";
+    static final String ALIAS = SearchIndexes.AWARDS;
 
     /** The current mapping, in {@code elasticsearch/<MAPPING>.json}. The first index takes its name. */
     static final String MAPPING = "awards-v1";
