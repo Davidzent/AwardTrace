@@ -31,6 +31,13 @@ describe('routes', () => {
     expect(screen.getByRole('link', { name: 'Search' }).getAttribute('aria-current')).toBe('page');
   });
 
+  it('loads the about page on first visit', async () => {
+    renderAt('/about');
+
+    expect((await screen.findByRole('heading', { level: 1 })).textContent).toBe('How AwardTrace works');
+    expect(screen.getByRole('link', { name: 'About' }).getAttribute('aria-current')).toBe('page');
+  });
+
   it('keeps the layout around a page that does not exist', () => {
     renderAt('/no/such/page');
 
