@@ -1,0 +1,77 @@
+package com.zntsns.awardtrace.pipeline.internal;
+
+import com.zntsns.awardtrace.ingest.ContractTransactionDeleted;
+import com.zntsns.awardtrace.ingest.ContractTransactionIngested;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+/** Transaction events for one Department of Agriculture award, shaped like real delta and full file rows. */
+final class TestEvents {
+
+    static final String AWARD_ID = "CONT_AWD_12024B26M0522_12C2_12024B24T7051_12C2";
+
+    private TestEvents() {
+    }
+
+    /** A source file generated on {@code yyyymmdd}, which versions every row it holds. */
+    static String file(String yyyymmdd) {
+        return "FY2026_012_Contracts_Full_" + yyyymmdd + "_1.csv";
+    }
+
+    static ContractTransactionIngested transaction(String modification, String actionDate, String obligation,
+            String totalObligated, String sourceFile) {
+        return new ContractTransactionIngested(
+                transactionId(modification),
+                AWARD_ID,
+                sourceFile,
+                fileDate(sourceFile),
+                Instant.parse(actionDate + "T12:00:00Z"),
+                "12024B26M0522",
+                "12024B24T7051",
+                modification,
+                "C",
+                null,
+                LocalDate.parse(actionDate),
+                new BigDecimal(obligation),
+                new BigDecimal(totalObligated),
+                new BigDecimal(totalObligated),
+                LocalDate.of(2026, 7, 16),
+                LocalDate.of(2026, 8, 6),
+                "012",
+                "Department of Agriculture",
+                "12C2",
+                "Forest Service",
+                "012",
+                "Department of Agriculture",
+                "MN5KRX2W9R46",
+                "NOMADIC LAND CAMPS, LLC",
+                "MN5KRX2W9R46",
+                "NOMADIC LAND CAMPS, LLC",
+                "BOISE",
+                "ID",
+                "USA",
+                "ID",
+                "USA",
+                "517810",
+                "ALL OTHER TELECOMMUNICATIONS",
+                "F003",
+                "NATURAL RESOURCES/CONSERVATION- FOREST-RANGE FIRE SUPPRESSION/PRESUPPRESSION",
+                "MOD " + modification,
+                "NOMADIC LAND CAMPS, LLC IDIPF000347 E40");
+    }
+
+    static ContractTransactionDeleted deletion(String modification, String sourceFile) {
+        return new ContractTransactionDeleted(transactionId(modification), AWARD_ID, sourceFile, fileDate(sourceFile));
+    }
+
+    private static String transactionId(String modification) {
+        return "12C2_12C2_12024B26M0522_" + modification + "_12024B24T7051_0";
+    }
+
+    private static LocalDate fileDate(String sourceFile) {
+        String yyyymmdd = sourceFile.replaceAll(".*_(\\d{8})_\\d+\\.csv$", "$1");
+        return LocalDate.parse(yyyymmdd, DateTimeFormatter.BASIC_ISO_DATE);
+    }
+}
