@@ -14,6 +14,7 @@ export function Layout() {
           <NavLink to="/" end>
             Search
           </NavLink>
+          <NavLink to="/status">Status</NavLink>
           <a href="https://github.com/Davidzent/awardtrace">GitHub</a>
         </nav>
       </header>

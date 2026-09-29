@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatCount, formatDate, formatMoney, formatMoneyShort } from './format';
+import { formatCount, formatDate, formatMoney, formatMoneyShort, formatTime } from './format';
 
 describe('format', () => {
   it('abbreviates money for cards and lists', () => {
@@ -17,5 +17,6 @@ describe('format', () => {
   it('formats counts and dates', () => {
     expect(formatCount(12481)).toBe('12,481');
     expect(formatDate('2026-09-28')).toBe('Sep 28, 2026');
+    expect(formatTime('2026-10-02T14:05:31Z')).toBe('Oct 2, 14:05 UTC');
   });
 });

@@ -14,6 +14,15 @@ const counts = new Intl.NumberFormat('en-US');
 
 const dates = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
+const times = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: 'UTC',
+});
+
 /**
  * $4,812,000.00. The API sends money as a decimal string, which Intl formats exactly rather than through a float.
  */
@@ -33,4 +42,9 @@ export function formatCount(count: number): string {
 /** Sep 28, 2026, from an API date such as 2026-09-28, whatever the reader's time zone. */
 export function formatDate(date: string): string {
   return dates.format(new Date(`${date}T00:00:00Z`));
+}
+
+/** Oct 2, 14:05 UTC, from an API timestamp. Pipeline times are shown in UTC, as the pipeline runs in it. */
+export function formatTime(timestamp: string): string {
+  return `${times.format(new Date(timestamp))} UTC`;
 }

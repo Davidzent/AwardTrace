@@ -22,6 +22,10 @@ export const routes: RouteObject[] = [
             path: 'recipients/:uei',
             lazy: async () => ({ Component: (await import('../pages/RecipientPage')).RecipientPage }),
           },
+          {
+            path: 'status',
+            lazy: async () => ({ Component: (await import('../pages/StatusPage')).StatusPage }),
+          },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

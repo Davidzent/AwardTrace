@@ -663,3 +663,80 @@ legend {
   margin: 0 0 0.5rem;
   font-size: 1.2rem;
 }
+
+.status-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.status-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.status-header p {
+  margin: 0;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+/* The condition word carries the meaning; its color and the tile's edge repeat it (doc 08). */
+.status-tile {
+  border-left-width: 4px;
+}
+
+.condition {
+  margin: -0.25rem 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.is-ok {
+  border-left-color: #1a7f37;
+}
+
+.is-ok .condition {
+  color: #1a7f37;
+}
+
+.is-degraded {
+  border-left-color: #9a6700;
+}
+
+.is-degraded .condition {
+  color: #9a6700;
+}
+
+.is-down {
+  border-left-color: var(--danger);
+}
+
+.is-down .condition {
+  color: var(--danger);
+}
+
+.is-unknown .condition {
+  color: var(--muted);
+}
+
+.num-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.status-tile .facts {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 1rem;
+}
+
+.status-tile .facts dd {
+  overflow-wrap: normal;
+  text-align: right;
+}
