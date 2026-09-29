@@ -24,4 +24,9 @@ class TransactionEventPublisher {
     CompletableFuture<SendResult<String, String>> publish(String awardId, Object payload, EventEnvelope.Source source) {
         return kafka.send(KafkaTopics.AWARD_TRANSACTIONS, awardId, EventCodec.write(EventEnvelope.of(payload, source)));
     }
+
+    /** Blocks until every event sent so far is acknowledged or has failed, and its future has completed. */
+    void flush() {
+        kafka.flush();
+    }
 }

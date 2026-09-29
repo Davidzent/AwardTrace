@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.sun.net.httpserver.HttpServer;
 import com.zntsns.awardtrace.TestcontainersConfiguration;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -13,8 +12,6 @@ import java.util.HexFormat;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +38,7 @@ class SourceFileStoreIT {
     @Autowired
     JdbcClient jdbc;
 
-    private final byte[] zip = zipOf("FY2026_012_Contracts_Full_20260909_1.csv", "contract_transaction_unique_key\n");
+    private final byte[] zip = Fixtures.zip(Fixtures.FULL_FILE, "contract_transaction_unique_key\n");
     private final AtomicInteger downloads = new AtomicInteger();
     private final AtomicReference<String> userAgent = new AtomicReference<>();
     private HttpServer archive;
@@ -99,17 +96,5 @@ class SourceFileStoreIT {
 
     private URI sourceUrl() {
         return URI.create("http://localhost:" + archive.getAddress().getPort() + PATH);
-    }
-
-    private static byte[] zipOf(String entryName, String content) {
-        var bytes = new ByteArrayOutputStream();
-        try (var zip = new ZipOutputStream(bytes)) {
-            zip.putNextEntry(new ZipEntry(entryName));
-            zip.write(content.getBytes());
-            zip.closeEntry();
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-        return bytes.toByteArray();
     }
 }

@@ -1,5 +1,8 @@
 package com.zntsns.awardtrace.ingest.internal;
 
+import static com.zntsns.awardtrace.ingest.internal.Fixtures.DELTA_FILE;
+import static com.zntsns.awardtrace.ingest.internal.Fixtures.FULL_FILE;
+import static com.zntsns.awardtrace.ingest.internal.Fixtures.csv;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -10,27 +13,20 @@ import com.zntsns.awardtrace.ingest.internal.ParsedRow.Ingested;
 import com.zntsns.awardtrace.ingest.internal.ParsedRow.Rejected;
 import com.zntsns.awardtrace.ingest.internal.ParsedRow.SkipReason;
 import com.zntsns.awardtrace.ingest.internal.ParsedRow.Skipped;
-import java.io.IOException;
 import java.io.StringReader;
-import java.io.UncheckedIOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-/** Fixtures are rows cut from the Department of Agriculture's 2026-09 full and delta files. */
 class ContractFileParserTest {
-
-    private static final String FULL_FILE = "FY2026_012_Contracts_Full_20260909_1.csv";
-    private static final String DELTA_FILE = "FY(All)_012_Contracts_Delta_20260908_1.csv";
 
     private final ContractFileParser parser = new ContractFileParser();
 
     @Test
     void mapsAFullFileRowToAnEvent() {
-        ContractTransactionIngested base = ((Ingested) parse(fixture(FULL_FILE), FULL_FILE).getFirst()).event();
+        ContractTransactionIngested base = ((Ingested) parse(csv(FULL_FILE), FULL_FILE).getFirst()).event();
 
         assertThat(base.transactionId()).isEqualTo("12C2_12C2_12024B26M0522_0_12024B24T7051_0");
         assertThat(base.awardId()).isEqualTo("CONT_AWD_12024B26M0522_12C2_12024B24T7051_12C2");
@@ -58,7 +54,7 @@ class ContractFileParserTest {
 
     @Test
     void keepsNegativeObligations() {
-        ContractTransactionIngested deobligation = ((Ingested) parse(fixture(FULL_FILE), FULL_FILE).get(1)).event();
+        ContractTransactionIngested deobligation = ((Ingested) parse(csv(FULL_FILE), FULL_FILE).get(1)).event();
 
         assertThat(deobligation.modificationNumber()).isEqualTo("P00002");
         assertThat(deobligation.federalActionObligation()).isEqualTo(new BigDecimal("-27500.00"));
@@ -66,7 +62,7 @@ class ContractFileParserTest {
 
     @Test
     void skipsIdvRows() {
-        List<ParsedRow> rows = parse(fixture(FULL_FILE), FULL_FILE);
+        List<ParsedRow> rows = parse(csv(FULL_FILE), FULL_FILE);
 
         assertThat(rows).hasSize(7);
         assertThat(rows).filteredOn(Ingested.class::isInstance).hasSize(5);
@@ -75,7 +71,7 @@ class ContractFileParserTest {
 
     @Test
     void turnsDeltaDeleteRowsIntoDeleteEventsWithTheirAwardKey() {
-        List<ParsedRow> rows = parse(fixture(DELTA_FILE), DELTA_FILE);
+        List<ParsedRow> rows = parse(csv(DELTA_FILE), DELTA_FILE);
 
         assertThat(rows).filteredOn(Deleted.class::isInstance)
                 .extracting(row -> ((Deleted) row).event())
@@ -89,7 +85,7 @@ class ContractFileParserTest {
 
     @Test
     void skipsActionsBeforeFiscalYear2025() {
-        List<ParsedRow> rows = parse(fixture(DELTA_FILE), DELTA_FILE);
+        List<ParsedRow> rows = parse(csv(DELTA_FILE), DELTA_FILE);
 
         assertThat(rows).filteredOn(Skipped.class::isInstance)
                 .containsExactly(
@@ -102,7 +98,7 @@ class ContractFileParserTest {
     @Test
     void derivesTheSameAwardKeyTheSourcePublishes() {
         var ingested = List.of(FULL_FILE, DELTA_FILE).stream()
-                .flatMap(file -> parse(fixture(file), file).stream())
+                .flatMap(file -> parse(csv(file), file).stream())
                 .filter(Ingested.class::isInstance)
                 .map(row -> ((Ingested) row).event())
                 .toList();
@@ -114,7 +110,7 @@ class ContractFileParserTest {
 
     @Test
     void rejectsARowWithAnUnreadableValueAndKeepsGoing() {
-        String csv = fixture(FULL_FILE).replace("2026-08-17 23:02:10+00", "2026-08-17T23:02:10");
+        String csv = csv(FULL_FILE).replace("2026-08-17 23:02:10+00", "2026-08-17T23:02:10");
 
         List<ParsedRow> rows = parse(csv, FULL_FILE);
 
@@ -124,7 +120,7 @@ class ContractFileParserTest {
 
     @Test
     void failsTheFileWhenAColumnIsMissing() {
-        String csv = fixture(FULL_FILE).replaceFirst("recipient_uei", "recipient_id");
+        String csv = csv(FULL_FILE).replaceFirst("recipient_uei", "recipient_id");
 
         assertThatThrownBy(() -> parse(csv, FULL_FILE))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -134,14 +130,6 @@ class ContractFileParserTest {
     private List<ParsedRow> parse(String csv, String fileName) {
         try (var rows = parser.parse(new StringReader(csv), fileName)) {
             return rows.toList();
-        }
-    }
-
-    private static String fixture(String fileName) {
-        try (var in = ContractFileParserTest.class.getResourceAsStream("/fixtures/contracts/" + fileName)) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
     }
 }
