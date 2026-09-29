@@ -1,0 +1,13 @@
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+// In production, Caddy serves the app and the API from one origin. The dev server proxies /api to the api role the
+// same way, so the app never needs CORS or an API base URL.
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
+});

@@ -16,6 +16,10 @@ target/
 # Spring Modulith output when an IDE compiles outside the Maven project directory
 build/
 
+# Web dependencies and build output
+node_modules/
+dist/
+
 # Package Files #
 *.jar
 *.war
