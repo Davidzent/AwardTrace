@@ -10,6 +10,13 @@ spring:
       properties:
         enable.idempotence: true
         linger.ms: 20
+    consumer:
+      # A new consumer group rebuilds from the start of each topic.
+      auto-offset-reset: earliest
+      # One database transaction per poll batch.
+      max-poll-records: 500
+    listener:
+      concurrency: 2
 
 awardtrace:
   s3:

@@ -22,9 +22,14 @@ final class TestEvents {
 
     static ContractTransactionIngested transaction(String modification, String actionDate, String obligation,
             String totalObligated, String sourceFile) {
+        return transaction(AWARD_ID, modification, actionDate, obligation, totalObligated, sourceFile);
+    }
+
+    static ContractTransactionIngested transaction(String awardId, String modification, String actionDate,
+            String obligation, String totalObligated, String sourceFile) {
         return new ContractTransactionIngested(
-                transactionId(modification),
-                AWARD_ID,
+                transactionId(awardId, modification),
+                awardId,
                 sourceFile,
                 fileDate(sourceFile),
                 Instant.parse(actionDate + "T12:00:00Z"),
@@ -63,11 +68,12 @@ final class TestEvents {
     }
 
     static ContractTransactionDeleted deletion(String modification, String sourceFile) {
-        return new ContractTransactionDeleted(transactionId(modification), AWARD_ID, sourceFile, fileDate(sourceFile));
+        return new ContractTransactionDeleted(transactionId(AWARD_ID, modification), AWARD_ID, sourceFile,
+                fileDate(sourceFile));
     }
 
-    private static String transactionId(String modification) {
-        return "12C2_12C2_12024B26M0522_" + modification + "_12024B24T7051_0";
+    private static String transactionId(String awardId, String modification) {
+        return awardId.replace("CONT_AWD_", "") + "_" + modification;
     }
 
     private static LocalDate fileDate(String sourceFile) {
