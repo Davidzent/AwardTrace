@@ -15,7 +15,7 @@ public class IngestHistory {
     }
 
     /** @param lastRun the newest run, whatever its status; null before the first */
-    public record Status(Run lastRun, Instant lastSuccessAt) {
+    public record IngestStatus(Run lastRun, Instant lastSuccessAt) {
     }
 
     private final JdbcClient jdbc;
@@ -24,7 +24,7 @@ public class IngestHistory {
         this.jdbc = jdbc;
     }
 
-    public Status status() {
+    public IngestStatus status() {
         var lastRun = jdbc.sql("""
                 SELECT run_id, mode, status, started_at, finished_at, records_published
                 FROM ingest_run ORDER BY started_at DESC LIMIT 1
@@ -35,6 +35,6 @@ public class IngestHistory {
         var lastSuccessAt = jdbc.sql("SELECT max(finished_at) FROM ingest_run WHERE status = 'succeeded'")
                 .query(Instant.class)
                 .single();
-        return new Status(lastRun, lastSuccessAt);
+        return new IngestStatus(lastRun, lastSuccessAt);
     }
 }

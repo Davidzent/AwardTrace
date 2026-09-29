@@ -1,0 +1,1024 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "description" : "Read-only search over federal contract awards published by USAspending.gov.",
+    "title" : "AwardTrace API",
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "paths" : {
+    "/api/v1/awards/search" : {
+      "get" : {
+        "operationId" : "search",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "agency",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "state",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "naics",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "fiscal_year",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "min_amount",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }, {
+          "in" : "query",
+          "name" : "max_amount",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }, {
+          "in" : "query",
+          "name" : "from",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "to",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "category_source",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SearchResults"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "search-controller" ]
+      }
+    },
+    "/api/v1/awards/{awardId}" : {
+      "get" : {
+        "operationId" : "award",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "awardId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/AwardDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "award-controller" ]
+      }
+    },
+    "/api/v1/recipients/suggest" : {
+      "get" : {
+        "operationId" : "suggest",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/RecipientSuggestion"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "recipient-controller" ]
+      }
+    },
+    "/api/v1/recipients/{uei}" : {
+      "get" : {
+        "operationId" : "recipient",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "uei",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecipientDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "recipient-controller" ]
+      }
+    },
+    "/api/v1/recipients/{uei}/awards" : {
+      "get" : {
+        "operationId" : "awards",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "uei",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "agency",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "state",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "naics",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "fiscal_year",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          }
+        }, {
+          "in" : "query",
+          "name" : "min_amount",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }, {
+          "in" : "query",
+          "name" : "max_amount",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }, {
+          "in" : "query",
+          "name" : "from",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "to",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "in" : "query",
+          "name" : "category_source",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SearchResults"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "recipient-controller" ]
+      }
+    },
+    "/api/v1/status" : {
+      "get" : {
+        "operationId" : "status",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Status"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "status-controller" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "AgencyRef" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "subtier_name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "AwardDetail" : {
+        "type" : "object",
+        "properties" : {
+          "agency" : {
+            "$ref" : "#/components/schemas/AgencyRef"
+          },
+          "award_id" : {
+            "type" : "string"
+          },
+          "award_type" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "fiscal_year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "funding_agency" : {
+            "$ref" : "#/components/schemas/FundingAgencyRef"
+          },
+          "last_action_date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "naics" : {
+            "$ref" : "#/components/schemas/Code"
+          },
+          "naics_code" : {
+            "type" : "string"
+          },
+          "parent_piid" : {
+            "type" : "string"
+          },
+          "period_of_performance" : {
+            "$ref" : "#/components/schemas/Period"
+          },
+          "piid" : {
+            "type" : "string"
+          },
+          "place_of_performance" : {
+            "$ref" : "#/components/schemas/Place"
+          },
+          "pop_state_code" : {
+            "type" : "string"
+          },
+          "potential_total_value" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          },
+          "psc" : {
+            "$ref" : "#/components/schemas/Code"
+          },
+          "recipient" : {
+            "$ref" : "#/components/schemas/RecipientRef"
+          },
+          "source_modified_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "total_obligated" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          },
+          "transactions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Modification"
+            }
+          },
+          "transactions_truncated" : {
+            "type" : "boolean"
+          },
+          "usaspending_url" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Backlog" : {
+        "type" : "object",
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "oldest_created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "Code" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        }
+      },
+      "FacetValue" : {
+        "type" : "object",
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        }
+      },
+      "FiscalYearRollup" : {
+        "type" : "object",
+        "properties" : {
+          "award_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fiscal_year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "total_obligated" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }
+      },
+      "Freshness" : {
+        "type" : "object",
+        "properties" : {
+          "latest_source_modified_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "FundingAgencyRef" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      },
+      "IndexStatus" : {
+        "type" : "object",
+        "properties" : {
+          "alias_target" : {
+            "type" : "string"
+          },
+          "available" : {
+            "type" : "boolean"
+          },
+          "award_row_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "document_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "IngestStatus" : {
+        "type" : "object",
+        "properties" : {
+          "last_run" : {
+            "$ref" : "#/components/schemas/Run"
+          },
+          "last_success_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "Location" : {
+        "type" : "object",
+        "properties" : {
+          "city" : {
+            "type" : "string"
+          },
+          "country_code" : {
+            "type" : "string"
+          },
+          "state_code" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Modification" : {
+        "type" : "object",
+        "properties" : {
+          "action_date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "federal_action_obligation" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          },
+          "modification_number" : {
+            "type" : "string"
+          },
+          "transaction_id" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Period" : {
+        "type" : "object",
+        "properties" : {
+          "end" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "start" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "PipelineStatus" : {
+        "type" : "object",
+        "properties" : {
+          "available" : {
+            "type" : "boolean"
+          },
+          "dead_letters" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "lag" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "outbox_backlog" : {
+            "$ref" : "#/components/schemas/Backlog"
+          }
+        }
+      },
+      "Place" : {
+        "type" : "object",
+        "properties" : {
+          "country_code" : {
+            "type" : "string"
+          },
+          "state_code" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Problem" : {
+        "type" : "object",
+        "properties" : {
+          "detail" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "type" : "array",
+            "description" : "One per invalid parameter, on invalid-search-parameters",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "field" : {
+                  "type" : "string"
+                },
+                "message" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "instance" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Stable, such as award-not-found"
+          }
+        }
+      },
+      "RecipientDetail" : {
+        "type" : "object",
+        "properties" : {
+          "awards_by_fiscal_year" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FiscalYearRollup"
+            }
+          },
+          "first_action_date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "last_action_date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "location" : {
+            "$ref" : "#/components/schemas/Location"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "parent" : {
+            "$ref" : "#/components/schemas/RecipientRef"
+          },
+          "top_agencies" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Rollup"
+            }
+          },
+          "top_naics" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Rollup"
+            }
+          },
+          "totals" : {
+            "$ref" : "#/components/schemas/Totals"
+          },
+          "uei" : {
+            "type" : "string"
+          }
+        }
+      },
+      "RecipientRef" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "uei" : {
+            "type" : "string"
+          }
+        }
+      },
+      "RecipientSuggestion" : {
+        "type" : "object",
+        "properties" : {
+          "award_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "uei" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Result" : {
+        "type" : "object",
+        "properties" : {
+          "agency" : {
+            "$ref" : "#/components/schemas/AgencyRef"
+          },
+          "award_id" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "description_highlight" : {
+            "type" : "string"
+          },
+          "fiscal_year" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "last_action_date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "naics_code" : {
+            "type" : "string"
+          },
+          "piid" : {
+            "type" : "string"
+          },
+          "pop_state_code" : {
+            "type" : "string"
+          },
+          "recipient" : {
+            "$ref" : "#/components/schemas/RecipientRef"
+          },
+          "total_obligated" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }
+      },
+      "Rollup" : {
+        "type" : "object",
+        "properties" : {
+          "award_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "total_obligated" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }
+      },
+      "Run" : {
+        "type" : "object",
+        "properties" : {
+          "finished_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "mode" : {
+            "type" : "string"
+          },
+          "records_published" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "run_id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "started_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "status" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SearchResults" : {
+        "type" : "object",
+        "properties" : {
+          "facets" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/components/schemas/FacetValue"
+              }
+            }
+          },
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Result"
+            }
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "took_ms" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total_is_capped" : {
+            "type" : "boolean"
+          },
+          "total_obligated" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }
+      },
+      "Status" : {
+        "type" : "object",
+        "properties" : {
+          "freshness" : {
+            "$ref" : "#/components/schemas/Freshness"
+          },
+          "index" : {
+            "$ref" : "#/components/schemas/IndexStatus"
+          },
+          "ingest" : {
+            "$ref" : "#/components/schemas/IngestStatus"
+          },
+          "pipeline" : {
+            "$ref" : "#/components/schemas/PipelineStatus"
+          }
+        }
+      },
+      "Totals" : {
+        "type" : "object",
+        "properties" : {
+          "award_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total_obligated" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }
+      }
+    }
+  }
+}

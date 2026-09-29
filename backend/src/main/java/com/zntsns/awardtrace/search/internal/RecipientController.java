@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -52,7 +53,7 @@ class RecipientController {
      * than 404, as any search can.
      */
     @GetMapping("/{uei}/awards")
-    ResponseEntity<SearchResults> awards(@PathVariable String uei, @ModelAttribute SearchParams params,
+    ResponseEntity<SearchResults> awards(@PathVariable String uei, @ParameterObject @ModelAttribute SearchParams params,
             BindingResult binding) throws IOException {
         String normalized = normalized(uei);
         SearchController.rejectInvalid(params, binding);

@@ -33,7 +33,8 @@ class StatusController {
     static final Duration TTL = Duration.ofSeconds(15);
     private static final Logger log = LoggerFactory.getLogger(StatusController.class);
 
-    record Status(IngestHistory.Status ingest, Pipeline pipeline, Index index, Freshness freshness) {
+    record Status(IngestHistory.IngestStatus ingest, PipelineStatus pipeline, IndexStatus index,
+            Freshness freshness) {
     }
 
     /**
@@ -41,7 +42,7 @@ class StatusController {
      * @param lag events each consumer group has yet to read, keyed by group
      * @param deadLetters events on the dead-letter topic, within its 30-day retention
      */
-    record Pipeline(boolean available, Map<String, Long> lag, Long deadLetters, OutboxQueries.Backlog outboxBacklog) {
+    record PipelineStatus(boolean available, Map<String, Long> lag, Long deadLetters, OutboxQueries.Backlog outboxBacklog) {
     }
 
     /**
@@ -49,7 +50,7 @@ class StatusController {
      *
      * @param available false when Elasticsearch couldn't report on the alias; its fields are then null
      */
-    record Index(boolean available, String aliasTarget, Long documentCount, long awardRowCount) {
+    record IndexStatus(boolean available, String aliasTarget, Long documentCount, long awardRowCount) {
     }
 
     record Freshness(Instant latestSourceModifiedAt) {
@@ -91,30 +92,30 @@ class StatusController {
                 new Freshness(live.latestSourceModifiedAt()));
     }
 
-    private Pipeline pipeline() {
+    private PipelineStatus pipeline() {
         var backlog = outbox.backlog();
         try {
             var lag = new LinkedHashMap<String, Long>();
             lag.put(KafkaTopics.PIPELINE_GROUP, offsets.lag(KafkaTopics.PIPELINE_GROUP, KafkaTopics.AWARD_TRANSACTIONS));
             lag.put(KafkaTopics.INDEXER_GROUP, offsets.lag(KafkaTopics.INDEXER_GROUP, KafkaTopics.AWARDS_CHANGED));
-            return new Pipeline(true, lag, offsets.retained(KafkaTopics.AWARD_TRANSACTIONS_DLT), backlog);
+            return new PipelineStatus(true, lag, offsets.retained(KafkaTopics.AWARD_TRANSACTIONS_DLT), backlog);
         } catch (ExecutionException | TimeoutException e) {
             log.warn("Kafka couldn't report consumer lag", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        return new Pipeline(false, null, null, backlog);
+        return new PipelineStatus(false, null, null, backlog);
     }
 
     /** The status page must still answer when Elasticsearch doesn't, since that is what it's there to show. */
-    private Index index(long awardRowCount) {
+    private IndexStatus index(long awardRowCount) {
         try {
             var aliases = elasticsearch.indices().getAlias(request -> request.name(SearchIndexes.AWARDS));
             long documents = elasticsearch.count(request -> request.index(SearchIndexes.AWARDS)).count();
-            return new Index(true, String.join(",", aliases.aliases().keySet()), documents, awardRowCount);
+            return new IndexStatus(true, String.join(",", aliases.aliases().keySet()), documents, awardRowCount);
         } catch (IOException | ElasticsearchException e) {
             log.warn("Elasticsearch couldn't report on the {} alias", SearchIndexes.AWARDS, e);
-            return new Index(false, null, null, awardRowCount);
+            return new IndexStatus(false, null, null, awardRowCount);
         }
     }
 }

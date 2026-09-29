@@ -5,6 +5,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ class SearchController {
     }
 
     @GetMapping("/api/v1/awards/search")
-    ResponseEntity<SearchResults> search(@ModelAttribute SearchParams params, BindingResult binding)
+    ResponseEntity<SearchResults> search(@ParameterObject @ModelAttribute SearchParams params, BindingResult binding)
             throws IOException {
         rejectInvalid(params, binding);
         return ResponseEntity.ok().cacheControl(CACHE).body(search.search(params, null));
