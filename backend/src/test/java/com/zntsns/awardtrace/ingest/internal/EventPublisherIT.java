@@ -24,10 +24,10 @@ import org.springframework.kafka.core.KafkaAdmin;
 
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
-class TransactionEventPublisherIT {
+class EventPublisherIT {
 
     @Autowired
-    TransactionEventPublisher publisher;
+    EventPublisher publisher;
 
     @Autowired
     KafkaAdmin kafkaAdmin;
@@ -39,7 +39,7 @@ class TransactionEventPublisherIT {
                 LocalDate.of(2026, 9, 8));
         var source = new EventEnvelope.Source(UuidV7.next(), "raw/contracts/2026/abc.zip", 2);
 
-        var sent = publisher.publish(deleted.awardId(), deleted, source).get();
+        var sent = publisher.publish(KafkaTopics.AWARD_TRANSACTIONS, deleted.awardId(), deleted, source).get();
 
         try (var consumer = consumer()) {
             var partition = new TopicPartition(KafkaTopics.AWARD_TRANSACTIONS, sent.getRecordMetadata().partition());

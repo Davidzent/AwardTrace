@@ -63,7 +63,7 @@ class StoredFilePublisherIT {
 
         // The delta fixture holds 1 in-scope row, 2 deletes, 2 actions before FY2025, and 1 IDV.
         assertThat(publication).isEqualTo(new Publication(6, 3, 3, 0));
-        assertThat(eventsFrom(key, 3))
+        assertThat(eventsFrom(KafkaTopics.AWARD_TRANSACTIONS, key, 3))
                 .extracting(event -> event.eventType() + " row " + event.source().rowNumber())
                 .containsExactlyInAnyOrder(
                         "ContractTransactionIngested row 1",
@@ -76,8 +76,36 @@ class StoredFilePublisherIT {
                 .isEqualTo("published 6");
     }
 
+    @Test
+    void publishesAStoredSubawardFileToTheSubawardTopic() throws Exception {
+        String key = "raw/subawards/2026/" + UUID.randomUUID() + ".zip";
+        s3.putObject(request -> request.bucket(TestcontainersConfiguration.RAW_BUCKET).key(key),
+                RequestBody.fromBytes(Fixtures.zip(Fixtures.SUBAWARD_FILE, Fixtures.subawardCsv())));
+        UUID runId = jdbc.sql("INSERT INTO ingest_run (mode, status) VALUES ('delta', 'running') RETURNING run_id")
+                .query(UUID.class)
+                .single();
+        jdbc.sql("""
+                INSERT INTO ingest_file (s3_key, run_id, source_url, sha256, bytes, status)
+                VALUES (:key, :runId, 'https://example.test/subawards.zip', repeat('1', 64), 1, 'stored')
+                """)
+                .param("key", key)
+                .param("runId", runId)
+                .update();
+
+        Publication publication = publisher.publish(key, runId);
+
+        // The subaward fixture holds 3 reported subawards, 1 action before FY2025, and 1 unreadable amount.
+        assertThat(publication).isEqualTo(new Publication(5, 3, 1, 1));
+        assertThat(eventsFrom(KafkaTopics.SUBAWARDS, key, 3))
+                .extracting(event -> event.eventType() + " " + event.payload().get("prime_award_id"))
+                .containsExactlyInAnyOrder(
+                        "SubawardReported CONT_AWD_1232SA25F0574_12H2_12305B24D0001_12H2",
+                        "SubawardReported CONT_AWD_12805B24F0134_12H2_12805B21D0001_12H2",
+                        "SubawardReported CONT_IDV_12760420A0002_12C2");
+    }
+
     @SuppressWarnings("rawtypes")
-    private List<EventEnvelope<Map>> eventsFrom(String s3Key, int expected) {
+    private List<EventEnvelope<Map>> eventsFrom(String topic, String s3Key, int expected) {
         var found = new ArrayList<EventEnvelope<Map>>();
         Map<String, Object> config = Map.of(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -85,7 +113,7 @@ class StoredFilePublisherIT {
                 ConsumerConfig.GROUP_ID_CONFIG, "test-" + UUID.randomUUID(),
                 ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         try (var consumer = new KafkaConsumer<>(config, new StringDeserializer(), new StringDeserializer())) {
-            consumer.subscribe(List.of(KafkaTopics.AWARD_TRANSACTIONS));
+            consumer.subscribe(List.of(topic));
             Instant deadline = Instant.now().plusSeconds(20);
             while (found.size() < expected && Instant.now().isBefore(deadline)) {
                 for (var record : consumer.poll(Duration.ofMillis(500))) {

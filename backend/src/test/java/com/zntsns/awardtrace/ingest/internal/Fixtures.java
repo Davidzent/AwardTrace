@@ -7,17 +7,29 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-/** Contract fixtures: rows cut from the Department of Agriculture's 2026-09 full and delta files. */
+/**
+ * Rows cut from the Department of Agriculture's source files: the 2026-09 contract full and delta files, and a
+ * subaward file generated on 2026-09-29.
+ */
 final class Fixtures {
 
     static final String FULL_FILE = "FY2026_012_Contracts_Full_20260909_1.csv";
     static final String DELTA_FILE = "FY(All)_012_Contracts_Delta_20260908_1.csv";
+    static final String SUBAWARD_FILE = "All_Contracts_Subawards_2026-09-29_H19M18S20_1.csv";
 
     private Fixtures() {
     }
 
     static String csv(String fileName) {
-        try (var in = Fixtures.class.getResourceAsStream("/fixtures/contracts/" + fileName)) {
+        return resource("/fixtures/contracts/" + fileName);
+    }
+
+    static String subawardCsv() {
+        return resource("/fixtures/subawards/" + SUBAWARD_FILE);
+    }
+
+    private static String resource(String path) {
+        try (var in = Fixtures.class.getResourceAsStream(path)) {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

@@ -8,24 +8,12 @@ import com.zntsns.awardtrace.ingest.internal.ParsedRow.Rejected;
 import com.zntsns.awardtrace.ingest.internal.ParsedRow.SkipReason;
 import com.zntsns.awardtrace.ingest.internal.ParsedRow.Skipped;
 import java.io.Reader;
-import java.math.BigDecimal;
 import java.time.DateTimeException;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
-import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import tools.jackson.databind.MappingIterator;
-import tools.jackson.dataformat.csv.CsvMapper;
-import tools.jackson.dataformat.csv.CsvSchema;
 
 /**
  * Reads a USAspending contract CSV, full or delta, into one {@link ParsedRow} per data row. Maps source column
@@ -38,27 +26,11 @@ class ContractFileParser {
 
     private static final Pattern FILE_DATE = Pattern.compile("_(\\d{8})_\\d+\\.csv$");
 
-    // Live rows use "2026-08-17 23:02:10+00".
-    private static final DateTimeFormatter MODIFIED_AT = new DateTimeFormatterBuilder()
-            .appendPattern("uuuu-MM-dd HH:mm:ss")
-            .optionalStart()
-            .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true)
-            .optionalEnd()
-            .appendOffset("+HH", "+00")
-            .toFormatter();
-
-    private final CsvMapper mapper = new CsvMapper();
-
     /** The stream reads lazily from {@code csv}; close it to release the reader. */
     Stream<ParsedRow> parse(Reader csv, String fileName) {
         LocalDate fileDate = fileDateOf(fileName);
-        MappingIterator<Map<String, String>> rows = mapper.readerForMapOf(String.class)
-                .with(CsvSchema.emptySchema().withHeader())
-                .readValues(csv);
         AtomicLong rowNumber = new AtomicLong();
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(rows, Spliterator.ORDERED), false)
-                .map(row -> parseRow(new SourceRow(row), rowNumber.incrementAndGet(), fileName, fileDate))
-                .onClose(rows::close);
+        return SourceRow.read(csv).map(row -> parseRow(row, rowNumber.incrementAndGet(), fileName, fileDate));
     }
 
     private static ParsedRow parseRow(SourceRow row, long rowNumber, String fileName, LocalDate fileDate) {
@@ -145,36 +117,5 @@ class ContractFileParser {
             throw new IllegalArgumentException("No generation date in source file name " + fileName);
         }
         return LocalDate.parse(matcher.group(1), DateTimeFormatter.BASIC_ISO_DATE);
-    }
-
-    private record SourceRow(Map<String, String> values) {
-
-        /** Fails the whole file, not the row: a missing column means the source format changed. */
-        String text(String column) {
-            if (!values.containsKey(column)) {
-                throw new IllegalArgumentException("Source file has no column " + column);
-            }
-            return optionalText(column);
-        }
-
-        String optionalText(String column) {
-            String value = values.get(column);
-            return value == null || value.isBlank() ? null : value.strip();
-        }
-
-        LocalDate date(String column) {
-            String value = text(column);
-            return value == null ? null : LocalDate.parse(value);
-        }
-
-        Instant instant(String column) {
-            String value = text(column);
-            return value == null ? null : OffsetDateTime.parse(value, MODIFIED_AT).toInstant();
-        }
-
-        BigDecimal money(String column) {
-            String value = text(column);
-            return value == null ? null : new BigDecimal(value);
-        }
     }
 }

@@ -17,6 +17,7 @@ public class KafkaTopics {
     public static final String AWARD_TRANSACTIONS = "awards.transactions.v1";
     public static final String AWARD_TRANSACTIONS_DLT = AWARD_TRANSACTIONS + ".DLT";
     public static final String AWARDS_CHANGED = "awards.changed.v1";
+    public static final String SUBAWARDS = "subawards.v1";
 
     // Listener IDs, which Spring Kafka also uses as the consumer group IDs.
     public static final String PIPELINE_GROUP = "pipeline";
@@ -35,6 +36,11 @@ public class KafkaTopics {
     @Bean
     NewTopic awardTransactionsDltTopic() {
         return deleteAfter(AWARD_TRANSACTIONS_DLT, Duration.ofDays(30));
+    }
+
+    @Bean
+    NewTopic subawardsTopic() {
+        return deleteAfter(SUBAWARDS, Duration.ofDays(7));
     }
 
     @Bean
