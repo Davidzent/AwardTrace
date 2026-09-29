@@ -1,0 +1,50 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "refresh_interval": "30s",
+    "analysis": {
+      "normalizer": {
+        "lowercase": {
+          "type": "custom",
+          "filter": ["lowercase"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "award_id": { "type": "keyword" },
+      "piid": { "type": "keyword", "normalizer": "lowercase" },
+      "description": { "type": "text", "analyzer": "english" },
+      "recipient_uei": { "type": "keyword" },
+      "recipient_name": {
+        "type": "text",
+        "fields": {
+          "suggest": { "type": "search_as_you_type" },
+          "raw": { "type": "keyword" }
+        }
+      },
+      "parent_uei": { "type": "keyword" },
+      "awarding_toptier_code": { "type": "keyword" },
+      "awarding_toptier_name": { "type": "keyword" },
+      "awarding_subtier_name": { "type": "keyword" },
+      "naics_code": { "type": "keyword" },
+      "naics_description": { "type": "text" },
+      "psc_code": { "type": "keyword" },
+      "category": { "type": "keyword" },
+      "category_source": { "type": "keyword" },
+      "baseline_category": { "type": "keyword" },
+      "pop_state_code": { "type": "keyword" },
+      "total_obligated": { "type": "scaled_float", "scaling_factor": 100 },
+      "potential_total_value": { "type": "scaled_float", "scaling_factor": 100 },
+      "last_action_date": { "type": "date" },
+      "pop_start_date": { "type": "date" },
+      "pop_end_date": { "type": "date" },
+      "fiscal_year": { "type": "short" },
+      "subaward_count": { "type": "integer" },
+      "subaward_total": { "type": "scaled_float", "scaling_factor": 100 }
+    }
+  }
+}
