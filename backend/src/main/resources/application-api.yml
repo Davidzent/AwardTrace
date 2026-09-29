@@ -5,10 +5,6 @@ server:
 spring:
   main:
     web-application-type: servlet
-  mvc:
-    # Every error, including the framework's own, is RFC 9457 problem details.
-    problemdetails:
-      enabled: true
   jackson:
     property-naming-strategy: SNAKE_CASE
 springdoc:
@@ -19,3 +15,5 @@ springdoc:
   writer-with-order-by-keys: true
   writer-with-default-pretty-printer: true
   default-produces-media-type: application/json
+  # Errors are documented once, as each operation's default problem response (OpenApiConfig).
+  override-with-generic-response: false
