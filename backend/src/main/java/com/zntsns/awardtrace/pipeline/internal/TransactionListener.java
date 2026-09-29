@@ -16,7 +16,7 @@ import tools.jackson.core.JacksonException;
 
 /**
  * Consumes transaction events one poll batch at a time. Invalid events go to the dead-letter topic from here,
- * never through the error handler, which retries infrastructure failures instead (see {@link PipelineKafkaConfig}).
+ * never through the error handler, which retries infrastructure failures instead (see {@code KafkaListenerConfig}).
  * Offsets are committed after this method returns, so after the database commit.
  */
 @Component
