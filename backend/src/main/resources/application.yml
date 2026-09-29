@@ -1,6 +1,9 @@
 spring:
   application:
     name: awardtrace
+  main:
+    # Only the api role serves HTTP (application-api.yml), so other roles and one-shot tasks never bind a port.
+    web-application-type: none
   jpa:
     # Flyway owns the schema; Hibernate only checks that the read models match it (ADR 0008).
     hibernate:

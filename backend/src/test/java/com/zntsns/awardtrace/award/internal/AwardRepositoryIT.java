@@ -1,4 +1,4 @@
-package com.zntsns.awardtrace.award;
+package com.zntsns.awardtrace.award.internal;
 
 import static com.zntsns.awardtrace.AwardRows.saveAward;
 import static com.zntsns.awardtrace.AwardRows.saveTransaction;
@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.zntsns.awardtrace.AwardRows;
+import com.zntsns.awardtrace.award.Award;
+import com.zntsns.awardtrace.award.AwardTransaction;
 import com.zntsns.awardtrace.TestcontainersConfiguration;
 import java.time.LocalDate;
 import org.junit.jupiter.api.AfterEach;

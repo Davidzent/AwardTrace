@@ -1,0 +1,10 @@
+# The api role: the read-only REST API under /api/v1 (docs 07).
+spring:
+  main:
+    web-application-type: servlet
+  mvc:
+    # Every error, including the framework's own, is RFC 9457 problem details.
+    problemdetails:
+      enabled: true
+  jackson:
+    property-naming-strategy: SNAKE_CASE
