@@ -1,11 +1,6 @@
 spring:
   application:
     name: awardtrace
-  # Local development defaults matching infra/compose/compose.local.yml. Deployed environments override them.
-  datasource:
-    url: jdbc:postgresql://localhost:5432/awardtrace
-    username: awardtrace
-    password: awardtrace
   kafka:
     producer:
       # acks=all is the default since Kafka 3.0; it is set explicitly so nobody lowers it.
@@ -15,3 +10,7 @@ spring:
       properties:
         enable.idempotence: true
         linger.ms: 20
+
+awardtrace:
+  s3:
+    region: us-east-1

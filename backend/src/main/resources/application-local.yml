@@ -1,0 +1,11 @@
+# Local development against infra/compose/compose.local.yml. Activate with the "local" profile.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/awardtrace
+    username: awardtrace
+    password: awardtrace
+
+awardtrace:
+  s3:
+    bucket: awardtrace-raw
+    endpoint: http://localhost:9090
