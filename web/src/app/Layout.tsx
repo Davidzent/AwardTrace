@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router';
 
 export function Layout() {
   return (
@@ -20,6 +20,8 @@ export function Layout() {
       <main id="main">
         <Outlet />
       </main>
+      {/* A new page, sort, or search starts at the top; Back and Forward return to where the reader was. */}
+      <ScrollRestoration />
     </>
   );
 }

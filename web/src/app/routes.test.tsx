@@ -1,20 +1,33 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen } from '@testing-library/react';
 import { createMemoryRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { routes } from './routes';
 
 function renderAt(path: string) {
-  render(<RouterProvider router={createMemoryRouter(routes, { initialEntries: [path] })} />);
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <RouterProvider router={createMemoryRouter(routes, { initialEntries: [path] })} />
+    </QueryClientProvider>,
+  );
 }
 
-afterEach(cleanup);
+beforeEach(() => {
+  // Pages may fetch; these tests only look at routing, so requests never settle.
+  vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe('routes', () => {
   it('opens the search page at the root', () => {
     renderAt('/');
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Search federal contract awards');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Search awards');
     expect(screen.getByRole('link', { name: 'Search' }).getAttribute('aria-current')).toBe('page');
   });
 

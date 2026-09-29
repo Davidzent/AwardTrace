@@ -21,7 +21,7 @@ export class ApiError extends Error {
 type Query = Record<string, string | number | readonly (string | number)[] | undefined>;
 
 /** List values repeat the parameter, as in state=ID&state=VA; undefined and empty values are left out. */
-async function get<T>(path: string, query: Query = {}, signal?: AbortSignal): Promise<T> {
+export function toSearchParams(query: Query): URLSearchParams {
   const params = new URLSearchParams();
   for (const [name, value] of Object.entries(query)) {
     for (const item of typeof value === 'object' ? value : [value]) {
@@ -30,6 +30,11 @@ async function get<T>(path: string, query: Query = {}, signal?: AbortSignal): Pr
       }
     }
   }
+  return params;
+}
+
+async function get<T>(path: string, query: Query = {}, signal?: AbortSignal): Promise<T> {
+  const params = toSearchParams(query);
   const url = params.size > 0 ? `${path}?${params}` : path;
   const response = await fetch(url, signal ? { signal } : {});
   if (!response.ok) {
