@@ -9,7 +9,8 @@ services:
     environment:
       POSTGRES_PASSWORD: awardtrace
     ports:
-      - "5432:5432"
+      # 5433 on the host, so a natively installed PostgreSQL on 5432 can keep running.
+      - "5433:5432"
 
   elasticsearch:
     environment:

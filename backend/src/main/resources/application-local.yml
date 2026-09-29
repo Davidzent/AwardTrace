@@ -1,7 +1,7 @@
 # Local development against infra/compose/compose.local.yml. Activate with the "local" profile.
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/awardtrace
+    url: jdbc:postgresql://localhost:5433/awardtrace
     username: awardtrace
     password: awardtrace
 
