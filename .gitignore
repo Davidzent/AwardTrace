@@ -23,6 +23,12 @@ dist/
 # Generated from backend/openapi.json before every web build and test
 web/src/api/schema.ts
 
+# Source files kept locally, such as USAspending archive downloads (infra/compose/mirror-archive.sh)
+/data/
+
+# Claude Code's local preview configuration
+.claude/
+
 # Package Files #
 *.jar
 *.war

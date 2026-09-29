@@ -28,7 +28,8 @@ services:
   s3mock:
     image: adobe/s3mock:5.2.3
     environment:
-      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: awardtrace-raw
+      # usaspending-archive mirrors files.usaspending.gov/award_data_archive from data/usaspending/ (mirror-archive.sh).
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: awardtrace-raw,usaspending-archive
       COM_ADOBE_TESTING_S3MOCK_STORE_ROOT: /s3mockroot
       COM_ADOBE_TESTING_S3MOCK_STORE_RETAIN_FILES_ON_EXIT: "true"
     ports:
