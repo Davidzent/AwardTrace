@@ -6,28 +6,14 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @SpringBootTest
-@Import(SchemaMigrationIT.Containers.class)
+@Import(TestcontainersConfiguration.class)
 @Transactional
 class SchemaMigrationIT {
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class Containers {
-
-        @Bean
-        @ServiceConnection
-        PostgreSQLContainer postgres() {
-            return new PostgreSQLContainer("postgres:18.6");
-        }
-    }
 
     @Autowired
     JdbcClient jdbc;

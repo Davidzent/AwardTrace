@@ -1,0 +1,1 @@
+[{"name":"com.zntsns.awardtrace.TestcontainersConfiguration","comment":"The same engines and versions as infra/compose, shared by every integration test through context caching."}]
