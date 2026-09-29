@@ -28,10 +28,10 @@ class AwardsIndexIT {
     @Test
     void createsTheFirstIndexBehindTheAlias() throws Exception {
         assertThat(elasticsearch.indices().getAlias(request -> request.name(AwardsIndex.ALIAS)).aliases())
-                .containsOnlyKeys(AwardsIndex.FIRST_INDEX);
+                .containsOnlyKeys(AwardsIndex.MAPPING);
 
-        var settings = elasticsearch.indices().getSettings(request -> request.index(AwardsIndex.FIRST_INDEX))
-                .get(AwardsIndex.FIRST_INDEX).settings().index();
+        var settings = elasticsearch.indices().getSettings(request -> request.index(AwardsIndex.MAPPING))
+                .get(AwardsIndex.MAPPING).settings().index();
         assertThat(settings.numberOfShards()).isEqualTo("1");
         assertThat(settings.numberOfReplicas()).isEqualTo("0");
     }
@@ -41,7 +41,7 @@ class AwardsIndexIT {
         awardsIndex.afterPropertiesSet();
 
         assertThat(elasticsearch.indices().getAlias(request -> request.name(AwardsIndex.ALIAS)).aliases())
-                .containsOnlyKeys(AwardsIndex.FIRST_INDEX);
+                .containsOnlyKeys(AwardsIndex.MAPPING);
     }
 
     @Test

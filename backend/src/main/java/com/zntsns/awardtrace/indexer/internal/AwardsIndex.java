@@ -17,7 +17,9 @@ import org.springframework.stereotype.Component;
 class AwardsIndex implements InitializingBean {
 
     static final String ALIAS = "awards";
-    static final String FIRST_INDEX = "awards-v1";
+
+    /** The current mapping, in {@code elasticsearch/<MAPPING>.json}. The first index takes its name. */
+    static final String MAPPING = "awards-v1";
 
     private final ElasticsearchClient elasticsearch;
 
@@ -27,14 +29,18 @@ class AwardsIndex implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws IOException {
-        if (elasticsearch.indices().existsAlias(request -> request.name(ALIAS)).value()) {
-            return;
+        if (!elasticsearch.indices().existsAlias(request -> request.name(ALIAS)).value()) {
+            create(MAPPING, true);
         }
-        try (var mapping = AwardsIndex.class.getResourceAsStream("/elasticsearch/" + FIRST_INDEX + ".json")) {
-            elasticsearch.indices().create(request -> request
-                    .index(FIRST_INDEX)
-                    .withJson(mapping)
-                    .aliases(ALIAS, alias -> alias));
+    }
+
+    /** Creates an index from the current mapping, optionally already behind the alias. */
+    void create(String index, boolean behindAlias) throws IOException {
+        try (var mapping = AwardsIndex.class.getResourceAsStream("/elasticsearch/" + MAPPING + ".json")) {
+            elasticsearch.indices().create(request -> {
+                request.index(index).withJson(mapping);
+                return behindAlias ? request.aliases(ALIAS, alias -> alias) : request;
+            });
         }
     }
 }

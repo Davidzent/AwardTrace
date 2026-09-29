@@ -77,6 +77,11 @@ class AwardIndexer {
 
     /** Several events for one award in a batch become one write of its current row. */
     Result index(Collection<String> awardIds) throws IOException {
+        return index(awardIds, AwardsIndex.ALIAS);
+    }
+
+    /** Writes to {@code target}: the alias normally, or a new index while a rebuild fills it. */
+    Result index(Collection<String> awardIds, String target) throws IOException {
         if (awardIds.isEmpty()) {
             return new Result(0, 0, 0, 0);
         }
@@ -87,11 +92,11 @@ class AwardIndexer {
             long version = ((Number) row.remove("index_version")).longValue();
             if ((Boolean) row.remove("deleted")) {
                 operations.add(BulkOperation.of(bulk -> bulk.delete(delete -> delete
-                        .index(AwardsIndex.ALIAS).id(awardId).version(version).versionType(VersionType.External))));
+                        .index(target).id(awardId).version(version).versionType(VersionType.External))));
             } else {
                 Map<String, Object> document = document(row);
                 operations.add(BulkOperation.of(bulk -> bulk.index(index -> index
-                        .index(AwardsIndex.ALIAS).id(awardId).version(version).versionType(VersionType.External)
+                        .index(target).id(awardId).version(version).versionType(VersionType.External)
                         .document(document))));
             }
         }
