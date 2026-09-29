@@ -1,6 +1,7 @@
 package com.zntsns.awardtrace.award;
 
 import com.zntsns.awardtrace.award.internal.AwardRepository;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Limit;
@@ -14,6 +15,10 @@ public class AwardQueries {
 
     /** An award and its newest live transactions; {@code truncated} means older ones were left out. */
     public record AwardWithTransactions(Award award, List<AwardTransaction> transactions, boolean truncated) {
+    }
+
+    /** @param latestSourceModifiedAt when USAspending last changed any of them; null when there are none */
+    public record LiveAwards(long count, Instant latestSourceModifiedAt) {
     }
 
     private final AwardRepository awards;
@@ -36,5 +41,11 @@ public class AwardQueries {
             return new AwardWithTransactions(award,
                     List.copyOf(truncated ? transactions.subList(0, maxTransactions) : transactions), truncated);
         });
+    }
+
+    /** Counts every live award, so it scans the table; callers cache it. */
+    @Transactional(readOnly = true)
+    public LiveAwards liveAwards() {
+        return awards.liveAwards();
     }
 }

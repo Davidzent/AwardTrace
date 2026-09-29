@@ -1,6 +1,7 @@
 package com.zntsns.awardtrace.award.internal;
 
 import com.zntsns.awardtrace.award.Award;
+import com.zntsns.awardtrace.award.AwardQueries.LiveAwards;
 import com.zntsns.awardtrace.award.AwardTransaction;
 import java.util.List;
 import java.util.Optional;
@@ -32,4 +33,11 @@ public interface AwardRepository extends Repository<Award, String> {
             ORDER BY t.actionDate DESC, t.modificationNumber DESC, t.transactionId DESC
             """)
     List<AwardTransaction> findLiveTransactions(String awardId, Limit limit);
+
+    @Query("""
+            SELECT new com.zntsns.awardtrace.award.AwardQueries$LiveAwards(count(a), max(a.sourceModifiedAt))
+            FROM Award a
+            WHERE a.deletedAt IS NULL
+            """)
+    LiveAwards liveAwards();
 }
