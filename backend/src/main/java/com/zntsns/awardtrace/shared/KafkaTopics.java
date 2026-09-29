@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
 /**
- * Topic names, and the topic definitions that {@code KafkaAdmin} creates at startup. The broker never
- * auto-creates topics, so every topic the application uses is declared here.
+ * Topic names, consumer group IDs, and the topic definitions that {@code KafkaAdmin} creates at startup. The broker
+ * never auto-creates topics, so every topic the application uses is declared here.
  */
 @Configuration(proxyBeanMethods = false)
 public class KafkaTopics {
@@ -17,6 +17,10 @@ public class KafkaTopics {
     public static final String AWARD_TRANSACTIONS = "awards.transactions.v1";
     public static final String AWARD_TRANSACTIONS_DLT = AWARD_TRANSACTIONS + ".DLT";
     public static final String AWARDS_CHANGED = "awards.changed.v1";
+
+    // Listener IDs, which Spring Kafka also uses as the consumer group IDs.
+    public static final String PIPELINE_GROUP = "pipeline";
+    public static final String INDEXER_GROUP = "indexer";
 
     // Fixed once chosen: changing it remaps award IDs to partitions. Dead-letter topics need the same
     // count, because the dead-letter recoverer writes to the record's original partition number.

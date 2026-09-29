@@ -38,7 +38,7 @@ class TransactionListener {
         this.deadLetters = deadLetters;
     }
 
-    @KafkaListener(id = "pipeline", topics = KafkaTopics.AWARD_TRANSACTIONS, batch = "true")
+    @KafkaListener(id = KafkaTopics.PIPELINE_GROUP, topics = KafkaTopics.AWARD_TRANSACTIONS, batch = "true")
     void onBatch(List<ConsumerRecord<String, String>> records) {
         var ingested = new ArrayList<ContractTransactionIngested>();
         var deleted = new ArrayList<ContractTransactionDeleted>();

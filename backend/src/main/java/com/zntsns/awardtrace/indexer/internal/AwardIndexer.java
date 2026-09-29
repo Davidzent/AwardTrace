@@ -61,7 +61,7 @@ class AwardIndexer {
         this.elasticsearch = elasticsearch;
     }
 
-    @KafkaListener(id = "indexer", topics = KafkaTopics.AWARDS_CHANGED, batch = "true")
+    @KafkaListener(id = KafkaTopics.INDEXER_GROUP, topics = KafkaTopics.AWARDS_CHANGED, batch = "true")
     void onBatch(List<ConsumerRecord<String, String>> records) throws IOException {
         var awardIds = new LinkedHashSet<String>();
         for (var record : records) {
