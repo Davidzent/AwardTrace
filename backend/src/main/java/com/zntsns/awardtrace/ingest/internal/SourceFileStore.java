@@ -25,7 +25,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 /**
- * Downloads USAspending archive files into the raw bucket, which is the source of truth (ADR 0002). Each file is
+ * Downloads USAspending source files into the raw bucket, which is the source of truth (ADR 0002). Each file is
  * fetched once: a known source URL is never downloaded again, and identical content is stored once, under a key
  * derived from its SHA-256.
  */
@@ -51,8 +51,16 @@ class SourceFileStore {
         this.jdbc = jdbc;
     }
 
-    /** Returns the S3 key of the file at {@code sourceUrl}, downloading and storing it first if it is new. */
+    /** Stores an archive contract file under {@code raw/contracts/{fiscal year}/}, the year taken from its name. */
     String store(URI sourceUrl, UUID runId) throws IOException, InterruptedException {
+        return store(sourceUrl, "contracts/" + fiscalYearOf(sourceUrl), runId);
+    }
+
+    /**
+     * Returns the S3 key of the file at {@code sourceUrl}, downloading and storing it under {@code raw/{folder}/}
+     * first if it is new.
+     */
+    String store(URI sourceUrl, String folder, UUID runId) throws IOException, InterruptedException {
         var known = jdbc.sql("SELECT s3_key FROM ingest_file WHERE source_url = :url")
                 .param("url", sourceUrl.toString())
                 .query(String.class)
@@ -64,7 +72,7 @@ class SourceFileStore {
         Path download = Files.createTempFile("awardtrace-", ".zip");
         try {
             String sha256 = download(sourceUrl, download);
-            String key = "raw/contracts/" + fiscalYearOf(sourceUrl) + "/" + sha256 + ".zip";
+            String key = "raw/" + folder + "/" + sha256 + ".zip";
             long bytes = Files.size(download);
             // Upload before recording: a failure in between leaves an orphaned object, never a row without one.
             s3.putObject(PutObjectRequest.builder().bucket(bucket).key(key).build(), RequestBody.fromFile(download));

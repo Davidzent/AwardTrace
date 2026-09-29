@@ -19,7 +19,8 @@ class ArchiveListingTest {
             .put("FY2026_097_Contracts_Full_20260906.zip", new byte[0])
             .put("FY2026_All_Contracts_Full_20260906.zip", new byte[0]);
 
-    private final ArchiveListing listing = new ArchiveListing(new IngestProperties(archive.url(), Set.of(), null));
+    private final ArchiveListing listing = new ArchiveListing(
+            new IngestProperties(archive.url(), Set.of(), null, null, null, null));
 
     @AfterEach
     void stopArchive() {

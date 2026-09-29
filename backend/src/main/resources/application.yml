@@ -31,3 +31,6 @@ awardtrace:
     region: us-east-1
   ingest:
     archive-url: https://files.usaspending.gov/award_data_archive/
+    api-url: https://api.usaspending.gov/
+    download-poll-interval: 5s
+    download-deadline: 15m

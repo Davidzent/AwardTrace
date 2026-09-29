@@ -91,6 +91,15 @@ class SourceFileStoreIT {
         assertThat(downloads).hasValue(1);
     }
 
+    @Test
+    void storesAGeneratedFileUnderTheFolderItIsGiven() throws Exception {
+        String key = store.store(sourceUrl(), "subawards/2026", runId);
+
+        assertThat(key).startsWith("raw/subawards/2026/").endsWith(".zip");
+        assertThat(s3.getObjectAsBytes(request -> request.bucket(TestcontainersConfiguration.RAW_BUCKET).key(key))
+                .asByteArray()).isEqualTo(zip);
+    }
+
     record StoredFile(String sha256, long bytes, String status, UUID runId) {
     }
 
