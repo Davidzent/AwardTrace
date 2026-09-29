@@ -5,6 +5,7 @@ import static org.awaitility.Awaitility.await;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.GetResponse;
+import com.zntsns.awardtrace.AwardRows;
 import com.zntsns.awardtrace.ElasticsearchTestConfiguration;
 import com.zntsns.awardtrace.TestcontainersConfiguration;
 import com.zntsns.awardtrace.indexer.internal.AwardIndexer.Result;
@@ -44,13 +45,13 @@ class AwardIndexerIT {
 
     @AfterEach
     void emptyTables() {
-        IndexerTestData.emptyTables(jdbc);
+        AwardRows.emptyTables(jdbc);
     }
 
     @Test
     void indexesTheCurrentAwardRowWhenItsChangeEventArrives() throws Exception {
         String awardId = "CONT_AWD_INDEXER_EVENT";
-        IndexerTestData.saveAward(jdbc, awardId, 3, "55000.00", false);
+        AwardRows.saveAward(jdbc, awardId, 3, "55000.00", false);
 
         var event = new AwardChanged(awardId, 3, "TRANSACTION");
         kafka.send(KafkaTopics.AWARDS_CHANGED, awardId, EventCodec.write(EventEnvelope.of(event, null))).get();
@@ -72,11 +73,11 @@ class AwardIndexerIT {
     @Test
     void keepsTheNewerDocumentWhenAnOlderVersionIsWritten() throws Exception {
         String awardId = "CONT_AWD_INDEXER_VERSIONS";
-        IndexerTestData.saveAward(jdbc, awardId, 3, "55000.00", false);
+        AwardRows.saveAward(jdbc, awardId, 3, "55000.00", false);
         assertThat(indexer.index(List.of(awardId))).isEqualTo(new Result(1, 0, 0, 0));
 
         // A stale read: the row an indexer saw before the version-3 change committed.
-        IndexerTestData.saveAward(jdbc, awardId, 2, "1.00", false);
+        AwardRows.saveAward(jdbc, awardId, 2, "1.00", false);
 
         assertThat(indexer.index(List.of(awardId))).isEqualTo(new Result(0, 0, 1, 0));
         assertThat(document(awardId).version()).isEqualTo(3);
@@ -86,10 +87,10 @@ class AwardIndexerIT {
     @Test
     void deletesTheDocumentOfADeletedAward() throws Exception {
         String awardId = "CONT_AWD_INDEXER_DELETED";
-        IndexerTestData.saveAward(jdbc, awardId, 1, "27500.00", false);
+        AwardRows.saveAward(jdbc, awardId, 1, "27500.00", false);
         indexer.index(List.of(awardId));
 
-        IndexerTestData.saveAward(jdbc, awardId, 2, "27500.00", true);
+        AwardRows.saveAward(jdbc, awardId, 2, "27500.00", true);
 
         assertThat(indexer.index(List.of(awardId))).isEqualTo(new Result(0, 1, 0, 0));
         assertThat(document(awardId).found()).isFalse();

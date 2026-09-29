@@ -1,9 +1,10 @@
 package com.zntsns.awardtrace.indexer.internal;
 
-import static com.zntsns.awardtrace.indexer.internal.IndexerTestData.saveAward;
+import static com.zntsns.awardtrace.AwardRows.saveAward;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import com.zntsns.awardtrace.AwardRows;
 import com.zntsns.awardtrace.ElasticsearchTestConfiguration;
 import com.zntsns.awardtrace.TestcontainersConfiguration;
 import com.zntsns.awardtrace.indexer.internal.Reindexer.Summary;
@@ -33,7 +34,7 @@ class ReindexIT {
     /** Puts the alias back on the first index and drops rebuilt ones, for the other tests sharing this cluster. */
     @AfterEach
     void restoreIndexes() throws Exception {
-        IndexerTestData.emptyTables(jdbc);
+        AwardRows.emptyTables(jdbc);
         var rebuilt = elasticsearch.indices().get(request -> request.index(AwardsIndex.MAPPING + "-*")).indices()
                 .keySet();
         elasticsearch.indices().updateAliases(request -> request.actions(action -> action
