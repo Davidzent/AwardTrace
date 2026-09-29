@@ -593,3 +593,73 @@ legend {
   height: 12rem;
   margin-bottom: 1rem;
 }
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tile {
+  margin: 0;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.tile strong {
+  font-size: 1.25rem;
+}
+
+.rollups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.rollup-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rollup-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.25rem 0;
+}
+
+.rollup-label {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.rollup-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rollup-table th,
+.rollup-table td {
+  padding: 0.25rem 0;
+  text-align: left;
+}
+
+.rollup-table th {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.rollup-table .num {
+  text-align: right;
+}
+
+.recipient-awards > h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
