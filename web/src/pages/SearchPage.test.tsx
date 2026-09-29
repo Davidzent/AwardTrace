@@ -69,6 +69,16 @@ describe('SearchPage', () => {
     await waitFor(() => expect(router.state.location.search).toBe('?q=camps'));
   });
 
+  it('narrows the search when a facet value is checked, and returns to page 1', async () => {
+    const facets = { state: [{ value: 'ID', count: 4 }, { value: 'MT', count: 2 }] };
+    const { router } = renderAt('/?q=fire&page=3', () => Response.json({ ...RESULTS, facets }));
+
+    fireEvent.click(await screen.findByRole('checkbox', { name: /MT/ }));
+
+    await waitFor(() => expect(router.state.location.search).toBe('?q=fire&state=MT'));
+    expect(await screen.findByRole('link', { name: 'Remove filter: MT' })).toBeDefined();
+  });
+
   it('describes a failed search and offers a retry', async () => {
     const problem = {
       type: 'invalid-search-parameters',

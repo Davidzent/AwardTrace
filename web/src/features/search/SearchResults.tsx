@@ -5,6 +5,7 @@ import { Pager } from '../../components/Pager';
 import { ProblemMessage } from '../../components/ProblemMessage';
 import { ResultCard } from '../../components/ResultCard';
 import { formatCount } from '../../lib/format';
+import type { Chip } from './filters';
 import { searchHref } from './searchUrl';
 
 /** The API refuses pages past Elasticsearch's result window (doc 07), so the pager stops there. */
@@ -23,12 +24,13 @@ type Props = {
   results: Schemas['SearchResults'] | undefined;
   error: unknown;
   updating: boolean;
+  lastFilter: Chip | undefined;
   onSort: (sort: string) => void;
   onRetry: () => void;
 };
 
 /** The results header, cards, and pager, with designed loading, empty, and error states (doc 08). */
-export function SearchResults({ query, results, error, updating, onSort, onRetry }: Props) {
+export function SearchResults({ query, results, error, updating, lastFilter, onSort, onRetry }: Props) {
   if (error) {
     return <ProblemMessage error={error} onRetry={onRetry} />;
   }
@@ -76,9 +78,16 @@ export function SearchResults({ query, results, error, updating, onSort, onRetry
       {total === 0 ? (
         <div className="empty">
           <p className="problem-title">No awards match.</p>
-          <p>
-            Try fewer or different words, or <Link to="/">start over</Link>.
-          </p>
+          {lastFilter ? (
+            <p>
+              Remove the last filter, <Link to={lastFilter.href}>{lastFilter.label}</Link>, or{' '}
+              <Link to="/">start over</Link>.
+            </p>
+          ) : (
+            <p>
+              Try fewer or different words, or <Link to="/">start over</Link>.
+            </p>
+          )}
         </div>
       ) : (
         <>

@@ -299,3 +299,158 @@ mark {
     display: inline;
   }
 }
+
+/* Filters sit in a column on wide screens and in a drawer on narrow ones (doc 08). */
+.search-layout {
+  display: grid;
+  gap: 1rem 2rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .search-layout {
+    grid-template-columns: 16rem minmax(0, 1fr);
+  }
+}
+
+.search-main .results {
+  margin-top: 0;
+}
+
+fieldset {
+  min-width: 0;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  margin-bottom: 0.4rem;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.facet ul {
+  margin: 0 0 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.facet label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.15rem 0;
+  cursor: pointer;
+}
+
+.facet-label {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.facet-count {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.link-button {
+  margin-right: 1rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.range-fields {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.range-fields label {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.range-fields input {
+  width: 100%;
+}
+
+.range-error {
+  margin: 0 0 0.5rem;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.active-filters ul {
+  display: contents;
+  list-style: none;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.1rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.chip:hover {
+  border-color: var(--muted);
+}
+
+.filters-button {
+  margin-bottom: 0.75rem;
+}
+
+.filters-drawer {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 1rem;
+  border: 0;
+}
+
+.filters-drawer::backdrop {
+  background: rgb(0 0 0 / 30%);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.drawer-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.drawer-done {
+  width: 100%;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
