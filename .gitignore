@@ -13,6 +13,9 @@
 # Maven build output
 target/
 
+# Spring Modulith output when an IDE compiles outside the Maven project directory
+build/
+
 # Package Files #
 *.jar
 *.war
