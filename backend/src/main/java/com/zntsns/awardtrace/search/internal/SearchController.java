@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -45,11 +46,15 @@ class SearchController {
                 .filter(problem -> problems.stream().noneMatch(reported -> reported.field().equals(problem.field())))
                 .forEach(problems::add);
         if (!problems.isEmpty()) {
-            var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "The search parameters are invalid");
-            problem.setType(URI.create("invalid-search-parameters"));
-            problem.setTitle("Invalid search parameters");
-            problem.setProperty("errors", problems);
-            throw new ErrorResponseException(HttpStatus.BAD_REQUEST, problem, null);
+            throw invalidParameters(problems);
         }
+    }
+
+    static ErrorResponseException invalidParameters(List<SearchParams.FieldError> problems) {
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "The search parameters are invalid");
+        problem.setType(URI.create("invalid-search-parameters"));
+        problem.setTitle("Invalid search parameters");
+        problem.setProperty("errors", problems);
+        return new ErrorResponseException(HttpStatus.BAD_REQUEST, problem, null);
     }
 }

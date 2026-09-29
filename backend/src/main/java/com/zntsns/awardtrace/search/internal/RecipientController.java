@@ -4,6 +4,7 @@ import com.zntsns.awardtrace.award.RecipientQueries;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import org.springframework.context.annotation.Profile;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 class RecipientController {
 
     static final int TOP = 5;
+    static final int SUGGESTIONS = 8;
     private static final Pattern UEI = Pattern.compile("[A-Za-z0-9]{12}");
     private static final CacheControl CACHE = CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic();
 
@@ -54,6 +57,18 @@ class RecipientController {
         String normalized = normalized(uei);
         SearchController.rejectInvalid(params, binding);
         return ResponseEntity.ok().cacheControl(SearchController.CACHE).body(search.search(params, normalized));
+    }
+
+    @GetMapping("/suggest")
+    ResponseEntity<List<AwardSearch.RecipientSuggestion>> suggest(@RequestParam(required = false) String q)
+            throws IOException {
+        String typed = q == null ? "" : q.strip();
+        if (typed.length() < 2 || typed.length() > 100) {
+            throw SearchController.invalidParameters(
+                    List.of(new SearchParams.FieldError("q", "must be 2 to 100 characters")));
+        }
+        return ResponseEntity.ok().cacheControl(SearchController.CACHE)
+                .body(search.suggestRecipients(typed, SUGGESTIONS));
     }
 
     /** UEIs are stored in upper case, so a pasted lower-case one still finds its recipient. */

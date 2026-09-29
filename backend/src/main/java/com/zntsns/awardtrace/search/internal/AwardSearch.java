@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import co.elastic.clients.elasticsearch.core.search.Hit;
@@ -94,6 +95,38 @@ class AwardSearch {
                 .toList();
         return new SearchResults(total.value(), total.relation() == TotalHitsRelation.Gte, totalObligated,
                 response.took(), params.page(), params.size(), results, facets(response.aggregations()));
+    }
+
+    record RecipientSuggestion(String uei, String name, long awardCount) {
+    }
+
+    /**
+     * Recipients whose names contain every word typed, the last one as a prefix, most awards first. Each recipient's
+     * newest award supplies its name.
+     */
+    List<RecipientSuggestion> suggestRecipients(String q, int size) throws IOException {
+        var response = elasticsearch.search(request -> request
+                .index(SearchIndexes.AWARDS)
+                .size(0)
+                .query(query -> query.multiMatch(match -> match
+                        .query(q)
+                        .type(TextQueryType.BoolPrefix)
+                        .operator(Operator.And)
+                        .fields("recipient_name.suggest", "recipient_name.suggest._2gram",
+                                "recipient_name.suggest._3gram")))
+                .aggregations("recipients", recipients -> recipients
+                        .terms(terms -> terms.field("recipient_uei").size(size))
+                        .aggregations("newest", newest -> newest.topHits(top -> top
+                                .size(1)
+                                .sort(field("last_action_date", SortOrder.Desc))
+                                .source(source -> source.filter(filter -> filter.includes("recipient_name")))))),
+                Map.class);
+        return response.aggregations().get("recipients").sterms().buckets().array().stream()
+                .map(bucket -> new RecipientSuggestion(bucket.key().stringValue(),
+                        (String) bucket.aggregations().get("newest").topHits().hits().hits().getFirst().source()
+                                .to(Map.class).get("recipient_name"),
+                        bucket.docCount()))
+                .toList();
     }
 
     /** One filter per facet with a selection, keyed by facet name. */

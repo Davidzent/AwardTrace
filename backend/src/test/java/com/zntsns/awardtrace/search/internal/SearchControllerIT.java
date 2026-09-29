@@ -177,6 +177,29 @@ class SearchControllerIT {
     }
 
     @Test
+    void suggestsRecipientsAsTheirNamesAreTyped() {
+        var partial = mvc.get().uri("/api/v1/recipients/suggest?q=nomadic ll").exchange();
+        var shared = mvc.get().uri("/api/v1/recipients/suggest?q=llc").exchange();
+
+        assertThat(partial).hasStatusOk();
+        assertThat(partial).headers().hasValue(HttpHeaders.CACHE_CONTROL, "max-age=60, public");
+        var json = assertThat(partial).bodyJson();
+        json.extractingPath("$[*].uei").asArray().containsExactly("MN5KRX2W9R46");
+        json.extractingPath("$[0].name").isEqualTo("NOMADIC LAND CAMPS, LLC");
+        json.extractingPath("$[0].award_count").isEqualTo(1);
+        assertThat(shared).bodyJson().extractingPath("$[*].name").asArray()
+                .containsExactly("ACME FEDERAL LLC", "NOMADIC LAND CAMPS, LLC");
+    }
+
+    @Test
+    void wantsAtLeastTwoCharactersToSuggestFrom() {
+        var result = mvc.get().uri("/api/v1/recipients/suggest?q= n ").exchange();
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("q");
+    }
+
+    @Test
     void reportsEveryInvalidParameterAtOnce() {
         var result = mvc.get()
                 .uri("/api/v1/awards/search?page=abc&size=0&fiscal_year=abc&min_amount=500&max_amount=100&sort=cheapest")
