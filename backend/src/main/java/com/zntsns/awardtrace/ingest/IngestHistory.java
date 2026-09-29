@@ -32,9 +32,11 @@ public class IngestHistory {
                 .query(Run.class)
                 .optional()
                 .orElse(null);
+        // max() over no rows is a null value, which single() rejects.
         var lastSuccessAt = jdbc.sql("SELECT max(finished_at) FROM ingest_run WHERE status = 'succeeded'")
                 .query(Instant.class)
-                .single();
+                .optional()
+                .orElse(null);
         return new IngestStatus(lastRun, lastSuccessAt);
     }
 }
