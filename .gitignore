@@ -20,6 +20,9 @@ build/
 node_modules/
 dist/
 
+# Generated from backend/openapi.json before every web build and test
+web/src/api/schema.ts
+
 # Package Files #
 *.jar
 *.war
