@@ -14,6 +14,7 @@ import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.EventEnvelope;
 import com.zntsns.awardtrace.shared.KafkaTopics;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,35 @@ class AwardIndexerIT {
                 .containsEntry("fiscal_year", 2026)
                 .doesNotContainKeys("index_version", "deleted");
         assertThat(((Number) document.source().get("total_obligated")).doubleValue()).isEqualTo(55000.0);
+    }
+
+    @Test
+    void countsAndTotalsTheAwardsReportedSubawards() throws Exception {
+        String awardId = "CONT_AWD_INDEXER_SUBAWARDS";
+        AwardRows.saveAward(jdbc, awardId, 1, "55000.00", false);
+        AwardRows.saveAward(jdbc, "CONT_AWD_INDEXER_NO_SUBAWARDS", 1, "10.00", false);
+        for (String[] subaward : new String[][] {{"S1", "1000.00"}, {"S2", "-200.50"}}) {
+            jdbc.sql("""
+                    INSERT INTO subaward (subaward_key, prime_award_id, prime_recipient_uei, prime_recipient_name,
+                                          sub_recipient_uei, sub_recipient_name, amount, action_date,
+                                          source_modified_at)
+                    VALUES (:key, :awardId, 'MN5KRX2W9R46', 'NOMADIC LAND CAMPS, LLC', 'E2QCEKQXLN48', 'DVORAK, LLC',
+                            :amount, DATE '2026-08-01', now())
+                    """)
+                    .param("key", subaward[0])
+                    .param("awardId", awardId)
+                    .param("amount", new BigDecimal(subaward[1]))
+                    .update();
+        }
+
+        indexer.index(List.of(awardId, "CONT_AWD_INDEXER_NO_SUBAWARDS"));
+
+        var withSubawards = document(awardId).source();
+        assertThat(withSubawards).containsEntry("subaward_count", 2);
+        assertThat(((Number) withSubawards.get("subaward_total")).doubleValue()).isEqualTo(799.5);
+        var without = document("CONT_AWD_INDEXER_NO_SUBAWARDS").source();
+        assertThat(without).containsEntry("subaward_count", 0);
+        assertThat(((Number) without.get("subaward_total")).doubleValue()).isZero();
     }
 
     @Test

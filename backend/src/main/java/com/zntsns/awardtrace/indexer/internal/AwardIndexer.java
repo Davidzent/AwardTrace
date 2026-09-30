@@ -45,11 +45,17 @@ class AwardIndexer {
                    subtier.name AS awarding_subtier_name, a.naics_code, a.naics_description, a.psc_code,
                    a.pop_state_code, a.total_obligated, a.potential_total_value, a.last_action_date,
                    a.pop_start_date, a.pop_end_date, a.fiscal_year,
+                   s.subaward_count, coalesce(s.subaward_total, 0) AS subaward_total,
                    a.index_version, a.deleted_at IS NOT NULL AS deleted
             FROM award a
             JOIN recipient r ON r.uei = a.recipient_uei
             JOIN agency toptier ON toptier.code = a.awarding_toptier_code
             LEFT JOIN agency subtier ON subtier.code = a.awarding_subtier_code
+            -- The award's reported subawards (ADR 0014); an award without any gets 0 and 0.
+            CROSS JOIN LATERAL (
+                SELECT count(*) AS subaward_count, sum(amount) AS subaward_total
+                FROM subaward WHERE prime_award_id = a.award_id
+            ) s
             WHERE a.award_id IN (:awardIds)
             """;
 

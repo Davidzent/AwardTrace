@@ -91,6 +91,6 @@ public final class AwardRows {
     }
 
     public static void emptyTables(JdbcClient jdbc) {
-        jdbc.sql("TRUNCATE award_transaction, award, recipient, agency, outbox").update();
+        jdbc.sql("TRUNCATE award_transaction, award, recipient, agency, outbox, subaward").update();
     }
 }
