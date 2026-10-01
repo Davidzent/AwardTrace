@@ -29,6 +29,7 @@ class RecipientController {
 
     static final int TOP = 5;
     static final int SUGGESTIONS = 8;
+    static final int MAX_PARTNERS = 50;
     private static final Pattern UEI = Pattern.compile("[A-Za-z0-9]{12}");
     private static final CacheControl CACHE = CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic();
 
@@ -58,6 +59,19 @@ class RecipientController {
         String normalized = normalized(uei);
         SearchController.rejectInvalid(params.problems(), binding);
         return ResponseEntity.ok().cacheControl(SearchController.CACHE).body(search.search(params, normalized));
+    }
+
+    /** The primes above and subrecipients below the recipient, from reported subawards only. */
+    @GetMapping("/{uei}/network")
+    ResponseEntity<RecipientNetworkDetail> network(@PathVariable String uei,
+            @RequestParam(defaultValue = "20") int limit) {
+        String normalized = normalized(uei);
+        if (limit < 1 || limit > MAX_PARTNERS) {
+            throw SearchController.invalidParameters(
+                    List.of(new SearchParams.FieldError("limit", "must be between 1 and 50")));
+        }
+        return ResponseEntity.ok().cacheControl(CACHE)
+                .body(RecipientNetworkDetail.of(recipients.network(normalized, limit)));
     }
 
     @GetMapping("/suggest")

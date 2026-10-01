@@ -93,15 +93,24 @@ public final class AwardRows {
     /** A subaward reported by the recipient of {@link #saveAward}; a null {@code subUei} is an unregistered vendor. */
     public static void saveSubaward(JdbcClient jdbc, String key, String awardId, String subUei, String subName,
             String amount, String actionDate) {
+        saveSubaward(jdbc, key, awardId, "MN5KRX2W9R46", "NOMADIC LAND CAMPS, LLC", subUei, subName, amount,
+                actionDate);
+    }
+
+    /** A subaward reported by any prime. The recipient network sees it once {@code recipient_edge} is refreshed. */
+    public static void saveSubaward(JdbcClient jdbc, String key, String awardId, String primeUei, String primeName,
+            String subUei, String subName, String amount, String actionDate) {
         jdbc.sql("""
                 INSERT INTO subaward (subaward_key, prime_award_id, prime_recipient_uei, prime_recipient_name,
                                       sub_recipient_uei, sub_recipient_name, amount, action_date, description,
                                       source_modified_at)
-                VALUES (:key, :awardId, 'MN5KRX2W9R46', 'NOMADIC LAND CAMPS, LLC', :subUei, :subName, :amount,
-                        CAST(:actionDate AS date), 'Subaward ' || :key, now())
+                VALUES (:key, :awardId, :primeUei, :primeName, :subUei, :subName, :amount, CAST(:actionDate AS date),
+                        'Subaward ' || :key, now())
                 """)
                 .param("key", key)
                 .param("awardId", awardId)
+                .param("primeUei", primeUei)
+                .param("primeName", primeName)
                 .param("subUei", subUei)
                 .param("subName", subName)
                 .param("amount", new BigDecimal(amount))
@@ -111,5 +120,6 @@ public final class AwardRows {
 
     public static void emptyTables(JdbcClient jdbc) {
         jdbc.sql("TRUNCATE award_transaction, award, recipient, agency, outbox, subaward").update();
+        jdbc.sql("REFRESH MATERIALIZED VIEW recipient_edge").update();
     }
 }

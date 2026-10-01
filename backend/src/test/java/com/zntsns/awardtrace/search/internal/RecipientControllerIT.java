@@ -2,6 +2,7 @@ package com.zntsns.awardtrace.search.internal;
 
 import static com.zntsns.awardtrace.AwardRows.saveAward;
 import static com.zntsns.awardtrace.AwardRows.saveSearchableAward;
+import static com.zntsns.awardtrace.AwardRows.saveSubaward;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.zntsns.awardtrace.AwardRows;
@@ -67,6 +68,16 @@ class RecipientControllerIT {
         saveSearchableAward(jdbc, "CONT_AWD_GONE", "12024B26M0999", "Withdrawn order", "DDDDDDDDDDD4",
                 "GONE LLC", "ID", "10.00", "2026-02-01");
         jdbc.sql("UPDATE award SET deleted_at = now() WHERE award_id = 'CONT_AWD_GONE'").update();
+
+        // The network: two subrecipients below, one reported twice under a renamed name, an unregistered vendor that
+        // has no UEI to link, and a prime above.
+        saveSubaward(jdbc, "S1", "CONT_AWD_CAMPS", "E2QCEKQXLN48", "DVORAK LLC", "1000.00", "2026-08-01");
+        saveSubaward(jdbc, "S2", "CONT_AWD_CAMPS", "E2QCEKQXLN48", "DVORAK, LLC", "500.00", "2026-08-20");
+        saveSubaward(jdbc, "S3", "CONT_AWD_NETWORK", "Z9X8C7V6B5N4", "RIVER SUPPLY CO", "2000.00", "2026-08-05");
+        saveSubaward(jdbc, "S4", "CONT_AWD_NETWORK", null, "UNREGISTERED VENDOR", "9000.00", "2026-08-05");
+        saveSubaward(jdbc, "S5", "CONT_IDV_BIG_PRIME", "PRIMEUEI0001", "BIG PRIME INC", UEI, "NOMADIC LAND CAMPS, LLC",
+                "300.00", "2026-03-10");
+        jdbc.sql("REFRESH MATERIALIZED VIEW recipient_edge").update();
     }
 
     @AfterAll
@@ -115,6 +126,46 @@ class RecipientControllerIT {
 
             assertThat(result).hasStatus(HttpStatus.NOT_FOUND).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
             assertThat(result).bodyJson().extractingPath("$.type").isEqualTo("recipient-not-found");
+        }
+    }
+
+    @Test
+    void listsThePrimesAboveAndSubrecipientsBelowLargestFirst() {
+        var result = mvc.get().uri("/api/v1/recipients/{uei}/network", "mn5krx2w9r46").exchange();
+
+        assertThat(result).hasStatusOk().headers().hasValue(HttpHeaders.CACHE_CONTROL, "max-age=300, public");
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$.subs_below[*].uei").asArray().containsExactly("Z9X8C7V6B5N4", "E2QCEKQXLN48");
+        json.extractingPath("$.subs_below[1].name").isEqualTo("DVORAK, LLC");
+        json.extractingPath("$.subs_below[1].subaward_count").isEqualTo(2);
+        json.extractingPath("$.subs_below[1].total_amount").isEqualTo("1500.00");
+        json.extractingPath("$.subs_below[1].first_action_date").isEqualTo("2026-08-01");
+        json.extractingPath("$.subs_below[1].last_action_date").isEqualTo("2026-08-20");
+        json.extractingPath("$.primes_above[*].name").asArray().containsExactly("BIG PRIME INC");
+        json.extractingPath("$.data_note").isEqualTo("Reported subawards only");
+
+        var limited = assertThat(mvc.get().uri("/api/v1/recipients/{uei}/network?limit=1", UEI).exchange())
+                .bodyJson();
+        limited.extractingPath("$.subs_below[*].uei").asArray().containsExactly("Z9X8C7V6B5N4");
+        limited.extractingPath("$.primes_above[*].uei").asArray().containsExactly("PRIMEUEI0001");
+    }
+
+    @Test
+    void givesAUeiWithoutSubawardsAnEmptyNetwork() {
+        var json = assertThat(mvc.get().uri("/api/v1/recipients/{uei}/network", "BBBBBBBBBBB2").exchange())
+                .bodyJson();
+
+        json.extractingPath("$.primes_above").asArray().isEmpty();
+        json.extractingPath("$.subs_below").asArray().isEmpty();
+    }
+
+    @Test
+    void refusesANetworkLimitOutOfRange() {
+        for (String limit : new String[] {"0", "51"}) {
+            var result = mvc.get().uri("/api/v1/recipients/{uei}/network?limit={limit}", UEI, limit).exchange();
+
+            assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+            assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("limit");
         }
     }
 

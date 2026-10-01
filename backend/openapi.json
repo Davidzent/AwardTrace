@@ -481,6 +481,51 @@
         "tags" : [ "recipient-controller" ]
       }
     },
+    "/api/v1/recipients/{uei}/network" : {
+      "get" : {
+        "operationId" : "network",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "uei",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "limit",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecipientNetworkDetail"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "recipient-controller" ]
+      }
+    },
     "/api/v1/status" : {
       "get" : {
         "operationId" : "status",
@@ -755,6 +800,34 @@
           }
         }
       },
+      "Partner" : {
+        "type" : "object",
+        "properties" : {
+          "first_action_date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "last_action_date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "subaward_count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total_amount" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          },
+          "uei" : {
+            "type" : "string"
+          }
+        }
+      },
       "Period" : {
         "type" : "object",
         "properties" : {
@@ -881,6 +954,26 @@
           },
           "uei" : {
             "type" : "string"
+          }
+        }
+      },
+      "RecipientNetworkDetail" : {
+        "type" : "object",
+        "properties" : {
+          "data_note" : {
+            "type" : "string"
+          },
+          "primes_above" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Partner"
+            }
+          },
+          "subs_below" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Partner"
+            }
           }
         }
       },
