@@ -3,13 +3,16 @@ package com.zntsns.awardtrace.search.internal;
 import com.zntsns.awardtrace.award.AwardQueries;
 import java.net.URI;
 import java.time.Duration;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +42,16 @@ class AwardController {
                 .eTag(Long.toString(found.award().indexVersion()))
                 .cacheControl(CACHE)
                 .body(AwardDetail.of(found));
+    }
+
+    /** The subawards reported under a live award, newest first. */
+    @GetMapping("/{awardId}/subawards")
+    ResponseEntity<SubawardPage> subawards(@PathVariable String awardId,
+            @ParameterObject @ModelAttribute PageParams params, BindingResult binding) {
+        SearchController.rejectInvalid(params.problems(), binding);
+        var found = awards.subawards(awardId, params.page(), params.size())
+                .orElseThrow(() -> awardNotFound(awardId));
+        return ResponseEntity.ok().cacheControl(CACHE).body(SubawardPage.of(found));
     }
 
     private static ErrorResponseException awardNotFound(String awardId) {

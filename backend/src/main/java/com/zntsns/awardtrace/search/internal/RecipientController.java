@@ -56,7 +56,7 @@ class RecipientController {
     ResponseEntity<SearchResults> awards(@PathVariable String uei, @ParameterObject @ModelAttribute SearchParams params,
             BindingResult binding) throws IOException {
         String normalized = normalized(uei);
-        SearchController.rejectInvalid(params, binding);
+        SearchController.rejectInvalid(params.problems(), binding);
         return ResponseEntity.ok().cacheControl(SearchController.CACHE).body(search.search(params, normalized));
     }
 

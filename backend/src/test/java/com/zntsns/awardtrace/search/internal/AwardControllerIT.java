@@ -1,6 +1,7 @@
 package com.zntsns.awardtrace.search.internal;
 
 import static com.zntsns.awardtrace.AwardRows.saveAward;
+import static com.zntsns.awardtrace.AwardRows.saveSubaward;
 import static com.zntsns.awardtrace.AwardRows.saveTransaction;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -66,6 +67,8 @@ class AwardControllerIT {
                 .containsExactly("P00001", "P00002", "0");
         json.extractingPath("$.transactions[1].federal_action_obligation").isEqualTo("-27500.00");
         json.extractingPath("$.transactions_truncated").isEqualTo(false);
+        json.extractingPath("$.subaward_summary.count").isEqualTo(0);
+        json.extractingPath("$.subaward_summary.total").isEqualTo("0.00");
         json.extractingPath("$.usaspending_url").isEqualTo("https://www.usaspending.gov/award/" + AWARD_ID + "/");
     }
 
@@ -94,5 +97,58 @@ class AwardControllerIT {
         saveAward(jdbc, AWARD_ID, 2, "0.00", true);
 
         assertThat(mvc.get().uri("/api/v1/awards/{awardId}", AWARD_ID).exchange()).hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void summarizesAndPagesTheReportedSubawardsNewestFirst() {
+        saveAward(jdbc, AWARD_ID, 3, "55000.00", false);
+        saveSubaward(jdbc, "S1", AWARD_ID, "E2QCEKQXLN48", "DVORAK, LLC", "1000.00", "2026-08-01");
+        saveSubaward(jdbc, "S2", AWARD_ID, "E2QCEKQXLN48", "DVORAK, LLC", "-200.50", "2026-08-20");
+        saveSubaward(jdbc, "S3", AWARD_ID, null, "UNREGISTERED VENDOR", "50.00", "2026-08-05");
+        saveSubaward(jdbc, "S4", "CONT_AWD_OTHER", "E2QCEKQXLN48", "DVORAK, LLC", "7.00", "2026-08-05");
+
+        var detail = assertThat(mvc.get().uri("/api/v1/awards/{awardId}", AWARD_ID).exchange()).bodyJson();
+        detail.extractingPath("$.subaward_summary.count").isEqualTo(3);
+        detail.extractingPath("$.subaward_summary.total").isEqualTo("849.50");
+
+        var first = mvc.get().uri("/api/v1/awards/{awardId}/subawards?size=2", AWARD_ID).exchange();
+        assertThat(first).hasStatusOk().headers().hasValue(HttpHeaders.CACHE_CONTROL, "max-age=300, public");
+        var json = assertThat(first).bodyJson();
+        json.extractingPath("$.total").isEqualTo(3);
+        json.extractingPath("$.total_is_capped").isEqualTo(false);
+        json.extractingPath("$.page").isEqualTo(1);
+        json.extractingPath("$.size").isEqualTo(2);
+        json.extractingPath("$.results[*].subaward_key").asArray().containsExactly("S2", "S3");
+        json.extractingPath("$.results[0].amount").isEqualTo("-200.50");
+        json.extractingPath("$.results[0].sub_recipient.name").isEqualTo("DVORAK, LLC");
+        json.extractingPath("$.results[1].sub_recipient.uei").isNull();
+        json.extractingPath("$.results[1].action_date").isEqualTo("2026-08-05");
+        json.extractingPath("$.results[1].description").isEqualTo("Subaward S3");
+
+        assertThat(mvc.get().uri("/api/v1/awards/{awardId}/subawards?size=2&page=2", AWARD_ID).exchange())
+                .bodyJson().extractingPath("$.results[*].subaward_key").asArray().containsExactly("S1");
+    }
+
+    @Test
+    void listsNoSubawardsForAMissingOrDeletedAward() {
+        saveAward(jdbc, AWARD_ID, 2, "0.00", true);
+        saveSubaward(jdbc, "S1", AWARD_ID, "E2QCEKQXLN48", "DVORAK, LLC", "1000.00", "2026-08-01");
+
+        var deleted = mvc.get().uri("/api/v1/awards/{awardId}/subawards", AWARD_ID).exchange();
+        assertThat(deleted).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(deleted).bodyJson().extractingPath("$.type").isEqualTo("award-not-found");
+        assertThat(mvc.get().uri("/api/v1/awards/{awardId}/subawards", "CONT_AWD_NONE").exchange())
+                .hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void rejectsInvalidSubawardPages() {
+        saveAward(jdbc, AWARD_ID, 3, "55000.00", false);
+
+        var result = mvc.get().uri("/api/v1/awards/{awardId}/subawards?page=abc&size=51", AWARD_ID).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(result).bodyJson().extractingPath("$.errors[*].field").asArray()
+                .containsExactlyInAnyOrder("page", "size");
     }
 }

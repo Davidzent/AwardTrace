@@ -196,6 +196,58 @@
         "tags" : [ "award-controller" ]
       }
     },
+    "/api/v1/awards/{awardId}/subawards" : {
+      "get" : {
+        "operationId" : "subawards",
+        "parameters" : [ {
+          "in" : "path",
+          "name" : "awardId",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SubawardPage"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "award-controller" ]
+      }
+    },
     "/api/v1/recipients/suggest" : {
       "get" : {
         "operationId" : "suggest",
@@ -535,6 +587,9 @@
           "source_modified_at" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "subaward_summary" : {
+            "$ref" : "#/components/schemas/SubawardSummary"
           },
           "total_obligated" : {
             "type" : "string",
@@ -1002,6 +1057,69 @@
           },
           "pipeline" : {
             "$ref" : "#/components/schemas/PipelineStatus"
+          }
+        }
+      },
+      "SubawardItem" : {
+        "type" : "object",
+        "properties" : {
+          "action_date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "amount" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "sub_recipient" : {
+            "$ref" : "#/components/schemas/RecipientRef"
+          },
+          "subaward_key" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SubawardPage" : {
+        "type" : "object",
+        "properties" : {
+          "page" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "results" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubawardItem"
+            }
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total_is_capped" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "SubawardSummary" : {
+        "type" : "object",
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "total" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
           }
         }
       },

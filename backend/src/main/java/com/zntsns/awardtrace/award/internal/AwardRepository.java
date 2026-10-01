@@ -26,6 +26,8 @@ public interface AwardRepository extends Repository<Award, String> {
             """)
     Optional<Award> findLive(String awardId);
 
+    boolean existsByAwardIdAndDeletedAtIsNull(String awardId);
+
     /** Live modifications, newest first in action order. */
     @Query("""
             SELECT t FROM AwardTransaction t

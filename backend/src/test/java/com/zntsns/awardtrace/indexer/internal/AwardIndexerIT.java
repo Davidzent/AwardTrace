@@ -14,7 +14,6 @@ import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.EventEnvelope;
 import com.zntsns.awardtrace.shared.KafkaTopics;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -76,19 +75,8 @@ class AwardIndexerIT {
         String awardId = "CONT_AWD_INDEXER_SUBAWARDS";
         AwardRows.saveAward(jdbc, awardId, 1, "55000.00", false);
         AwardRows.saveAward(jdbc, "CONT_AWD_INDEXER_NO_SUBAWARDS", 1, "10.00", false);
-        for (String[] subaward : new String[][] {{"S1", "1000.00"}, {"S2", "-200.50"}}) {
-            jdbc.sql("""
-                    INSERT INTO subaward (subaward_key, prime_award_id, prime_recipient_uei, prime_recipient_name,
-                                          sub_recipient_uei, sub_recipient_name, amount, action_date,
-                                          source_modified_at)
-                    VALUES (:key, :awardId, 'MN5KRX2W9R46', 'NOMADIC LAND CAMPS, LLC', 'E2QCEKQXLN48', 'DVORAK, LLC',
-                            :amount, DATE '2026-08-01', now())
-                    """)
-                    .param("key", subaward[0])
-                    .param("awardId", awardId)
-                    .param("amount", new BigDecimal(subaward[1]))
-                    .update();
-        }
+        AwardRows.saveSubaward(jdbc, "S1", awardId, "E2QCEKQXLN48", "DVORAK, LLC", "1000.00", "2026-08-01");
+        AwardRows.saveSubaward(jdbc, "S2", awardId, "E2QCEKQXLN48", "DVORAK, LLC", "-200.50", "2026-08-01");
 
         indexer.index(List.of(awardId, "CONT_AWD_INDEXER_NO_SUBAWARDS"));
 

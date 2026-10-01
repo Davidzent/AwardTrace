@@ -32,18 +32,21 @@ class SearchController {
     @GetMapping("/api/v1/awards/search")
     ResponseEntity<SearchResults> search(@ParameterObject @ModelAttribute SearchParams params, BindingResult binding)
             throws IOException {
-        rejectInvalid(params, binding);
+        rejectInvalid(params.problems(), binding);
         return ResponseEntity.ok().cacheControl(CACHE).body(search.search(params, null));
     }
 
-    /** Binding errors, such as {@code page=abc}, and rule violations are reported together, one per field. */
-    static void rejectInvalid(SearchParams params, BindingResult binding) {
+    /**
+     * Binding errors, such as {@code page=abc}, and the parameters' rule violations are reported together, one per
+     * field.
+     */
+    static void rejectInvalid(List<SearchParams.FieldError> rules, BindingResult binding) {
         var problems = new ArrayList<SearchParams.FieldError>();
         // Spring reports binding errors under the request parameter's name, such as fiscal_year.
         binding.getFieldErrors().forEach(error -> problems.add(new SearchParams.FieldError(error.getField(),
                 "is not valid")));
         // A field that failed to bind is left at its default, so only its binding error is reported.
-        params.problems().stream()
+        rules.stream()
                 .filter(problem -> problems.stream().noneMatch(reported -> reported.field().equals(problem.field())))
                 .forEach(problems::add);
         if (!problems.isEmpty()) {

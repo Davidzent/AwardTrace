@@ -1,14 +1,15 @@
 package com.zntsns.awardtrace.search.internal;
 
 import com.zntsns.awardtrace.award.AwardQueries.AwardWithTransactions;
+import com.zntsns.awardtrace.award.AwardQueries.SubawardSummary;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
 /**
- * The body of {@code GET /api/v1/awards/{award_id}} (doc 07). Category and subaward fields arrive with the phases
- * that produce their data.
+ * The body of {@code GET /api/v1/awards/{award_id}} (doc 07). Category fields arrive with the phase that produces
+ * them.
  */
 record AwardDetail(
         String awardId,
@@ -31,6 +32,7 @@ record AwardDetail(
         Place placeOfPerformance,
         List<Modification> transactions,
         boolean transactionsTruncated,
+        SubawardSummary subawardSummary,
         Instant sourceModifiedAt,
         String usaspendingUrl) {
 
@@ -86,6 +88,7 @@ record AwardDetail(
                                 transaction.federalActionObligation(), transaction.description()))
                         .toList(),
                 found.truncated(),
+                found.subawards(),
                 award.sourceModifiedAt(),
                 "https://www.usaspending.gov/award/" + award.awardId() + "/");
     }

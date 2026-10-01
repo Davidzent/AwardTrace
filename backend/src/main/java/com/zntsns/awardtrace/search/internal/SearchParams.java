@@ -28,9 +28,6 @@ record SearchParams(
         Integer page,
         Integer size) {
 
-    /** Elasticsearch's default max_result_window; deeper pages are refused rather than served slowly. */
-    static final int MAX_RESULT_WINDOW = 10_000;
-
     enum Sort { relevance, newest, largest, recipient }
 
     record FieldError(String field, String message) {
@@ -72,14 +69,7 @@ record SearchParams(
         if (sort != null && Set.of(Sort.values()).stream().noneMatch(value -> value.name().equals(sort))) {
             problems.add(new FieldError("sort", "must be relevance, newest, largest, or recipient"));
         }
-        if (page < 1) {
-            problems.add(new FieldError("page", "must be 1 or more"));
-        }
-        if (size < 1 || size > 50) {
-            problems.add(new FieldError("size", "must be between 1 and 50"));
-        } else if (page >= 1 && (long) page * size > MAX_RESULT_WINDOW) {
-            problems.add(new FieldError("page", "page times size may not exceed 10,000; refine the search instead"));
-        }
+        problems.addAll(PageParams.problems(page, size));
         return problems;
     }
 }
