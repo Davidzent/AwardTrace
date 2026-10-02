@@ -3,6 +3,7 @@ import type { Schemas } from '../../api/client';
 import { Money } from '../../components/Money';
 import { formatDate } from '../../lib/format';
 import { ModificationsTable } from './ModificationsTable';
+import { SubawardsPanel } from './SubawardsPanel';
 
 /** USAspending's contract award types. */
 const AWARD_TYPES: Record<string, string> = {
@@ -12,7 +13,7 @@ const AWARD_TYPES: Record<string, string> = {
   D: 'Definitive contract',
 };
 
-/** The award detail layout from doc 08. Subawards and the category arrive with the phases that produce them. */
+/** The award detail layout from doc 08. The category arrives with the phase that produces it. */
 export function AwardDetail({ award }: { award: Schemas['AwardDetail'] }) {
   const { agency, recipient, naics, psc, period_of_performance: period, place_of_performance: place } = award;
   const transactions = award.transactions ?? [];
@@ -55,12 +56,15 @@ export function AwardDetail({ award }: { award: Schemas['AwardDetail'] }) {
           </dl>
         </section>
 
-        <section className="panel" aria-labelledby="award-recipient">
-          <h2 id="award-recipient">Recipient</h2>
-          <p className="recipient-name">{recipient?.name}</p>
-          <p className="muted">UEI {recipient?.uei}</p>
-          {recipient?.uei && <Link to={`/recipients/${recipient.uei}`}>View recipient →</Link>}
-        </section>
+        <div className="award-side">
+          <section className="panel" aria-labelledby="award-recipient">
+            <h2 id="award-recipient">Recipient</h2>
+            <p className="recipient-name">{recipient?.name}</p>
+            <p className="muted">UEI {recipient?.uei}</p>
+            {recipient?.uei && <Link to={`/recipients/${recipient.uei}`}>View recipient →</Link>}
+          </section>
+          {award.award_id && <SubawardsPanel awardId={award.award_id} summary={award.subaward_summary} />}
+        </div>
       </div>
 
       <section className="panel" aria-labelledby="award-modifications">

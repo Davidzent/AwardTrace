@@ -483,6 +483,18 @@ legend {
   }
 }
 
+/* The recipient and its subawards, stacked beside the details. */
+.award-side {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+
+.subaward-date {
+  display: block;
+  font-size: 0.85rem;
+}
+
 .panel {
   padding: 1rem 1.25rem;
   border: 1px solid var(--border);
