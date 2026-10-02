@@ -25,6 +25,7 @@ const RESULTS: Schemas['SearchResults'] = {
       total_obligated: '4812000.00',
       fiscal_year: 2026,
       naics_code: '481211',
+      subaward_count: 2,
     },
   ],
 };
@@ -57,6 +58,7 @@ describe('SearchPage', () => {
     expect(screen.getByRole('link', { name: 'SKYLINE AVIATION INC' }).getAttribute('href'))
       .toBe('/recipients/AAAAAAAAAAA1');
     expect(screen.getByText('$4.8M')).toBeDefined();
+    expect(screen.getByText('2 reported subawards')).toBeDefined();
     expect(screen.getByRole('link', { name: 'Page 3' }).getAttribute('href')).toBe('/?q=helicopter&page=3');
   });
 
