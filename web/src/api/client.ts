@@ -56,6 +56,8 @@ export const api = {
     get<Schemas['SubawardPage']>(`/api/v1/awards/${segment(awardId)}/subawards`, query, signal),
   recipient: (uei: string, signal?: AbortSignal) =>
     get<Schemas['RecipientDetail']>(`/api/v1/recipients/${segment(uei)}`, {}, signal),
+  recipientNetwork: (uei: string, signal?: AbortSignal) =>
+    get<Schemas['RecipientNetworkDetail']>(`/api/v1/recipients/${segment(uei)}/network`, {}, signal),
   recipientAwards: (uei: string, query: SearchQuery, signal?: AbortSignal) =>
     get<Schemas['SearchResults']>(`/api/v1/recipients/${segment(uei)}/awards`, query, signal),
   suggestRecipients: (q: string, signal?: AbortSignal) =>

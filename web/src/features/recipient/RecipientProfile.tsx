@@ -2,7 +2,7 @@ import type { Schemas } from '../../api/client';
 import { Money } from '../../components/Money';
 import { formatCount } from '../../lib/format';
 
-/** The recipient header, summary tiles, and rollups from doc 08. The network arrives with subawards (Phase 4). */
+/** The recipient header, summary tiles, and rollups from doc 08. */
 export function RecipientProfile({ recipient }: { recipient: Schemas['RecipientDetail'] }) {
   const { parent, location, totals } = recipient;
   const years = (recipient.awards_by_fiscal_year ?? []).map((year) => year.fiscal_year);

@@ -2,12 +2,13 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { ProblemMessage } from '../components/ProblemMessage';
+import { RecipientNetwork } from '../features/recipient/RecipientNetwork';
 import { RecipientProfile } from '../features/recipient/RecipientProfile';
 import { SearchResults } from '../features/search/SearchResults';
 import { readSearch, searchHref } from '../features/search/searchUrl';
 
 /**
- * The profile and the recipient's awards load in parallel. The awards take the search page's parameters from the URL,
+ * The profile, the network, and the recipient's awards load in parallel. The awards take the search page's parameters from the URL,
  * so their sort and page survive a reload or a shared link.
  */
 export function RecipientPage() {
@@ -18,6 +19,10 @@ export function RecipientPage() {
   const profile = useQuery({
     queryKey: ['recipient', uei],
     queryFn: ({ signal }) => api.recipient(uei, signal),
+  });
+  const network = useQuery({
+    queryKey: ['recipient', uei, 'network'],
+    queryFn: ({ signal }) => api.recipientNetwork(uei, signal),
   });
   const awards = useQuery({
     queryKey: ['recipient', uei, 'awards', query],
@@ -48,6 +53,7 @@ export function RecipientPage() {
         <>
           <title>{`${profile.data.name} · AwardTrace`}</title>
           <RecipientProfile recipient={profile.data} />
+          <RecipientNetwork network={network.data} error={network.error} onRetry={() => void network.refetch()} />
         </>
       ) : (
         <div aria-busy="true">

@@ -38,7 +38,7 @@ export function SubawardsPanel({ awardId, summary }: Props) {
               <li key={subaward.subaward_key}>
                 <span className="rollup-label">
                   {subaward.sub_recipient?.name}
-                  <span className="muted subaward-date">
+                  <span className="muted rollup-note">
                     {subaward.action_date && formatDate(subaward.action_date)}
                   </span>
                 </span>
