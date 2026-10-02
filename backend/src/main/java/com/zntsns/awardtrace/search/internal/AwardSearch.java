@@ -284,7 +284,9 @@ class AwardSearch {
                 source.get("last_action_date") == null ? null : LocalDate.parse((String) source.get("last_action_date")),
                 source.get("fiscal_year") == null ? null : ((Number) source.get("fiscal_year")).intValue(),
                 (String) source.get("naics_code"),
-                (String) source.get("pop_state_code"));
+                (String) source.get("pop_state_code"),
+                // A document indexed before subawards were counted has none: writing one reindexes its award.
+                source.get("subaward_count") instanceof Number count ? count.intValue() : 0);
     }
 
     /** The source holds the exact decimal the indexer sent; its shortest double form restores it. */

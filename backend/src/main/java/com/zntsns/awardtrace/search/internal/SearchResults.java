@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The body of {@code GET /api/v1/awards/search} (doc 07). Categories and subaward counts arrive with the phases that
- * produce them.
+ * The body of {@code GET /api/v1/awards/search} (doc 07). Categories arrive with the phase that produces them.
  *
  * @param totalObligated the sum over every match, not just this page
  * @param totalIsCapped true when {@code total} is a lower bound
@@ -42,6 +41,7 @@ record SearchResults(
             LocalDate lastActionDate,
             Integer fiscalYear,
             String naicsCode,
-            String popStateCode) {
+            String popStateCode,
+            int subawardCount) {
     }
 }

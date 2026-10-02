@@ -1,6 +1,7 @@
 package com.zntsns.awardtrace.search.internal;
 
 import static com.zntsns.awardtrace.AwardRows.saveSearchableAward;
+import static com.zntsns.awardtrace.AwardRows.saveSubaward;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -65,6 +66,8 @@ class SearchControllerIT {
                 "MN5KRX2W9R46", "NOMADIC LAND CAMPS, LLC", "ID", "55000.00", "2026-08-24");
         saveSearchableAward(jdbc, AWARDS.get(2), "12318726F0042", "Cloud software licenses",
                 "BBBBBBBBBBB2", "ACME FEDERAL LLC", "VA", "950.00", "2025-06-03");
+        saveSubaward(jdbc, "S1", AWARDS.get(0), "E2QCEKQXLN48", "DVORAK, LLC", "1000.00", "2026-08-01");
+        saveSubaward(jdbc, "S2", AWARDS.get(0), "E2QCEKQXLN48", "DVORAK, LLC", "500.00", "2026-08-02");
         for (String awardId : AWARDS) {
             var event = new AwardChanged(awardId, 1, "TRANSACTION");
             kafka.send(KafkaTopics.AWARDS_CHANGED, awardId, EventCodec.write(EventEnvelope.of(event, null))).get();
@@ -89,6 +92,7 @@ class SearchControllerIT {
         json.extractingPath("$.results[0].recipient.name").isEqualTo("SKYLINE AVIATION INC");
         json.extractingPath("$.results[0].agency.subtier_name").isEqualTo("Forest Service");
         json.extractingPath("$.results[0].total_obligated").isEqualTo("4812000.00");
+        json.extractingPath("$.results[0].subaward_count").isEqualTo(2);
     }
 
     @Test
@@ -106,6 +110,7 @@ class SearchControllerIT {
         json.extractingPath("$.total").isEqualTo(3);
         json.extractingPath("$.results[*].award_id").asArray()
                 .containsExactly(AWARDS.get(1), AWARDS.get(0), AWARDS.get(2));
+        json.extractingPath("$.results[*].subaward_count").asArray().containsExactly(0, 2, 0);
         json.extractingPath("$.total_obligated").isEqualTo("4867950.00");
     }
 
