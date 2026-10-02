@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://awardtrace.zntsns.com/events/SubawardReported.v1.json",
+  "title": "SubawardReported, schema version 1",
+  "description": "One subaward as its prime recipient reported it, on subawards.v1 keyed by the prime award ID (ADR 0014). Null fields are left out of the payload (doc 05, ADR 0010).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "occurred_at",
+    "source",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "const": "SubawardReported"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "s3_key",
+        "row_number"
+      ],
+      "description": "Where the row came from: the ingest run, the stored file, and the row within it",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "s3_key": {
+          "type": "string"
+        },
+        "row_number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subaward_key",
+        "prime_award_id"
+      ],
+      "properties": {
+        "subaward_key": {
+          "type": "string"
+        },
+        "source_modified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "prime_award_id": {
+          "type": "string"
+        },
+        "prime_recipient_uei": {
+          "type": "string"
+        },
+        "prime_recipient_name": {
+          "type": "string"
+        },
+        "sub_recipient_uei": {
+          "type": "string"
+        },
+        "sub_recipient_name": {
+          "type": "string"
+        },
+        "subaward_number": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string",
+          "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+          "description": "A decimal string, exactly as the source wrote it, so no reader loses precision"
+        },
+        "action_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

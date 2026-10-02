@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://awardtrace.zntsns.com/events/ContractTransactionDeleted.v1.json",
+  "title": "ContractTransactionDeleted, schema version 1",
+  "description": "A delete row from a USAspending delta file, on awards.transactions.v1; award_id is derived from the transaction key (ADR 0012). Null fields are left out of the payload (doc 05, ADR 0010).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "occurred_at",
+    "source",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "const": "ContractTransactionDeleted"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "s3_key",
+        "row_number"
+      ],
+      "description": "Where the row came from: the ingest run, the stored file, and the row within it",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "s3_key": {
+          "type": "string"
+        },
+        "row_number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_id",
+        "award_id",
+        "source_file",
+        "source_file_date"
+      ],
+      "properties": {
+        "transaction_id": {
+          "type": "string"
+        },
+        "award_id": {
+          "type": "string"
+        },
+        "source_file": {
+          "type": "string"
+        },
+        "source_file_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    }
+  }
+}

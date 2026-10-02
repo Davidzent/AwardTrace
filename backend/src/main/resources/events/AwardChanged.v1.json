@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://awardtrace.zntsns.com/events/AwardChanged.v1.json",
+  "title": "AwardChanged, schema version 1",
+  "description": "An award changed in a way search must see, on awards.changed.v1. It carries no award data on purpose. Null fields are left out of the payload (doc 05, ADR 0010).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "occurred_at",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "const": "AwardChanged"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "award_id",
+        "index_version",
+        "change_reason"
+      ],
+      "properties": {
+        "award_id": {
+          "type": "string"
+        },
+        "index_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "change_reason": {
+          "enum": [
+            "TRANSACTION",
+            "SUBAWARD",
+            "CLASSIFICATION",
+            "REINDEX"
+          ]
+        }
+      }
+    }
+  }
+}

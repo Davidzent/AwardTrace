@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://awardtrace.zntsns.com/events/ContractTransactionIngested.v1.json",
+  "title": "ContractTransactionIngested, schema version 1",
+  "description": "One contract transaction as a USAspending source file published it, on awards.transactions.v1. Null fields are left out of the payload (doc 05, ADR 0010).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "occurred_at",
+    "source",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "const": "ContractTransactionIngested"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "s3_key",
+        "row_number"
+      ],
+      "description": "Where the row came from: the ingest run, the stored file, and the row within it",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "s3_key": {
+          "type": "string"
+        },
+        "row_number": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_id",
+        "award_id",
+        "source_file",
+        "source_file_date"
+      ],
+      "properties": {
+        "transaction_id": {
+          "type": "string"
+        },
+        "award_id": {
+          "type": "string"
+        },
+        "source_file": {
+          "type": "string"
+        },
+        "source_file_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "source_modified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "piid": {
+          "type": "string"
+        },
+        "parent_piid": {
+          "type": "string"
+        },
+        "modification_number": {
+          "type": "string"
+        },
+        "award_type": {
+          "type": "string"
+        },
+        "action_type_code": {
+          "type": "string"
+        },
+        "action_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "federal_action_obligation": {
+          "type": "string",
+          "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+          "description": "A decimal string, exactly as the source wrote it, so no reader loses precision"
+        },
+        "total_obligated": {
+          "type": "string",
+          "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+          "description": "A decimal string, exactly as the source wrote it, so no reader loses precision"
+        },
+        "potential_total_value": {
+          "type": "string",
+          "pattern": "^-?[0-9]+(\\.[0-9]+)?$",
+          "description": "A decimal string, exactly as the source wrote it, so no reader loses precision"
+        },
+        "pop_start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "pop_end_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "awarding_toptier_code": {
+          "type": "string"
+        },
+        "awarding_toptier_name": {
+          "type": "string"
+        },
+        "awarding_subtier_code": {
+          "type": "string"
+        },
+        "awarding_subtier_name": {
+          "type": "string"
+        },
+        "funding_toptier_code": {
+          "type": "string"
+        },
+        "funding_toptier_name": {
+          "type": "string"
+        },
+        "recipient_uei": {
+          "type": "string"
+        },
+        "recipient_name": {
+          "type": "string"
+        },
+        "recipient_parent_uei": {
+          "type": "string"
+        },
+        "recipient_parent_name": {
+          "type": "string"
+        },
+        "recipient_city": {
+          "type": "string"
+        },
+        "recipient_state_code": {
+          "type": "string"
+        },
+        "recipient_country_code": {
+          "type": "string"
+        },
+        "pop_state_code": {
+          "type": "string"
+        },
+        "pop_country_code": {
+          "type": "string"
+        },
+        "naics_code": {
+          "type": "string"
+        },
+        "naics_description": {
+          "type": "string"
+        },
+        "psc_code": {
+          "type": "string"
+        },
+        "psc_description": {
+          "type": "string"
+        },
+        "transaction_description": {
+          "type": "string"
+        },
+        "award_description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
