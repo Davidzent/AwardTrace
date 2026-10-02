@@ -1,5 +1,5 @@
-# The checks in doc 10 that exist so far. The coverage gate, web lint, Terraform, the secret scan, SonarQube Cloud,
-# and Playwright (which needs a running stack with data) join as each one is built.
+# The checks in doc 10 that exist so far. Terraform and Playwright (which needs a running stack with data) join as
+# each one is built. CodeQL runs in its own workflow.
 name: CI
 
 on:
@@ -26,7 +26,8 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: maven
-      # Unit tests, the Testcontainers integration tests, the module boundary test, and the OpenAPI drift check.
+      # Unit tests, the Testcontainers integration tests, the module boundary test, the OpenAPI drift check, and the
+      # JaCoCo coverage gate.
       - run: ./mvnw --batch-mode verify
 
   web:
@@ -42,6 +43,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      - run: npm run lint
       # Each script first regenerates the typed client from backend/openapi.json.
       - run: npm run typecheck
       - run: npm test
