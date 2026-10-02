@@ -807,6 +807,9 @@
             "type" : "string",
             "format" : "date"
           },
+          "has_awards" : {
+            "type" : "boolean"
+          },
           "last_action_date" : {
             "type" : "string",
             "format" : "date"

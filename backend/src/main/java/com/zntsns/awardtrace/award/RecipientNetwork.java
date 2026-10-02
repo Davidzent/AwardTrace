@@ -13,8 +13,10 @@ public record RecipientNetwork(List<Partner> primesAbove, List<Partner> subsBelo
     /**
      * @param name as most recently reported
      * @param totalAmount the sum of the reported amounts, which corrections can lower
+     * @param hasAwards whether the partner holds live awards here, and so has a recipient profile; a subrecipient or
+     *     an out-of-scope prime may not
      */
     public record Partner(String uei, String name, long subawardCount, BigDecimal totalAmount,
-            LocalDate firstActionDate, LocalDate lastActionDate) {
+            LocalDate firstActionDate, LocalDate lastActionDate, boolean hasAwards) {
     }
 }

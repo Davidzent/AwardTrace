@@ -16,20 +16,24 @@ public class RecipientQueries {
 
     // recipient_edge is a materialized view the pipeline refreshes (ADR 0014), so it is read with SQL, not mapped.
     private static final String PRIMES_ABOVE = """
-            SELECT prime_uei AS uei, prime_name AS name, subaward_count, total_amount, first_action_date,
-                   last_action_date
-            FROM recipient_edge
-            WHERE sub_uei = :uei
-            ORDER BY total_amount DESC, prime_uei
+            SELECT e.prime_uei AS uei, e.prime_name AS name, e.subaward_count, e.total_amount, e.first_action_date,
+                   e.last_action_date,
+                   EXISTS (SELECT 1 FROM award a WHERE a.recipient_uei = e.prime_uei AND a.deleted_at IS NULL)
+                       AS has_awards
+            FROM recipient_edge e
+            WHERE e.sub_uei = :uei
+            ORDER BY e.total_amount DESC, e.prime_uei
             LIMIT :limit
             """;
 
     private static final String SUBS_BELOW = """
-            SELECT sub_uei AS uei, sub_name AS name, subaward_count, total_amount, first_action_date,
-                   last_action_date
-            FROM recipient_edge
-            WHERE prime_uei = :uei
-            ORDER BY total_amount DESC, sub_uei
+            SELECT e.sub_uei AS uei, e.sub_name AS name, e.subaward_count, e.total_amount, e.first_action_date,
+                   e.last_action_date,
+                   EXISTS (SELECT 1 FROM award a WHERE a.recipient_uei = e.sub_uei AND a.deleted_at IS NULL)
+                       AS has_awards
+            FROM recipient_edge e
+            WHERE e.prime_uei = :uei
+            ORDER BY e.total_amount DESC, e.sub_uei
             LIMIT :limit
             """;
 

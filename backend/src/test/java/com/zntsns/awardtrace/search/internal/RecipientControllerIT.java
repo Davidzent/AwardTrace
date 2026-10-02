@@ -69,11 +69,11 @@ class RecipientControllerIT {
                 "GONE LLC", "ID", "10.00", "2026-02-01");
         jdbc.sql("UPDATE award SET deleted_at = now() WHERE award_id = 'CONT_AWD_GONE'").update();
 
-        // The network: two subrecipients below, one reported twice under a renamed name, an unregistered vendor that
-        // has no UEI to link, and a prime above.
+        // The network: two subrecipients below, one with awards of its own and one reported twice under a changed
+        // name, an unregistered vendor without a UEI, and a prime above with no awards here.
         saveSubaward(jdbc, "S1", "CONT_AWD_CAMPS", "E2QCEKQXLN48", "DVORAK LLC", "1000.00", "2026-08-01");
         saveSubaward(jdbc, "S2", "CONT_AWD_CAMPS", "E2QCEKQXLN48", "DVORAK, LLC", "500.00", "2026-08-20");
-        saveSubaward(jdbc, "S3", "CONT_AWD_NETWORK", "Z9X8C7V6B5N4", "RIVER SUPPLY CO", "2000.00", "2026-08-05");
+        saveSubaward(jdbc, "S3", "CONT_AWD_NETWORK", "BBBBBBBBBBB2", "ACME FEDERAL LLC", "2000.00", "2026-08-05");
         saveSubaward(jdbc, "S4", "CONT_AWD_NETWORK", null, "UNREGISTERED VENDOR", "9000.00", "2026-08-05");
         saveSubaward(jdbc, "S5", "CONT_IDV_BIG_PRIME", "PRIMEUEI0001", "BIG PRIME INC", UEI, "NOMADIC LAND CAMPS, LLC",
                 "300.00", "2026-03-10");
@@ -135,24 +135,26 @@ class RecipientControllerIT {
 
         assertThat(result).hasStatusOk().headers().hasValue(HttpHeaders.CACHE_CONTROL, "max-age=300, public");
         var json = assertThat(result).bodyJson();
-        json.extractingPath("$.subs_below[*].uei").asArray().containsExactly("Z9X8C7V6B5N4", "E2QCEKQXLN48");
+        json.extractingPath("$.subs_below[*].uei").asArray().containsExactly("BBBBBBBBBBB2", "E2QCEKQXLN48");
+        json.extractingPath("$.subs_below[*].has_awards").asArray().containsExactly(true, false);
         json.extractingPath("$.subs_below[1].name").isEqualTo("DVORAK, LLC");
         json.extractingPath("$.subs_below[1].subaward_count").isEqualTo(2);
         json.extractingPath("$.subs_below[1].total_amount").isEqualTo("1500.00");
         json.extractingPath("$.subs_below[1].first_action_date").isEqualTo("2026-08-01");
         json.extractingPath("$.subs_below[1].last_action_date").isEqualTo("2026-08-20");
         json.extractingPath("$.primes_above[*].name").asArray().containsExactly("BIG PRIME INC");
+        json.extractingPath("$.primes_above[0].has_awards").isEqualTo(false);
         json.extractingPath("$.data_note").isEqualTo("Reported subawards only");
 
         var limited = assertThat(mvc.get().uri("/api/v1/recipients/{uei}/network?limit=1", UEI).exchange())
                 .bodyJson();
-        limited.extractingPath("$.subs_below[*].uei").asArray().containsExactly("Z9X8C7V6B5N4");
+        limited.extractingPath("$.subs_below[*].uei").asArray().containsExactly("BBBBBBBBBBB2");
         limited.extractingPath("$.primes_above[*].uei").asArray().containsExactly("PRIMEUEI0001");
     }
 
     @Test
     void givesAUeiWithoutSubawardsAnEmptyNetwork() {
-        var json = assertThat(mvc.get().uri("/api/v1/recipients/{uei}/network", "BBBBBBBBBBB2").exchange())
+        var json = assertThat(mvc.get().uri("/api/v1/recipients/{uei}/network", "ZZZZZZZZZZZ9").exchange())
                 .bodyJson();
 
         json.extractingPath("$.primes_above").asArray().isEmpty();
