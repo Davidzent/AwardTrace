@@ -89,6 +89,24 @@ class AwardIndexerIT {
     }
 
     @Test
+    void categorizesEachAwardByItsPscBaseline() throws Exception {
+        AwardRows.saveAward(jdbc, "CONT_AWD_INDEXER_SECURITY", 1, "10.00", false);
+        AwardRows.saveAward(jdbc, "CONT_AWD_INDEXER_NO_PSC", 1, "10.00", false);
+        jdbc.sql("UPDATE award SET psc_code = 'DJ01' WHERE award_id = 'CONT_AWD_INDEXER_SECURITY'").update();
+        jdbc.sql("UPDATE award SET psc_code = NULL WHERE award_id = 'CONT_AWD_INDEXER_NO_PSC'").update();
+
+        indexer.index(List.of("CONT_AWD_INDEXER_SECURITY", "CONT_AWD_INDEXER_NO_PSC"));
+
+        // DJ beats the D group's IT infrastructure: the longest matching prefix wins.
+        assertThat(document("CONT_AWD_INDEXER_SECURITY").source())
+                .containsEntry("category", "CYBERSECURITY")
+                .containsEntry("category_source", "baseline")
+                .containsEntry("baseline_category", "CYBERSECURITY");
+        assertThat(document("CONT_AWD_INDEXER_NO_PSC").source())
+                .doesNotContainKeys("category", "category_source", "baseline_category");
+    }
+
+    @Test
     void keepsTheNewerDocumentWhenAnOlderVersionIsWritten() throws Exception {
         String awardId = "CONT_AWD_INDEXER_VERSIONS";
         AwardRows.saveAward(jdbc, awardId, 3, "55000.00", false);

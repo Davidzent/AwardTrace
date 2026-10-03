@@ -46,6 +46,8 @@ class AwardIndexer {
                    a.pop_state_code, a.total_obligated, a.potential_total_value, a.last_action_date,
                    a.pop_start_date, a.pop_end_date, a.fiscal_year,
                    s.subaward_count, coalesce(s.subaward_total, 0) AS subaward_total,
+                   baseline.category, CASE WHEN baseline.category IS NOT NULL THEN 'baseline' END AS category_source,
+                   baseline.category AS baseline_category,
                    a.index_version, a.deleted_at IS NOT NULL AS deleted
             FROM award a
             JOIN recipient r ON r.uei = a.recipient_uei
@@ -56,6 +58,14 @@ class AwardIndexer {
                 SELECT count(*) AS subaward_count, sum(amount) AS subaward_total
                 FROM subaward WHERE prime_award_id = a.award_id
             ) s
+            -- The free baseline category from the PSC, by the longest matching prefix (doc 09). An award without a PSC
+            -- has none. The LLM's category, when there is one, replaces it as category in Phase 5.
+            LEFT JOIN LATERAL (
+                SELECT m.category FROM psc_baseline_map m
+                WHERE starts_with(a.psc_code, m.psc_prefix)
+                ORDER BY char_length(m.psc_prefix) DESC
+                LIMIT 1
+            ) baseline ON true
             WHERE a.award_id IN (:awardIds)
             """;
 

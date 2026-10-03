@@ -143,7 +143,9 @@ class SearchControllerIT {
         json.extractingPath("$.facets.agency[0].label").isEqualTo("Department of Agriculture");
         json.extractingPath("$.facets.agency[0].count").isEqualTo(2);
         json.extractingPath("$.facets.naics[0].label").isEqualTo("ALL OTHER TELECOMMUNICATIONS");
-        json.extractingPath("$.facets.category").asArray().isEmpty();
+        // Every test award's PSC is F003, natural resources, which the baseline puts in OTHER.
+        json.extractingPath("$.facets.category[*].value").asArray().containsExactly("OTHER");
+        json.extractingPath("$.facets.category[0].count").isEqualTo(2);
     }
 
     @Test
