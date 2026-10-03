@@ -41,8 +41,13 @@ class OutboxRelay {
         this.transactions = transactions;
     }
 
-    /** Relays until the outbox is drained, one transaction per batch, so a backfill isn't held to one batch a tick. */
-    @Scheduled(fixedDelayString = "${awardtrace.outbox.relay-delay:500ms}")
+    /**
+     * Relays until the outbox is drained, one transaction per batch, so a backfill isn't held to one batch a tick. The
+     * first run waits one delay too: without it, Spring runs the task at startup, and a test that sets a long delay to
+     * call the relay itself would race that run.
+     */
+    @Scheduled(initialDelayString = "${awardtrace.outbox.relay-delay:500ms}",
+            fixedDelayString = "${awardtrace.outbox.relay-delay:500ms}")
     void relay() {
         while (transactions.execute(status -> relayBatch()) == BATCH_SIZE) {
             // A full batch means more rows are probably waiting.
