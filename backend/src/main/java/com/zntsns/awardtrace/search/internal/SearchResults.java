@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The body of {@code GET /api/v1/awards/search} (doc 07). Categories arrive with the phase that produces them.
+ * The body of {@code GET /api/v1/awards/search} (doc 07).
  *
  * @param totalObligated the sum over every match, not just this page
  * @param totalIsCapped true when {@code total} is a lower bound
@@ -25,7 +25,7 @@ record SearchResults(
         List<Result> results,
         Map<String, List<FacetValue>> facets) {
 
-    /** @param label a display name, where the facet has one: agency names and NAICS descriptions */
+    /** @param label a display name, where the facet has one: agency names, category labels, and NAICS descriptions */
     record FacetValue(String value, String label, long count) {
     }
 
@@ -41,7 +41,12 @@ record SearchResults(
             LocalDate lastActionDate,
             Integer fiscalYear,
             String naicsCode,
+            CategoryRef category,
             String popStateCode,
             int subawardCount) {
+    }
+
+    /** @param source {@code baseline} from the PSC, or {@code llm} once the classifier has run (doc 09) */
+    record CategoryRef(String code, String label, String source) {
     }
 }

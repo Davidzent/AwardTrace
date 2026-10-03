@@ -53,9 +53,11 @@ class AwardSearch {
                     params -> params.fiscalYear().stream().map(String::valueOf).toList()));
 
     private final ElasticsearchClient elasticsearch;
+    private final Taxonomy taxonomy;
 
-    AwardSearch(ElasticsearchClient elasticsearch) {
+    AwardSearch(ElasticsearchClient elasticsearch, Taxonomy taxonomy) {
         this.elasticsearch = elasticsearch;
+        this.taxonomy = taxonomy;
     }
 
     /**
@@ -93,8 +95,11 @@ class AwardSearch {
         List<SearchResults.Result> results = response.hits().hits().stream()
                 .map(hit -> result((Hit<Map<String, Object>>) (Hit) hit))
                 .toList();
+        var facets = facets(response.aggregations());
+        // Documents carry category codes only; the labels come from the taxonomy.
+        facets.computeIfPresent("category", (name, values) -> taxonomy.labeled(values));
         return new SearchResults(total.value(), total.relation() == TotalHitsRelation.Gte, totalObligated,
-                response.took(), params.page(), params.size(), results, facets(response.aggregations()));
+                response.took(), params.page(), params.size(), results, facets);
     }
 
     record RecipientSuggestion(String uei, String name, long awardCount) {
@@ -269,7 +274,7 @@ class AwardSearch {
         return SortOptions.of(option -> option.field(field -> field.field(name).order(order)));
     }
 
-    private static SearchResults.Result result(Hit<Map<String, Object>> hit) {
+    private SearchResults.Result result(Hit<Map<String, Object>> hit) {
         Map<String, Object> source = hit.source();
         var highlight = hit.highlight().get("description");
         return new SearchResults.Result(
@@ -284,9 +289,18 @@ class AwardSearch {
                 source.get("last_action_date") == null ? null : LocalDate.parse((String) source.get("last_action_date")),
                 source.get("fiscal_year") == null ? null : ((Number) source.get("fiscal_year")).intValue(),
                 (String) source.get("naics_code"),
+                category(source),
                 (String) source.get("pop_state_code"),
                 // A document indexed before subawards were counted has none: writing one reindexes its award.
                 source.get("subaward_count") instanceof Number count ? count.intValue() : 0);
+    }
+
+    /** Null when the award has no category: it has no PSC, and the classifier hasn't labeled it. */
+    private SearchResults.CategoryRef category(Map<String, Object> source) {
+        String code = (String) source.get("category");
+        return code == null
+                ? null
+                : new SearchResults.CategoryRef(code, taxonomy.label(code), (String) source.get("category_source"));
     }
 
     /** The source holds the exact decimal the indexer sent; its shortest double form restores it. */

@@ -93,6 +93,21 @@ class SearchControllerIT {
         json.extractingPath("$.results[0].agency.subtier_name").isEqualTo("Forest Service");
         json.extractingPath("$.results[0].total_obligated").isEqualTo("4812000.00");
         json.extractingPath("$.results[0].subaward_count").isEqualTo(2);
+        json.extractingPath("$.results[0].category.code").isEqualTo("OTHER");
+        json.extractingPath("$.results[0].category.label").isEqualTo("Other");
+        json.extractingPath("$.results[0].category.source").isEqualTo("baseline");
+    }
+
+    @Test
+    void servesTheTaxonomyInDisplayOrder() {
+        var result = mvc.get().uri("/api/v1/categories").exchange();
+
+        assertThat(result).hasStatusOk().headers().hasValue(HttpHeaders.CACHE_CONTROL, "max-age=300, public");
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$[*].code").asArray().hasSize(13).startsWith("IT_SOFTWARE").endsWith("UNCLASSIFIABLE");
+        json.extractingPath("$[2].label").isEqualTo("Cybersecurity");
+        json.extractingPath("$[2].definition")
+                .isEqualTo("Security operations, assessments, identity management, and information assurance");
     }
 
     @Test
@@ -146,6 +161,7 @@ class SearchControllerIT {
         // Every test award's PSC is F003, natural resources, which the baseline puts in OTHER.
         json.extractingPath("$.facets.category[*].value").asArray().containsExactly("OTHER");
         json.extractingPath("$.facets.category[0].count").isEqualTo(2);
+        json.extractingPath("$.facets.category[0].label").isEqualTo("Other");
     }
 
     @Test

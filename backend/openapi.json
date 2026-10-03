@@ -248,6 +248,37 @@
         "tags" : [ "award-controller" ]
       }
     },
+    "/api/v1/categories" : {
+      "get" : {
+        "operationId" : "categories",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/Category"
+                  }
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "default" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description" : "Problem details"
+          }
+        },
+        "tags" : [ "search-controller" ]
+      }
+    },
     "/api/v1/recipients/suggest" : {
       "get" : {
         "operationId" : "suggest",
@@ -668,6 +699,34 @@
           }
         }
       },
+      "Category" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "definition" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CategoryRef" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "source" : {
+            "type" : "string"
+          }
+        }
+      },
       "Code" : {
         "type" : "object",
         "properties" : {
@@ -1014,6 +1073,9 @@
           },
           "award_id" : {
             "type" : "string"
+          },
+          "category" : {
+            "$ref" : "#/components/schemas/CategoryRef"
           },
           "description" : {
             "type" : "string"

@@ -1,5 +1,6 @@
 package com.zntsns.awardtrace.search.internal;
 
+import com.zntsns.awardtrace.award.Category;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Duration;
@@ -22,11 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 class SearchController {
 
     static final CacheControl CACHE = CacheControl.maxAge(Duration.ofMinutes(1)).cachePublic();
+    private static final CacheControl TAXONOMY_CACHE = CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic();
 
     private final AwardSearch search;
+    private final Taxonomy taxonomy;
 
-    SearchController(AwardSearch search) {
+    SearchController(AwardSearch search, Taxonomy taxonomy) {
         this.search = search;
+        this.taxonomy = taxonomy;
     }
 
     @GetMapping("/api/v1/awards/search")
@@ -34,6 +38,12 @@ class SearchController {
             throws IOException {
         rejectInvalid(params.problems(), binding);
         return ResponseEntity.ok().cacheControl(CACHE).body(search.search(params, null));
+    }
+
+    /** The taxonomy in display order, for facet labels and help text. */
+    @GetMapping("/api/v1/categories")
+    ResponseEntity<List<Category>> categories() {
+        return ResponseEntity.ok().cacheControl(TAXONOMY_CACHE).body(taxonomy.categories());
     }
 
     /**

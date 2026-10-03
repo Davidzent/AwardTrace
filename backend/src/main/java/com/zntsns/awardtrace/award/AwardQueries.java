@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,16 +38,19 @@ public class AwardQueries {
 
     private final AwardRepository awards;
     private final SubawardRepository subawards;
+    private final JdbcClient jdbc;
 
-    AwardQueries(AwardRepository awards, SubawardRepository subawards) {
+    AwardQueries(AwardRepository awards, SubawardRepository subawards, JdbcClient jdbc) {
         this.awards = awards;
         this.subawards = subawards;
+        this.jdbc = jdbc;
     }
 
     /**
      * Reads the award, its transactions, and its subaward summary from one snapshot, so a pipeline commit between the
-     * queries can't pair the award at one index version with transactions or subawards from the next. PostgreSQL's default, READ COMMITTED,
-     * takes a new snapshot for every statement; REPEATABLE READ keeps the first one for the whole transaction.
+     * queries can't pair the award at one index version with transactions or subawards from the next. PostgreSQL's
+     * default, READ COMMITTED, takes a new snapshot for every statement; REPEATABLE READ keeps the first one for the
+     * whole transaction.
      */
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Optional<AwardWithTransactions> find(String awardId, int maxTransactions) {
@@ -71,6 +75,14 @@ public class AwardQueries {
             return Optional.empty();
         }
         return Optional.of(subawards.findByPrimeAward(awardId, PageRequest.of(page - 1, size)));
+    }
+
+    /** The category taxonomy in display order. Only a migration changes it. */
+    @Transactional(readOnly = true)
+    public List<Category> categories() {
+        return jdbc.sql("SELECT code, label, definition FROM taxonomy_category ORDER BY sort_order")
+                .query(Category.class)
+                .list();
     }
 
     /** Counts every live award, so it scans the table; callers cache it. */
