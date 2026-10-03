@@ -3,6 +3,7 @@ package com.zntsns.awardtrace.search.internal;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +38,7 @@ class RateLimiting implements WebMvcConfigurer {
     static final int SEARCH_PER_MINUTE = 60;
     static final int OTHER_PER_MINUTE = 120;
     private static final String[] SEARCH = {"/api/v1/awards/search", "/api/v1/recipients/*/awards"};
-    private static final long MINUTE = Duration.ofMinutes(1).toNanos();
+    private static final long MINUTE = Duration.ofMinutes(1).toMillis();
 
     /** @param exemptAddresses clients never limited, such as the load generator (doc 12) */
     @ConfigurationProperties("awardtrace.rate-limit")
@@ -53,9 +54,12 @@ class RateLimiting implements WebMvcConfigurer {
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
     private final Set<String> exempt;
+    // The application clock rather than System.nanoTime, so a test can stop time and no bucket refills mid-test.
+    private final Clock clock;
 
-    RateLimiting(Properties properties) {
+    RateLimiting(Properties properties, Clock clock) {
         this.exempt = properties.exemptAddresses();
+        this.clock = clock;
     }
 
     @Override
@@ -72,9 +76,9 @@ class RateLimiting implements WebMvcConfigurer {
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
                 String client = request.getRemoteAddr();
                 if (!exempt.contains(client)) {
-                    long waitNanos = take(kind + " " + client, perMinute);
-                    if (waitNanos > 0) {
-                        throw tooManyRequests(kind, perMinute, waitNanos);
+                    long waitMillis = take(kind + " " + client, perMinute);
+                    if (waitMillis > 0) {
+                        throw tooManyRequests(kind, perMinute, waitMillis);
                     }
                 }
                 return true;
@@ -82,19 +86,20 @@ class RateLimiting implements WebMvcConfigurer {
         };
     }
 
-    /** Takes a token if one is left; otherwise returns how long until one will be, in nanoseconds. */
+    /** Takes a token if one is left; otherwise returns how long until one will be, in milliseconds. */
     private long take(String key, int perMinute) {
-        long now = System.nanoTime();
-        double perNano = (double) perMinute / MINUTE;
+        long now = clock.millis();
+        double perMilli = (double) perMinute / MINUTE;
         long[] wait = {0};
         buckets.compute(key, (ignored, bucket) -> {
             double tokens = bucket == null
                     ? perMinute
-                    : Math.min(perMinute, bucket.tokens() + (now - bucket.updatedAt()) * perNano);
+                    // The wall clock can step back; that only delays a refill.
+                    : Math.min(perMinute, bucket.tokens() + Math.max(0, now - bucket.updatedAt()) * perMilli);
             if (tokens >= 1) {
                 return new Bucket(tokens - 1, now);
             }
-            wait[0] = (long) Math.ceil((1 - tokens) / perNano);
+            wait[0] = (long) Math.ceil((1 - tokens) / perMilli);
             return new Bucket(tokens, now);
         });
         return wait[0];
@@ -103,12 +108,12 @@ class RateLimiting implements WebMvcConfigurer {
     /** A bucket untouched for a minute has refilled completely, which is the same as having none. */
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.MINUTES)
     void evictIdle() {
-        long cutoff = System.nanoTime() - MINUTE;
+        long cutoff = clock.millis() - MINUTE;
         buckets.values().removeIf(bucket -> bucket.updatedAt() < cutoff);
     }
 
-    private static ErrorResponseException tooManyRequests(String kind, int perMinute, long waitNanos) {
-        long seconds = Math.max(1, TimeUnit.NANOSECONDS.toSeconds(waitNanos + TimeUnit.SECONDS.toNanos(1) - 1));
+    private static ErrorResponseException tooManyRequests(String kind, int perMinute, long waitMillis) {
+        long seconds = Math.max(1, (waitMillis + 999) / 1000);
         var problem = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS,
                 "Up to %d %s requests a minute are allowed; retry in %d s".formatted(perMinute, kind, seconds));
         problem.setType(URI.create("rate-limited"));

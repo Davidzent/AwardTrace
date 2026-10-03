@@ -7,16 +7,23 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Runs a real Tomcat, since resolving X-Forwarded-For is Tomcat's job, not MVC's. Requests come from 127.0.0.1, an
  * internal proxy address, as Caddy's do. Each test uses its own client addresses, since buckets outlive a test. The
- * requests fail validation before touching Elasticsearch or PostgreSQL, but still count.
+ * requests fail validation before touching Elasticsearch or PostgreSQL, but still count. The clock is stopped: in real
+ * time, a slow runner refills a token while a test sends its requests, and the request it expects refused gets through.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "awardtrace.rate-limit.exempt-addresses=198.51.100.9")
@@ -26,6 +33,16 @@ class RateLimitIT {
 
     private static final String SEARCH = "/api/v1/awards/search?page=0";
     private static final String OTHER = "/api/v1/recipients/SHORT";
+
+    @TestConfiguration
+    static class StoppedClock {
+
+        @Bean
+        @Primary
+        Clock stoppedClock() {
+            return Clock.fixed(Instant.parse("2026-10-03T12:00:00Z"), ZoneOffset.UTC);
+        }
+    }
 
     private final HttpClient http = HttpClient.newHttpClient();
 
