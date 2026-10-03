@@ -29,6 +29,18 @@ jobs:
       # Unit tests, the Testcontainers integration tests, the module boundary test, the OpenAPI drift check, and the
       # JaCoCo coverage gate.
       - run: ./mvnw --batch-mode verify
+      # Each failed test becomes an annotation on the run's summary, with its message and first stack frames.
+      - if: failure()
+        run: |
+          for report in target/surefire-reports/*.txt target/failsafe-reports/*.txt; do
+            [ -f "$report" ] || continue
+            awk 'function escape(s) { gsub(/%/, "%25", s); gsub(/\r/, "", s); return s }
+                 /<<< (FAILURE|ERROR)!/ && !/^Tests run:/ {
+                   message = escape($0)
+                   for (i = 0; i < 4 && (getline line) > 0; i++) message = message "%0A" escape(line)
+                   print "::error title=Test failed::" message
+                 }' "$report"
+          done
 
   web:
     runs-on: ubuntu-latest
