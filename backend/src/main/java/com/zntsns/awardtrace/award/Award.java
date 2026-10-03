@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.Immutable;
 
 /**
@@ -47,6 +48,10 @@ public class Award {
     private String naicsDescription;
     private String pscCode;
     private String pscDescription;
+
+    // Computed by PostgreSQL with the same function the indexer uses, so the two can't disagree.
+    @Formula("psc_baseline_category(psc_code)")
+    private String baselineCategory;
     private String popStateCode;
     private String popCountryCode;
     private BigDecimal totalObligated;
@@ -120,6 +125,11 @@ public class Award {
 
     public String pscDescription() {
         return pscDescription;
+    }
+
+    /** The category the PSC implies (doc 09); null without a PSC. */
+    public String baselineCategory() {
+        return baselineCategory;
     }
 
     public String popStateCode() {

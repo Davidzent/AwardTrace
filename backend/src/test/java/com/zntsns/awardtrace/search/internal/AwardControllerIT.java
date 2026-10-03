@@ -69,7 +69,23 @@ class AwardControllerIT {
         json.extractingPath("$.transactions_truncated").isEqualTo(false);
         json.extractingPath("$.subaward_summary.count").isEqualTo(0);
         json.extractingPath("$.subaward_summary.total").isEqualTo("0.00");
+        // PSC F003, natural resources, which the baseline puts in Other.
+        json.extractingPath("$.category.code").isEqualTo("OTHER");
+        json.extractingPath("$.category.label").isEqualTo("Other");
+        json.extractingPath("$.category.source").isEqualTo("baseline");
+        json.extractingPath("$.category.confidence").isNull();
+        json.extractingPath("$.category.baseline_code").isEqualTo("OTHER");
+        json.extractingPath("$.category.baseline_label").isEqualTo("Other");
         json.extractingPath("$.usaspending_url").isEqualTo("https://www.usaspending.gov/award/" + AWARD_ID + "/");
+    }
+
+    @Test
+    void leavesTheCategoryEmptyForAnAwardWithoutAPsc() {
+        saveAward(jdbc, AWARD_ID, 3, "55000.00", false);
+        jdbc.sql("UPDATE award SET psc_code = NULL WHERE award_id = :awardId").param("awardId", AWARD_ID).update();
+
+        assertThat(mvc.get().uri("/api/v1/awards/{awardId}", AWARD_ID).exchange()).bodyJson()
+                .extractingPath("$.category").isNull();
     }
 
     @Test

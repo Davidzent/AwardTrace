@@ -58,14 +58,9 @@ class AwardIndexer {
                 SELECT count(*) AS subaward_count, sum(amount) AS subaward_total
                 FROM subaward WHERE prime_award_id = a.award_id
             ) s
-            -- The free baseline category from the PSC, by the longest matching prefix (doc 09). An award without a PSC
-            -- has none. The LLM's category, when there is one, replaces it as category in Phase 5.
-            LEFT JOIN LATERAL (
-                SELECT m.category FROM psc_baseline_map m
-                WHERE starts_with(a.psc_code, m.psc_prefix)
-                ORDER BY char_length(m.psc_prefix) DESC
-                LIMIT 1
-            ) baseline ON true
+            -- The free baseline category from the PSC (doc 09); an award without a PSC has none. The LLM's category,
+            -- when there is one, replaces it as category in Phase 5.
+            CROSS JOIN LATERAL (SELECT psc_baseline_category(a.psc_code) AS category) baseline
             WHERE a.award_id IN (:awardIds)
             """;
 

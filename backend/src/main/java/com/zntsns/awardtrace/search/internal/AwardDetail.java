@@ -6,10 +6,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
 
 /**
- * The body of {@code GET /api/v1/awards/{award_id}} (doc 07). Category fields arrive with the phase that produces
- * them.
+ * The body of {@code GET /api/v1/awards/{award_id}} (doc 07). Until the classifier runs (Phase 5), the category is
+ * the PSC baseline.
  */
 record AwardDetail(
         String awardId,
@@ -28,6 +29,7 @@ record AwardDetail(
         String popStateCode,
         Code naics,
         Code psc,
+        CategoryDetail category,
         Period periodOfPerformance,
         Place placeOfPerformance,
         List<Modification> transactions,
@@ -51,6 +53,16 @@ record AwardDetail(
     record Period(LocalDate start, LocalDate end) {
     }
 
+    /**
+     * The award's category beside the PSC baseline, so the reader can compare the two (doc 08).
+     *
+     * @param source {@code baseline} from the PSC, or {@code llm} once the classifier has run (doc 09)
+     * @param confidence null, like {@code model} and {@code promptVersion}, when the source is {@code baseline}
+     */
+    record CategoryDetail(String code, String label, String source, Double confidence, String model,
+            String promptVersion, String baselineCode, String baselineLabel) {
+    }
+
     record Place(String stateCode, String countryCode) {
     }
 
@@ -58,8 +70,10 @@ record AwardDetail(
             BigDecimal federalActionObligation, String description) {
     }
 
-    static AwardDetail of(AwardWithTransactions found) {
+    /** @param labels the taxonomy's label for a category code */
+    static AwardDetail of(AwardWithTransactions found, Function<String, String> labels) {
         var award = found.award();
+        String baseline = award.baselineCategory();
         var subtier = award.awardingSubtier();
         var funding = award.fundingToptier();
         return new AwardDetail(
@@ -80,6 +94,8 @@ record AwardDetail(
                 award.popStateCode(),
                 new Code(award.naicsCode(), award.naicsDescription()),
                 new Code(award.pscCode(), award.pscDescription()),
+                baseline == null ? null : new CategoryDetail(baseline, labels.apply(baseline), "baseline", null, null,
+                        null, baseline, labels.apply(baseline)),
                 new Period(award.popStartDate(), award.popEndDate()),
                 new Place(award.popStateCode(), award.popCountryCode()),
                 found.transactions().stream()

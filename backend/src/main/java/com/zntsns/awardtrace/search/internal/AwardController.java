@@ -26,9 +26,11 @@ class AwardController {
     private static final CacheControl CACHE = CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic();
 
     private final AwardQueries awards;
+    private final Taxonomy taxonomy;
 
-    AwardController(AwardQueries awards) {
+    AwardController(AwardQueries awards, Taxonomy taxonomy) {
         this.awards = awards;
+        this.taxonomy = taxonomy;
     }
 
     /**
@@ -41,7 +43,7 @@ class AwardController {
         return ResponseEntity.ok()
                 .eTag(Long.toString(found.award().indexVersion()))
                 .cacheControl(CACHE)
-                .body(AwardDetail.of(found));
+                .body(AwardDetail.of(found, taxonomy::label));
     }
 
     /** The subawards reported under a live award, newest first. */

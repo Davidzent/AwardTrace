@@ -614,6 +614,9 @@
           "award_type" : {
             "type" : "string"
           },
+          "category" : {
+            "$ref" : "#/components/schemas/CategoryDetail"
+          },
           "description" : {
             "type" : "string"
           },
@@ -709,6 +712,36 @@
             "type" : "string"
           },
           "label" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CategoryDetail" : {
+        "type" : "object",
+        "properties" : {
+          "baseline_code" : {
+            "type" : "string"
+          },
+          "baseline_label" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "confidence" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "model" : {
+            "type" : "string"
+          },
+          "prompt_version" : {
+            "type" : "string"
+          },
+          "source" : {
             "type" : "string"
           }
         }

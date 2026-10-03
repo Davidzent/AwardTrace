@@ -72,6 +72,7 @@ class SchemaMigrationIT {
         assertThat(baselineCategoryOf("R425")).isEqualTo("ENGINEERING_RESEARCH");
         assertThat(baselineCategoryOf("R408")).isEqualTo("PROFESSIONAL_SERVICES");
         assertThat(baselineCategoryOf("F003")).isEqualTo("OTHER");
+        assertThat(baselineCategoryOf(null)).isNull();
     }
 
     @Test
@@ -99,12 +100,8 @@ class SchemaMigrationIT {
     }
 
     private String baselineCategoryOf(String psc) {
-        return jdbc.sql("""
-                SELECT category FROM psc_baseline_map
-                WHERE starts_with(:psc, psc_prefix)
-                ORDER BY char_length(psc_prefix) DESC
-                LIMIT 1
-                """)
+        // single() rejects a null value, which a PSC without a category returns.
+        return jdbc.sql("SELECT psc_baseline_category(CAST(:psc AS text))")
                 .param("psc", psc)
                 .query(String.class)
                 .optional()
