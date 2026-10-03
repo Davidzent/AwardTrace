@@ -41,7 +41,37 @@ class SchemaMigrationIT {
 
         assertThat(tables).containsExactlyInAnyOrder(
                 "agency", "recipient", "award", "award_transaction", "outbox", "ingest_run", "ingest_file",
-                "subaward");
+                "subaward", "taxonomy_category", "psc_baseline_map");
+    }
+
+    @Test
+    void seedsTheThirteenCategoriesInDisplayOrder() {
+        assertThat(jdbc.sql("SELECT code FROM taxonomy_category ORDER BY sort_order").query(String.class).list())
+                .containsExactly("IT_SOFTWARE", "IT_INFRASTRUCTURE", "CYBERSECURITY", "PROFESSIONAL_SERVICES",
+                        "ENGINEERING_RESEARCH", "CONSTRUCTION_FACILITIES", "HEALTH_MEDICAL", "DEFENSE_SYSTEMS",
+                        "LOGISTICS_TRANSPORT", "SUPPLIES_EQUIPMENT", "TRAINING_EDUCATION", "OTHER", "UNCLASSIFIABLE");
+    }
+
+    @Test
+    void mapsEveryPscGroupToABaselineCategory() {
+        // Services start with a letter (PSC has no I or O); products start with an FSC group's first digit.
+        for (char group : "123456789ABCDEFGHJKLMNPQRSTUVWXYZ".toCharArray()) {
+            assertThat(baselineCategoryOf(group + "999")).as("PSC group " + group).isNotNull();
+        }
+    }
+
+    @Test
+    void picksTheLongestMatchingPrefix() {
+        assertThat(baselineCategoryOf("D399")).isEqualTo("IT_INFRASTRUCTURE");
+        assertThat(baselineCategoryOf("DA01")).isEqualTo("IT_SOFTWARE");
+        assertThat(baselineCategoryOf("DJ01")).isEqualTo("CYBERSECURITY");
+        assertThat(baselineCategoryOf("D310")).isEqualTo("CYBERSECURITY");
+        assertThat(baselineCategoryOf("7J20")).isEqualTo("CYBERSECURITY");
+        assertThat(baselineCategoryOf("2310")).isEqualTo("LOGISTICS_TRANSPORT");
+        assertThat(baselineCategoryOf("2350")).isEqualTo("DEFENSE_SYSTEMS");
+        assertThat(baselineCategoryOf("R425")).isEqualTo("ENGINEERING_RESEARCH");
+        assertThat(baselineCategoryOf("R408")).isEqualTo("PROFESSIONAL_SERVICES");
+        assertThat(baselineCategoryOf("F003")).isEqualTo("OTHER");
     }
 
     @Test
@@ -66,6 +96,19 @@ class SchemaMigrationIT {
 
         assertThatThrownBy(() -> jdbc.sql("SET CONSTRAINTS ALL IMMEDIATE").update())
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    private String baselineCategoryOf(String psc) {
+        return jdbc.sql("""
+                SELECT category FROM psc_baseline_map
+                WHERE starts_with(:psc, psc_prefix)
+                ORDER BY char_length(psc_prefix) DESC
+                LIMIT 1
+                """)
+                .param("psc", psc)
+                .query(String.class)
+                .optional()
+                .orElse(null);
     }
 
     private int fiscalYearOf(LocalDate lastActionDate) {
