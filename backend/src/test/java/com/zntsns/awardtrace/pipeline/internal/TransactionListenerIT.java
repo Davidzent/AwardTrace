@@ -14,6 +14,7 @@ import com.zntsns.awardtrace.TestcontainersConfiguration;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.EventEnvelope;
 import com.zntsns.awardtrace.shared.KafkaTopics;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -53,6 +54,9 @@ class TransactionListenerIT {
     @Autowired
     JdbcClient jdbc;
 
+    @Autowired
+    MeterRegistry meters;
+
     @AfterEach
     void emptyTables() {
         jdbc.sql("TRUNCATE award_transaction, award, recipient, agency, outbox").update();
@@ -65,11 +69,20 @@ class TransactionListenerIT {
         String withoutUei = json(transaction(awardId, "P00001", "2026-08-24", "27500.00", "55000.00",
                 file("20260909"))).replace("\"recipient_uei\":\"MN5KRX2W9R46\",", "");
 
+        double insertedBefore = meters.counter("awardtrace.pipeline.upserts", "outcome", "inserted").count();
+        double missingUeiBefore = meters.counter("awardtrace.pipeline.dlt", "reason", "MISSING_UEI").count();
+
         send(awardId, valid);
         send(awardId, withoutUei);
 
         assertThat(deadLetterReasons(awardId, 1)).containsExactly("MISSING_UEI");
         assertThat(transactionCount(awardId)).isEqualTo(1);
+        assertThat(meters.counter("awardtrace.pipeline.upserts", "outcome", "inserted").count() - insertedBefore)
+                .isEqualTo(1);
+        // Counted once the send completes, which can be just after the dead letter is readable.
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> assertThat(
+                meters.counter("awardtrace.pipeline.dlt", "reason", "MISSING_UEI").count() - missingUeiBefore)
+                .isEqualTo(1));
     }
 
     @Test

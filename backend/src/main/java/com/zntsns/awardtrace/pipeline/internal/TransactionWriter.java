@@ -24,7 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 class TransactionWriter {
 
-    record Result(int applied, int stale, int deleted, int awardsChanged) {
+    /** @param stale upserts the version guard refused, because a newer version of the row was already stored */
+    record Result(int inserted, int updated, int stale, int deleted, int awardsChanged) {
     }
 
     private static final String UPSERT_TRANSACTION = """
@@ -187,10 +188,15 @@ class TransactionWriter {
         ingested.forEach(event -> awardIds.add(event.awardId()));
         deleted.forEach(event -> awardIds.add(event.awardId()));
         if (awardIds.isEmpty()) {
-            return new Result(0, 0, 0, 0);
+            return new Result(0, 0, 0, 0, 0);
         }
 
         jdbc.batchUpdate(INSERT_AGENCY, agencies(ingested));
+        // An upsert reports only whether it applied, so new rows are told from updated ones by counting the
+        // batch's transactions before and after.
+        var transactionIds = new MapSqlParameterSource("ids",
+                ingested.stream().map(ContractTransactionIngested::transactionId).toList());
+        long storedBefore = ingested.isEmpty() ? 0 : storedTransactions(transactionIds);
         // Upserts run before deletes, so a delete in the same batch as its transaction still applies. The source
         // file version decides every conflict, so the order of events within the batch doesn't matter.
         int[] upserts = jdbc.batchUpdate(UPSERT_TRANSACTION, ingested.stream().map(EventParameters::of)
@@ -202,7 +208,14 @@ class TransactionWriter {
         int awardsChanged = jdbc.update(PROJECT_AWARDS, ids);
 
         int applied = Arrays.stream(upserts).sum();
-        return new Result(applied, upserts.length - applied, Arrays.stream(deletes).sum(), awardsChanged);
+        int inserted = ingested.isEmpty() ? 0 : (int) (storedTransactions(transactionIds) - storedBefore);
+        return new Result(inserted, applied - inserted, upserts.length - applied, Arrays.stream(deletes).sum(),
+                awardsChanged);
+    }
+
+    private long storedTransactions(MapSqlParameterSource transactionIds) {
+        return jdbc.queryForObject("SELECT count(*) FROM award_transaction WHERE transaction_id IN (:ids)",
+                transactionIds, Long.class);
     }
 
     /** Toptier agencies first, so each subtier agency's parent exists when it is inserted. */

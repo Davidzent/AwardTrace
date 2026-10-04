@@ -58,7 +58,7 @@ class TransactionWriterIT {
     void projectsTheAwardFromItsLatestTransactionInActionOrder() {
         Result result = write(base, deobligation, option);
 
-        assertThat(result).isEqualTo(new Result(3, 0, 0, 1));
+        assertThat(result).isEqualTo(new Result(3, 0, 0, 0, 1));
         assertThat(award()).isEqualTo(new AwardRow(new BigDecimal("55000.00"), 3, LocalDate.of(2026, 7, 16),
                 LocalDate.of(2026, 8, 24), 2026, 1, false));
         assertThat(count("recipient")).isEqualTo(1);
@@ -73,7 +73,7 @@ class TransactionWriterIT {
 
         Result redelivery = write(base, deobligation, option);
 
-        assertThat(redelivery).isEqualTo(new Result(0, 3, 0, 0));
+        assertThat(redelivery).isEqualTo(new Result(0, 0, 3, 0, 0));
         assertThat(award().indexVersion()).isEqualTo(1);
         assertThat(outboxVersions()).containsExactly(1L);
     }
@@ -96,6 +96,9 @@ class TransactionWriterIT {
 
         assertThat(olderCopy.stale()).isEqualTo(1);
         assertThat(award().totalObligated()).isEqualByComparingTo("55000.00");
+        // A newer file's copy updates the stored row rather than adding one.
+        Result newerCopy = write(transaction("P00001", "2026-08-24", "27500.00", "60000.00", OCT_7));
+        assertThat(newerCopy).extracting(Result::inserted, Result::updated, Result::stale).containsExactly(0, 1, 0);
     }
 
     @Test
@@ -113,7 +116,7 @@ class TransactionWriterIT {
 
         Result firstDelete = write(List.of(), List.of(deletion("P00001", OCT_7)));
 
-        assertThat(firstDelete).isEqualTo(new Result(0, 0, 1, 1));
+        assertThat(firstDelete).isEqualTo(new Result(0, 0, 0, 1, 1));
         assertThat(award()).isEqualTo(new AwardRow(new BigDecimal("27500.00"), 1, LocalDate.of(2026, 7, 16),
                 LocalDate.of(2026, 7, 16), 2026, 2, false));
 
@@ -138,7 +141,7 @@ class TransactionWriterIT {
     void ignoresADeleteForATransactionNeverStored() {
         Result result = write(List.of(), List.of(deletion("P00009", OCT_7)));
 
-        assertThat(result).isEqualTo(new Result(0, 0, 0, 0));
+        assertThat(result).isEqualTo(new Result(0, 0, 0, 0, 0));
         assertThat(count("award")).isZero();
     }
 
@@ -146,7 +149,7 @@ class TransactionWriterIT {
     void storesAnAwardAsDeletedWhenItsOnlyTransactionIsDeletedInTheSameBatch() {
         Result result = write(List.of(base), List.of(deletion("0", OCT_7)));
 
-        assertThat(result).isEqualTo(new Result(1, 0, 1, 1));
+        assertThat(result).isEqualTo(new Result(1, 0, 0, 1, 1));
         assertThat(award().deleted()).isTrue();
     }
 

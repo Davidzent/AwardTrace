@@ -1,6 +1,9 @@
 package com.zntsns.awardtrace.pipeline.internal;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import java.nio.charset.StandardCharsets;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.apache.kafka.common.header.internals.RecordHeaders;
@@ -21,10 +24,19 @@ class PipelineKafkaConfig {
      * plus the reason code.
      */
     @Bean
-    DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, String> kafka) {
+    DeadLetterPublishingRecoverer deadLetterPublishingRecoverer(KafkaTemplate<String, String> kafka,
+            MeterRegistry meters) {
         // Named explicitly: Spring Kafka's default suffix is "-dlt", and the broker never auto-creates topics.
         var recoverer = new DeadLetterPublishingRecoverer(kafka,
-                (record, exception) -> new TopicPartition(record.topic() + ".DLT", record.partition()));
+                (record, exception) -> new TopicPartition(record.topic() + ".DLT", record.partition())) {
+
+            /** Every dead letter passes here, from the listeners and the error handler; counted once it is sent. */
+            @Override
+            public void accept(ConsumerRecord<?, ?> record, Consumer<?, ?> consumer, Exception exception) {
+                super.accept(record, consumer, exception);
+                meters.counter("awardtrace.pipeline.dlt", "reason", reasonOf(exception)).increment();
+            }
+        };
         recoverer.setHeadersFunction((record, exception) -> new RecordHeaders().add(new RecordHeader(REASON_HEADER,
                 reasonOf(exception).getBytes(StandardCharsets.UTF_8))));
         return recoverer;

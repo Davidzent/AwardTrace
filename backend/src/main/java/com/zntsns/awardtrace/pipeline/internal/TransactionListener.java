@@ -4,6 +4,8 @@ import com.zntsns.awardtrace.ingest.ContractTransactionDeleted;
 import com.zntsns.awardtrace.ingest.ContractTransactionIngested;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.KafkaTopics;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +34,17 @@ class TransactionListener {
 
     private final TransactionWriter writer;
     private final DeadLetterPublishingRecoverer deadLetters;
+    // How often duplicate or out-of-order events arrive; stale counts the version guard at work (doc 11).
+    private final Counter insertedUpserts;
+    private final Counter updatedUpserts;
+    private final Counter staleUpserts;
 
-    TransactionListener(TransactionWriter writer, DeadLetterPublishingRecoverer deadLetters) {
+    TransactionListener(TransactionWriter writer, DeadLetterPublishingRecoverer deadLetters, MeterRegistry meters) {
         this.writer = writer;
         this.deadLetters = deadLetters;
+        this.insertedUpserts = meters.counter("awardtrace.pipeline.upserts", "outcome", "inserted");
+        this.updatedUpserts = meters.counter("awardtrace.pipeline.upserts", "outcome", "updated");
+        this.staleUpserts = meters.counter("awardtrace.pipeline.upserts", "outcome", "stale");
     }
 
     @KafkaListener(id = KafkaTopics.PIPELINE_GROUP, topics = KafkaTopics.AWARD_TRANSACTIONS, batch = "true")
@@ -58,7 +67,11 @@ class TransactionListener {
                 invalid.add(new Invalid(record, new InvalidEventException("SCHEMA_VIOLATION", e)));
             }
         }
-        writer.write(ingested, deleted);
+        var result = writer.write(ingested, deleted);
+        // After the commit, so a batch that rolls back and is redelivered counts once.
+        insertedUpserts.increment(result.inserted());
+        updatedUpserts.increment(result.updated());
+        staleUpserts.increment(result.stale());
         // After the database commit: if a send fails, the batch is redelivered, the write is a no-op, and the
         // dead letters are sent again.
         invalid.forEach(entry -> deadLetters.accept(entry.record(), entry.problem()));
