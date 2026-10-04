@@ -1,0 +1,38 @@
+# Caddy terminates TLS, serves the web build, and proxies the API (docs 07 and 10). It routes nothing else, so the
+# actuator endpoints never leave the Docker network. SITE_ADDRESS overrides the domain, such as localhost for a local
+# run with Caddy's own certificate authority.
+{
+	# Only TCP 80 and 443 are open (invariant I6), so HTTP/3, which runs over UDP, is off rather than unreachable.
+	servers {
+		protocols h1 h2
+	}
+}
+
+{$SITE_ADDRESS:awardtrace.zntsns.com} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# The API sets its own Cache-Control and ETag headers.
+	handle /api/* {
+		reverse_proxy app:8080
+	}
+
+	handle {
+		root * /srv
+		# Vite fingerprints every file under /assets, so one never changes. Everything else is revalidated.
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		@shell not path /assets/*
+		header @shell Cache-Control no-cache
+		# Client-side routes such as /awards/{id} get the app shell, and the router takes it from there.
+		try_files {path} /index.html
+		file_server
+	}
+}
