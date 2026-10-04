@@ -14,6 +14,7 @@ if [[ ! $sha =~ ^[0-9a-f]{40}$ ]]; then
 fi
 repo=${AWARDTRACE_REPO:-Davidzent/AwardTrace}
 root=${AWARDTRACE_ROOT:-/opt/awardtrace}
+units=${AWARDTRACE_SYSTEMD_DIR:-/etc/systemd/system}
 # The first start creates the Kafka topics, migrates the schema, and waits for Elasticsearch, so it gets minutes.
 health_seconds=${AWARDTRACE_HEALTH_SECONDS:-600}
 releases_kept=5
@@ -48,6 +49,19 @@ start() {
   compose "$1" up -d --remove-orphans
 }
 
+# Each release brings the host's timers, such as the nightly backup; their services run the current release's scripts.
+install_timers() {
+  local unit timer
+  for unit in "$1"/infra/host/systemd/*.service "$1"/infra/host/systemd/*.timer; do
+    install -m 644 "$unit" "${units}/"
+  done
+  systemctl daemon-reload
+  for timer in "$1"/infra/host/systemd/*.timer; do
+    systemctl enable "${timer##*/}"
+    systemctl restart "${timer##*/}"
+  done
+}
+
 # The API answers through the Docker network, from the Caddy container, the way public requests reach it.
 answers() {
   local deadline=$((SECONDS + health_seconds))
@@ -72,6 +86,7 @@ log "Starting ${sha}"
 start "$release"
 if answers "$release"; then
   ln -sfn "releases/${sha}" "${root}/current"
+  install_timers "$release"
   log "Deployed ${sha}"
   # Older releases and unused images go; a rollback pulls its images again, and ECR keeps the last ten.
   current=$(readlink -f "${root}/current")
