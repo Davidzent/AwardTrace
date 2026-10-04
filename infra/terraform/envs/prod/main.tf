@@ -74,3 +74,10 @@ module "compute" {
   instance_profile  = module.iam.host_instance_profile
   alert_email       = var.alert_email
 }
+
+module "budget" {
+  source = "../../modules/budget"
+
+  name        = local.name
+  alert_email = var.alert_email
+}

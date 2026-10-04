@@ -17,6 +17,6 @@ variable "instance_type" {
 }
 
 variable "alert_email" {
-  description = "Where alerts go: the host's status-check alarm. Set it in terraform.tfvars, which git ignores."
+  description = "Where alerts go: the status-check alarm and the budget. Set it in terraform.tfvars, which git ignores."
   type        = string
 }
