@@ -1,0 +1,93 @@
+# Production (doc 10), layered on compose.yml:
+#   docker compose --env-file /opt/awardtrace/.env -f compose.yml -f compose.prod.yml up -d
+# infra/host/write-env.sh writes the env file from SSM; IMAGE_TAG, the commit to run, comes from the deploy. Only
+# Caddy publishes ports, so Kafka, PostgreSQL, and Elasticsearch answer on the Docker network alone (invariant I6).
+# Memory limits and heaps total about 3.5 GiB of the host's 4 GiB.
+
+x-logging: &logging
+  driver: awslogs
+  options:
+    awslogs-region: ${AWS_REGION:?run write-env.sh first}
+    awslogs-group: /awardtrace/prod
+    tag: "{{.Name}}"
+    # If CloudWatch stalls, log lines are dropped instead of blocking the container that writes them.
+    mode: non-blocking
+    max-buffer-size: 4m
+
+services:
+  kafka:
+    restart: unless-stopped
+    mem_limit: 768m
+    environment:
+      KAFKA_HEAP_OPTS: -Xms512m -Xmx512m
+    logging: *logging
+
+  postgres:
+    restart: unless-stopped
+    mem_limit: 512m
+    command: ["postgres", "-c", "shared_buffers=128MB"]
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?run write-env.sh first}
+    logging: *logging
+
+  elasticsearch:
+    restart: unless-stopped
+    mem_limit: 1400m
+    environment:
+      ES_JAVA_OPTS: -Xms896m -Xmx896m
+      xpack.security.enabled: "true"
+      # Traffic never leaves the host's Docker network, so the node authenticates every request but skips TLS.
+      xpack.security.http.ssl.enabled: "false"
+      xpack.security.transport.ssl.enabled: "false"
+      ELASTIC_PASSWORD: ${ELASTICSEARCH_PASSWORD:?run write-env.sh first}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs -u \"elastic:$$ELASTIC_PASSWORD\" 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=5s'"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+    logging: *logging
+
+  app:
+    image: ${AWARDTRACE_REGISTRY:?run write-env.sh first}/awardtrace/backend:${IMAGE_TAG:?set the commit to run}
+    restart: unless-stopped
+    mem_limit: 768m
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      # Every long-running role in one JVM (ADR 0001). Ingest runs as a one-shot task with its own profile.
+      SPRING_PROFILES_ACTIVE: pipeline,indexer,api
+      JAVA_TOOL_OPTIONS: -Xms512m -Xmx512m
+      SPRING_THREADS_VIRTUAL_ENABLED: "true"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/awardtrace
+      SPRING_DATASOURCE_USERNAME: awardtrace
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      SPRING_ELASTICSEARCH_USERNAME: elastic
+      SPRING_ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+      # The S3 client takes its credentials from the instance role, through IMDS.
+      AWARDTRACE_S3_BUCKET: ${AWARDTRACE_S3_BUCKET:?run write-env.sh first}
+      AWARDTRACE_S3_REGION: ${AWS_REGION}
+    logging: *logging
+
+  caddy:
+    image: ${AWARDTRACE_REGISTRY}/awardtrace/web:${IMAGE_TAG}
+    restart: unless-stopped
+    mem_limit: 64m
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Certificates outlive restarts and deploys, so renewals never run into Let's Encrypt's rate limits.
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *logging
+
+volumes:
+  caddy-data:
+  caddy-config:
