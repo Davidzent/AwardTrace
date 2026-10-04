@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.zntsns.awardtrace.TestcontainersConfiguration;
 import com.zntsns.awardtrace.ingest.internal.IngestRuns.Mode;
 import com.zntsns.awardtrace.ingest.internal.IngestRuns.Summary;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
@@ -72,6 +73,9 @@ class IngestRunsIT {
     S3Client s3;
 
     @Autowired
+    MeterRegistry meters;
+
+    @Autowired
     JdbcClient jdbc;
 
     /** The database rolls back after each test, but S3 keeps its files, and a replay publishes every file in S3. */
@@ -85,6 +89,8 @@ class IngestRunsIT {
     @Test
     void backfillStoresTheConfiguredAgenciesFullFilesAndEveryYearsSubawards() throws Exception {
         int requestsBefore = USASPENDING.subawardRequests().size();
+        double publishedBefore = records("published");
+        double rejectedBefore = records("rejected");
 
         Summary summary = runs.run(Mode.BACKFILL);
 
@@ -96,6 +102,12 @@ class IngestRunsIT {
                 "Department of Agriculture 2025-10-01 2026-09-30",
                 "Department of Agriculture 2026-10-01 2027-09-30");
         assertThat(lastRun()).isEqualTo("backfill succeeded files=4 published=14 rejected=3");
+        assertThat(records("published") - publishedBefore).isEqualTo(14);
+        assertThat(records("rejected") - rejectedBefore).isEqualTo(3);
+    }
+
+    private double records(String result) {
+        return meters.counter("awardtrace.ingest.records", "result", result).count();
     }
 
     @Test

@@ -4,6 +4,8 @@ import com.zntsns.awardtrace.ingest.internal.ArchiveListing.ArchiveFile;
 import com.zntsns.awardtrace.ingest.internal.ArchiveListing.Kind;
 import com.zntsns.awardtrace.ingest.internal.SourceFileStore.StoredFile;
 import com.zntsns.awardtrace.ingest.internal.StoredFilePublisher.Publication;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
@@ -50,9 +52,13 @@ class IngestRuns {
     private final IngestProperties properties;
     private final JdbcClient jdbc;
     private final Clock clock;
+    // Is ingest producing? (doc 11)
+    private final Counter publishedRecords;
+    private final Counter rejectedRecords;
 
     IngestRuns(ArchiveListing archive, SubawardDownloads subawards, SourceFileStore store,
-            StoredFilePublisher publisher, IngestProperties properties, JdbcClient jdbc, Clock clock) {
+            StoredFilePublisher publisher, IngestProperties properties, JdbcClient jdbc, Clock clock,
+            MeterRegistry meters) {
         this.archive = archive;
         this.subawards = subawards;
         this.store = store;
@@ -60,6 +66,8 @@ class IngestRuns {
         this.properties = properties;
         this.jdbc = jdbc;
         this.clock = clock;
+        this.publishedRecords = meters.counter("awardtrace.ingest.records", "result", "published");
+        this.rejectedRecords = meters.counter("awardtrace.ingest.records", "result", "rejected");
     }
 
     Summary run(Mode mode) throws IOException, InterruptedException {
@@ -83,6 +91,8 @@ class IngestRuns {
                 published += publication.published();
                 skipped += publication.skipped();
                 rejected += publication.rejected();
+                publishedRecords.increment(publication.published());
+                rejectedRecords.increment(publication.rejected());
             }
             jdbc.sql("""
                     UPDATE ingest_run SET status = 'succeeded', finished_at = now(), files_total = :files,
