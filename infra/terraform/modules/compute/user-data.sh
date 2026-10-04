@@ -6,11 +6,11 @@ set -euo pipefail
 # Docker, and the Compose plugin, which Amazon Linux doesn't package. Pinned and checksummed like every dependency.
 dnf install -y docker
 compose_version=v5.6.0
-compose_sha256=733ec76717ceb59052a9609b9dadfb523b2df8eab57a54212872d10a58078ea2
+compose_sha256=40343e21ca777173e69cff5dbafeb37c6f81f3b0d57d9e597f036e95eb63e76a
 plugin=/usr/local/lib/docker/cli-plugins/docker-compose
 mkdir -p "$(dirname "$plugin")"
 curl -fsSL -o "$plugin" \
-  "https://github.com/docker/compose/releases/download/${compose_version}/docker-compose-linux-aarch64"
+  "https://github.com/docker/compose/releases/download/${compose_version}/docker-compose-linux-x86_64"
 echo "${compose_sha256}  ${plugin}" | sha256sum -c -
 chmod 755 "$plugin"
 systemctl enable --now docker

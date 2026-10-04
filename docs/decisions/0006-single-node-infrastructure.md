@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Accepted |
+| Status | Accepted. The host type is superseded by [ADR 0015](0015-x86-host-on-the-aws-free-plan.md) |
 | Date | 2026-09-28 |
 
 ## Context

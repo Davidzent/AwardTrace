@@ -14,12 +14,12 @@ data "aws_ami" "al2023" {
 
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.*-kernel-*-arm64"]
+    values = ["al2023-ami-2023.*-kernel-*-x86_64"]
   }
 
   filter {
     name   = "architecture"
-    values = ["arm64"]
+    values = ["x86_64"]
   }
 }
 
@@ -30,12 +30,6 @@ resource "aws_instance" "host" {
   vpc_security_group_ids = [var.security_group_id]
   iam_instance_profile   = var.instance_profile
   user_data              = file("${path.module}/user-data.sh")
-
-  # The host throttles at its CPU baseline instead of billing surplus credits, so its monthly cost stays fixed
-  # (goal G5). Switch to unlimited alongside the backfill resize if throttling slows the backfill.
-  credit_specification {
-    cpu_credits = "standard"
-  }
 
   metadata_options {
     http_tokens = "required"

@@ -4,7 +4,7 @@ variable "name" {
 }
 
 variable "instance_type" {
-  description = "The host's Graviton instance type."
+  description = "The host's x86 instance type."
   type        = string
 }
 

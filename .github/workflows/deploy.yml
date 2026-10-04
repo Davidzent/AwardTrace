@@ -1,5 +1,5 @@
 # Deploys a commit of main to production (doc 10). CI calls it after every check passes on a push to main; running it
-# by hand redeploys main, as the rebuild drill does. It builds the commit's two arm64 images, pushes the ones ECR
+# by hand redeploys main, as the rebuild drill does. It builds the commit's two x86 images, pushes the ones ECR
 # doesn't have yet, and runs infra/host/deploy.sh on the host through SSM, which rolls back if the new release
 # doesn't answer. AWS access comes from OIDC, so the repository holds no AWS keys: set the repository variable
 # AWS_DEPLOY_ROLE_ARN to the deploy_role_arn output of infra/terraform/envs/prod.
@@ -16,7 +16,7 @@ permissions:
 jobs:
   deploy:
     # The deploy role trusts main alone, so a run from any other branch fails to assume it.
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     # One deploy at a time, in order, and never cancelled halfway; the host script also refuses to overlap.
     concurrency:
@@ -44,7 +44,7 @@ jobs:
               echo "awardtrace/${image}:${GITHUB_SHA} is already in ECR"
               continue
             fi
-            docker buildx build . --file "${image}/Dockerfile" --platform linux/arm64 --provenance=false \
+            docker buildx build . --file "${image}/Dockerfile" --platform linux/amd64 --provenance=false \
               --cache-from "type=gha,scope=${image}" --cache-to "type=gha,scope=${image},mode=max" \
               --tag "${REGISTRY}/awardtrace/${image}:${GITHUB_SHA}" --push
           done
