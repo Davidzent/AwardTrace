@@ -1,5 +1,5 @@
 # The checks in doc 10 that exist so far. Playwright, which needs a running stack with data, joins once it can have
-# one. CodeQL runs in its own workflow.
+# one. CodeQL runs in its own workflow. A push to main that passes every check deploys (deploy.yml).
 name: CI
 
 on:
@@ -9,9 +9,10 @@ on:
 permissions:
   contents: read
 
+# A newer push cancels a branch's older run, except on main, where a run may be deploying.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   backend:
@@ -78,3 +79,12 @@ jobs:
             terraform -chdir="$root" init -backend=false -input=false
             terraform -chdir="$root" validate
           done
+
+  # A push to this repository's main only; pull requests, forks among them, never reach it.
+  deploy:
+    needs: [backend, web, terraform]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy.yml

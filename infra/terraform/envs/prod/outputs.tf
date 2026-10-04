@@ -8,6 +8,11 @@ output "host_public_ip" {
   value       = module.compute.public_ip
 }
 
+output "deploy_role_arn" {
+  description = "Set as the repository variable AWS_DEPLOY_ROLE_ARN, which the deploy workflow assumes."
+  value       = module.iam.deploy_role_arn
+}
+
 output "host_instance_id" {
   description = "The host's instance ID, for aws ssm start-session."
   value       = module.compute.instance_id

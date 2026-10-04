@@ -57,11 +57,12 @@ data "aws_s3_bucket" "raw" {
 module "iam" {
   source = "../../modules/iam"
 
-  name            = local.name
-  raw_bucket_arn  = data.aws_s3_bucket.raw.arn
-  repository_arns = values(module.registry.repository_arns)
-  log_group_arn   = module.observability.log_group_arn
-  parameter_path  = "/${local.name}"
+  name              = local.name
+  raw_bucket_arn    = data.aws_s3_bucket.raw.arn
+  repository_arns   = values(module.registry.repository_arns)
+  log_group_arn     = module.observability.log_group_arn
+  parameter_path    = "/${local.name}"
+  github_repository = var.github_repository
 }
 
 module "compute" {

@@ -16,6 +16,12 @@ variable "instance_type" {
   }
 }
 
+variable "github_repository" {
+  description = "The GitHub repository, as owner/name, whose main branch deploys."
+  type        = string
+  default     = "Davidzent/AwardTrace"
+}
+
 variable "alert_email" {
   description = "Where alerts go: the status-check alarm and the budget. Set it in terraform.tfvars, which git ignores."
   type        = string

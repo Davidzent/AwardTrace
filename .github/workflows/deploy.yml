@@ -1,0 +1,90 @@
+# Deploys a commit of main to production (doc 10). CI calls it after every check passes on a push to main; running it
+# by hand redeploys main, as the rebuild drill does. It builds the commit's two arm64 images, pushes the ones ECR
+# doesn't have yet, and runs infra/host/deploy.sh on the host through SSM, which rolls back if the new release
+# doesn't answer. AWS access comes from OIDC, so the repository holds no AWS keys: set the repository variable
+# AWS_DEPLOY_ROLE_ARN to the deploy_role_arn output of infra/terraform/envs/prod.
+name: Deploy
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    # The deploy role trusts main alone, so a run from any other branch fails to assume it.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    # One deploy at a time, in order, and never cancelled halfway; the host script also refuses to overlap.
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: docker/setup-buildx-action@v4
+      - name: Log in to ECR
+        run: |
+          registry="$(aws sts get-caller-identity --query Account --output text).dkr.ecr.${AWS_REGION}.amazonaws.com"
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$registry"
+          echo "REGISTRY=${registry}" >> "$GITHUB_ENV"
+      # Tags are immutable, so an image already pushed is never rebuilt, and a rerun deploys the same images.
+      - name: Build and push the commit's images
+        run: |
+          for image in backend web; do
+            if aws ecr describe-images --repository-name "awardtrace/${image}" --image-ids "imageTag=${GITHUB_SHA}" > /dev/null 2>&1; then
+              echo "awardtrace/${image}:${GITHUB_SHA} is already in ECR"
+              continue
+            fi
+            docker buildx build . --file "${image}/Dockerfile" --platform linux/arm64 --provenance=false \
+              --cache-from "type=gha,scope=${image}" --cache-to "type=gha,scope=${image},mode=max" \
+              --tag "${REGISTRY}/awardtrace/${image}:${GITHUB_SHA}" --push
+          done
+      - name: Deploy on the host
+        run: |
+          instance=$(aws ec2 describe-instances \
+            --filters Name=tag:app,Values=awardtrace Name=instance-state-name,Values=running \
+            --query 'Reservations[].Instances[].InstanceId' --output text)
+          if [[ ! $instance =~ ^i-[0-9a-f]+$ ]]; then
+            echo "::error::Expected one running host tagged app=awardtrace, found: ${instance:-none}"
+            exit 1
+          fi
+
+          # From a file, not a pipe: docker compose exec would read the rest of a piped script as its input.
+          parameters=$(jq -n --arg repo "$GITHUB_REPOSITORY" --arg sha "$GITHUB_SHA" '{
+            executionTimeout: ["1800"],
+            commands: [
+              "curl -fsSL -o /tmp/awardtrace-deploy.sh https://raw.githubusercontent.com/\($repo)/\($sha)/infra/host/deploy.sh",
+              "AWARDTRACE_REPO=\($repo) bash /tmp/awardtrace-deploy.sh \($sha)"
+            ]
+          }')
+          command_id=$(aws ssm send-command --instance-ids "$instance" --document-name AWS-RunShellScript \
+            --comment "Deploy ${GITHUB_SHA}" --parameters "$parameters" --query Command.CommandId --output text)
+          echo "Sent command ${command_id} to ${instance}"
+
+          # Up to 30 minutes: the new release gets 10 to answer, and a rollback as long again.
+          status=Pending
+          for _ in $(seq 180); do
+            sleep 10
+            status=$(aws ssm get-command-invocation --command-id "$command_id" --instance-id "$instance" \
+              --query Status --output text 2> /dev/null || echo Pending)
+            case $status in
+              Pending | InProgress | Delayed) ;;
+              *) break ;;
+            esac
+          done
+
+          aws ssm get-command-invocation --command-id "$command_id" --instance-id "$instance" \
+            --query '[StandardOutputContent, StandardErrorContent]' --output text
+          if [ "$status" != Success ]; then
+            echo "::error::The deploy ended ${status}; the host rolled back if it could"
+            exit 1
+          fi

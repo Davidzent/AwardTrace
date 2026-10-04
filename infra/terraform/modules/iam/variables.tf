@@ -18,6 +18,17 @@ variable "log_group_arn" {
   type        = string
 }
 
+variable "github_repository" {
+  description = "The GitHub repository, as owner/name, whose workflows may assume the deploy role."
+  type        = string
+}
+
+variable "deploy_branch" {
+  description = "The only branch whose workflows may assume the deploy role."
+  type        = string
+  default     = "main"
+}
+
 variable "parameter_path" {
   description = "The SSM Parameter Store path holding the host's secrets, with a leading slash."
   type        = string

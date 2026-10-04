@@ -1,6 +1,6 @@
 # The host's instance role (doc 10): read and write raw/ and backups/, read the /awardtrace/* parameters, pull the
 # two images, write to its log group, and register with SSM. Nothing else, including pushing images or deleting from
-# the raw bucket.
+# the raw bucket. The deploy role is in deploy.tf.
 
 terraform {
   required_providers {
