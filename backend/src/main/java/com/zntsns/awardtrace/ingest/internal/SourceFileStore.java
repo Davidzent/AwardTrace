@@ -18,6 +18,7 @@ import java.util.HexFormat;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -30,6 +31,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
  * derived from its SHA-256.
  */
 @Component
+@Profile("ingest")
 class SourceFileStore {
 
     static final String USER_AGENT = "AwardTrace/0.1 (+https://github.com/Davidzent/awardtrace)";

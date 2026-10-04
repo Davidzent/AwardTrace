@@ -22,11 +22,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @SpringBootTest
+@ActiveProfiles("ingest")
 @Import(TestcontainersConfiguration.class)
 @Transactional
 class StoredFilePublisherIT {

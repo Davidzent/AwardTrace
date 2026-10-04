@@ -9,6 +9,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
  * {@code --awardtrace.ingest.task=backfill}, {@code delta}, or {@code replay}.
  */
 @Component
+@Profile("ingest")
 @ConditionalOnProperty("awardtrace.ingest.task")
 class IngestTask implements ApplicationRunner {
 

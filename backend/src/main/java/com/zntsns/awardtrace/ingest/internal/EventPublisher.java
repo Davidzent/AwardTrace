@@ -3,6 +3,7 @@ package com.zntsns.awardtrace.ingest.internal;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.EventEnvelope;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
  * treating a file as published.
  */
 @Component
+@Profile("ingest")
 class EventPublisher {
 
     private final KafkaTemplate<String, String> kafka;

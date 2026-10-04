@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -21,6 +22,7 @@ import tools.jackson.databind.json.JsonMapper;
  * deadline passes.
  */
 @Component
+@Profile("ingest")
 class SubawardDownloads {
 
     private static final JsonMapper JSON = JsonMapper.shared();

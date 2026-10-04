@@ -17,12 +17,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /** Lists contract files in the USAspending award data archive, which is a public S3 bucket listing. */
 @Component
+@Profile("ingest")
 class ArchiveListing {
 
     enum Kind { Full, Delta }
