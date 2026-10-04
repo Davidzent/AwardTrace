@@ -63,3 +63,14 @@ module "iam" {
   log_group_arn   = module.observability.log_group_arn
   parameter_path  = "/${local.name}"
 }
+
+module "compute" {
+  source = "../../modules/compute"
+
+  name              = local.name
+  instance_type     = var.instance_type
+  subnet_id         = module.network.subnet_id
+  security_group_id = module.network.security_group_id
+  instance_profile  = module.iam.host_instance_profile
+  alert_email       = var.alert_email
+}
