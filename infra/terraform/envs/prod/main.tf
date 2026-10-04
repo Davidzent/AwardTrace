@@ -46,3 +46,20 @@ module "observability" {
 
   log_group_name = "/${local.name}/prod"
 }
+
+data "aws_caller_identity" "current" {}
+
+# Created by envs/data, which this root never manages, so the rebuild drill can't destroy it.
+data "aws_s3_bucket" "raw" {
+  bucket = "${local.name}-raw-${data.aws_caller_identity.current.account_id}"
+}
+
+module "iam" {
+  source = "../../modules/iam"
+
+  name            = local.name
+  raw_bucket_arn  = data.aws_s3_bucket.raw.arn
+  repository_arns = values(module.registry.repository_arns)
+  log_group_arn   = module.observability.log_group_arn
+  parameter_path  = "/${local.name}"
+}
