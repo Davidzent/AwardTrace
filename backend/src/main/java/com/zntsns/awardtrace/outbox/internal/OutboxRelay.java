@@ -1,9 +1,12 @@
 package com.zntsns.awardtrace.outbox.internal;
 
 import com.zntsns.awardtrace.outbox.AwardChanged;
+import com.zntsns.awardtrace.outbox.OutboxQueries;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.EventEnvelope;
 import com.zntsns.awardtrace.shared.KafkaTopics;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -35,10 +38,13 @@ class OutboxRelay {
     private final KafkaTemplate<String, String> kafka;
     private final TransactionTemplate transactions;
 
-    OutboxRelay(JdbcClient jdbc, KafkaTemplate<String, String> kafka, TransactionTemplate transactions) {
+    OutboxRelay(JdbcClient jdbc, KafkaTemplate<String, String> kafka, TransactionTemplate transactions,
+            OutboxQueries outbox, MeterRegistry meters) {
         this.jdbc = jdbc;
         this.kafka = kafka;
         this.transactions = transactions;
+        // Is the relay keeping up? Counted when Prometheus scrapes, over the partial index of unpublished rows.
+        Gauge.builder("awardtrace.outbox.unpublished", outbox, queries -> queries.backlog().count()).register(meters);
     }
 
     /**

@@ -2,11 +2,15 @@ package com.zntsns.awardtrace.indexer.internal;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.VersionType;
+import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.OperationType;
 import com.zntsns.awardtrace.outbox.AwardChanged;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.KafkaTopics;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -66,10 +70,15 @@ class AwardIndexer {
 
     private final JdbcClient jdbc;
     private final ElasticsearchClient elasticsearch;
+    // Is indexing healthy, and how often does a stale write lose, as designed? (doc 11)
+    private final Timer bulkDuration;
+    private final Counter conflictCounter;
 
-    AwardIndexer(JdbcClient jdbc, ElasticsearchClient elasticsearch) {
+    AwardIndexer(JdbcClient jdbc, ElasticsearchClient elasticsearch, MeterRegistry meters) {
         this.jdbc = jdbc;
         this.elasticsearch = elasticsearch;
+        this.bulkDuration = meters.timer("awardtrace.indexer.bulk.duration");
+        this.conflictCounter = meters.counter("awardtrace.indexer.conflicts");
     }
 
     @KafkaListener(id = KafkaTopics.INDEXER_GROUP, topics = KafkaTopics.AWARDS_CHANGED, batch = "true")
@@ -119,9 +128,17 @@ class AwardIndexer {
         int deleted = 0;
         int conflicts = 0;
         var failures = new ArrayList<String>();
-        for (var item : elasticsearch.bulk(bulk -> bulk.operations(operations)).items()) {
+        var started = Timer.start();
+        BulkResponse response;
+        try {
+            response = elasticsearch.bulk(bulk -> bulk.operations(operations));
+        } finally {
+            started.stop(bulkDuration);
+        }
+        for (var item : response.items()) {
             if (item.status() == 409) {
                 conflicts++; // A newer version is already indexed, which is the outcome we want.
+                conflictCounter.increment();
             } else if (item.error() != null) {
                 failures.add(item.id() + ": " + item.error().reason());
             } else if (item.operationType() == OperationType.Delete) {

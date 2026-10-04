@@ -12,6 +12,7 @@ import com.zntsns.awardtrace.outbox.AwardChanged;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.EventEnvelope;
 import com.zntsns.awardtrace.shared.KafkaTopics;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -54,6 +55,9 @@ class OutboxRelayIT {
     @Autowired
     JdbcClient jdbc;
 
+    @Autowired
+    MeterRegistry meters;
+
     @AfterEach
     void emptyOutbox() {
         jdbc.sql("TRUNCATE outbox").update();
@@ -65,6 +69,7 @@ class OutboxRelayIT {
                 insertRow("CONT_AWD_RELAY_A", 1),
                 insertRow("CONT_AWD_RELAY_B", 1),
                 insertRow("CONT_AWD_RELAY_A", 2));
+        assertThat(unpublishedGauge()).isEqualTo(3);
 
         relay.relay();
 
@@ -75,6 +80,7 @@ class OutboxRelayIT {
                 .extracting(AwardChanged::indexVersion)
                 .containsExactly(1L, 2L);
         assertThat(unpublishedRows()).isZero();
+        assertThat(unpublishedGauge()).isZero();
     }
 
     @Test
@@ -102,6 +108,10 @@ class OutboxRelayIT {
                 .param("indexVersion", indexVersion)
                 .query(UUID.class)
                 .single();
+    }
+
+    private double unpublishedGauge() {
+        return meters.get("awardtrace.outbox.unpublished").gauge().value();
     }
 
     private long unpublishedRows() {

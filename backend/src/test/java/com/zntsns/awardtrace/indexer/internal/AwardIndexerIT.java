@@ -13,6 +13,7 @@ import com.zntsns.awardtrace.outbox.AwardChanged;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.EventEnvelope;
 import com.zntsns.awardtrace.shared.KafkaTopics;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
@@ -42,6 +43,9 @@ class AwardIndexerIT {
 
     @Autowired
     JdbcClient jdbc;
+
+    @Autowired
+    MeterRegistry meters;
 
     @AfterEach
     void emptyTables() {
@@ -109,6 +113,8 @@ class AwardIndexerIT {
     @Test
     void keepsTheNewerDocumentWhenAnOlderVersionIsWritten() throws Exception {
         String awardId = "CONT_AWD_INDEXER_VERSIONS";
+        long bulkWritesBefore = meters.timer("awardtrace.indexer.bulk.duration").count();
+        double conflictsBefore = meters.counter("awardtrace.indexer.conflicts").count();
         AwardRows.saveAward(jdbc, awardId, 3, "55000.00", false);
         assertThat(indexer.index(List.of(awardId))).isEqualTo(new Result(1, 0, 0, 0));
 
@@ -118,6 +124,8 @@ class AwardIndexerIT {
         assertThat(indexer.index(List.of(awardId))).isEqualTo(new Result(0, 0, 1, 0));
         assertThat(document(awardId).version()).isEqualTo(3);
         assertThat(((Number) document(awardId).source().get("total_obligated")).doubleValue()).isEqualTo(55000.0);
+        assertThat(meters.timer("awardtrace.indexer.bulk.duration").count() - bulkWritesBefore).isEqualTo(2);
+        assertThat(meters.counter("awardtrace.indexer.conflicts").count() - conflictsBefore).isEqualTo(1);
     }
 
     @Test
