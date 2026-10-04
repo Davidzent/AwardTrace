@@ -1,5 +1,5 @@
-# The checks in doc 10 that exist so far. Terraform and Playwright (which needs a running stack with data) join as
-# each one is built. CodeQL runs in its own workflow.
+# The checks in doc 10 that exist so far. Playwright, which needs a running stack with data, joins once it can have
+# one. CodeQL runs in its own workflow.
 name: CI
 
 on:
@@ -60,3 +60,21 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+      - run: terraform fmt -check -recursive infra/terraform
+      # Every root, without its backend, so validation needs no AWS credentials. Modules are checked through the
+      # roots that use them.
+      - run: |
+          for root in infra/terraform/bootstrap infra/terraform/envs/*; do
+            [ -d "$root" ] || continue
+            terraform -chdir="$root" init -backend=false -input=false
+            terraform -chdir="$root" validate
+          done
