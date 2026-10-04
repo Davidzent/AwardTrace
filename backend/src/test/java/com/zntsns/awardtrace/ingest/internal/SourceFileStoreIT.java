@@ -76,6 +76,9 @@ class SourceFileStoreIT {
         assertThat(key).isEqualTo("raw/contracts/2026/" + sha256 + ".zip");
         assertThat(s3.getObjectAsBytes(request -> request.bucket(TestcontainersConfiguration.RAW_BUCKET).key(key))
                 .asByteArray()).isEqualTo(zip);
+        // The object carries its source URL, so a replay can order files from S3 alone.
+        assertThat(s3.headObject(request -> request.bucket(TestcontainersConfiguration.RAW_BUCKET).key(key))
+                .metadata()).containsEntry(SourceFileStore.SOURCE_URL, sourceUrl().toString());
         assertThat(jdbc.sql("SELECT sha256, bytes, status, run_id FROM ingest_file WHERE s3_key = :key")
                 .param("key", key)
                 .query(StoredFile.class)

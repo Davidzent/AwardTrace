@@ -2,6 +2,7 @@ package com.zntsns.awardtrace.ingest.internal;
 
 import com.zntsns.awardtrace.ingest.internal.ArchiveListing.ArchiveFile;
 import com.zntsns.awardtrace.ingest.internal.ArchiveListing.Kind;
+import com.zntsns.awardtrace.ingest.internal.SourceFileStore.StoredFile;
 import com.zntsns.awardtrace.ingest.internal.StoredFilePublisher.Publication;
 import java.io.IOException;
 import java.net.URI;
@@ -42,9 +43,6 @@ class IngestRuns {
     record Summary(UUID runId, int files, long published, long skipped, long rejected) {
     }
 
-    private record StoredFile(String s3Key, String sourceUrl) {
-    }
-
     private final ArchiveListing archive;
     private final SubawardDownloads subawards;
     private final SourceFileStore store;
@@ -76,7 +74,7 @@ class IngestRuns {
                 }
                 storeSubawardFiles(mode, runId);
             }
-            List<String> keys = filesToPublish(mode == Mode.REPLAY);
+            List<String> keys = filesToPublish(mode, runId);
             long published = 0;
             long skipped = 0;
             long rejected = 0;
@@ -154,11 +152,14 @@ class IngestRuns {
         return IntStream.rangeClosed(first, currentFiscalYear()).boxed().toList();
     }
 
-    private List<String> filesToPublish(boolean all) {
-        return jdbc.sql("SELECT s3_key, source_url FROM ingest_file" + (all ? "" : " WHERE status = 'stored'"))
-                .query(StoredFile.class)
-                .list()
-                .stream()
+    /** A replay takes every file in S3, so it works after the database is wiped; the others take the unpublished. */
+    private List<String> filesToPublish(Mode mode, UUID runId) {
+        List<StoredFile> files = mode == Mode.REPLAY
+                ? store.storedFiles(runId)
+                : jdbc.sql("SELECT s3_key, source_url FROM ingest_file WHERE status = 'stored'")
+                        .query(StoredFile.class)
+                        .list();
+        return files.stream()
                 .sorted(Comparator.comparing((StoredFile file) -> fileDateOf(file.sourceUrl()))
                         .thenComparing(StoredFile::sourceUrl))
                 .map(StoredFile::s3Key)

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +25,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * The clock stands at 2026-11-01, early in FY2027: a backfill covers FY2025 through FY2027, and a delta the current
@@ -67,7 +69,18 @@ class IngestRunsIT {
     IngestRuns runs;
 
     @Autowired
+    S3Client s3;
+
+    @Autowired
     JdbcClient jdbc;
+
+    /** The database rolls back after each test, but S3 keeps its files, and a replay publishes every file in S3. */
+    @BeforeEach
+    void emptyBucket() {
+        s3.listObjectsV2Paginator(request -> request.bucket(TestcontainersConfiguration.RAW_BUCKET)).contents()
+                .forEach(object -> s3.deleteObject(request -> request.bucket(TestcontainersConfiguration.RAW_BUCKET)
+                        .key(object.key())));
+    }
 
     @Test
     void backfillStoresTheConfiguredAgenciesFullFilesAndEveryYearsSubawards() throws Exception {

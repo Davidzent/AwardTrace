@@ -14,8 +14,11 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import org.springframework.context.annotation.Profile;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 /**
  * Downloads USAspending source files into the raw bucket, which is the source of truth (ADR 0002). Each file is
@@ -35,6 +39,12 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 class SourceFileStore {
 
     static final String USER_AGENT = "AwardTrace/0.1 (+https://github.com/Davidzent/awardtrace)";
+
+    /** Object metadata holding the file's source URL, which orders contract files when a replay has only S3. */
+    static final String SOURCE_URL = "source-url";
+
+    record StoredFile(String s3Key, String sourceUrl) {
+    }
 
     // "FY2026_012_Contracts_Full_20260906.zip" or "FY(All)_012_Contracts_Delta_20260906.zip".
     private static final Pattern FISCAL_YEAR = Pattern.compile("^FY(\\d{4}|\\(All\\))_");
@@ -77,22 +87,55 @@ class SourceFileStore {
             String key = "raw/" + folder + "/" + sha256 + ".zip";
             long bytes = Files.size(download);
             // Upload before recording: a failure in between leaves an orphaned object, never a row without one.
-            s3.putObject(PutObjectRequest.builder().bucket(bucket).key(key).build(), RequestBody.fromFile(download));
-            jdbc.sql("""
-                    INSERT INTO ingest_file (s3_key, run_id, source_url, sha256, bytes, status)
-                    VALUES (:key, :runId, :url, :sha256, :bytes, 'stored')
-                    ON CONFLICT DO NOTHING
-                    """)
-                    .param("key", key)
-                    .param("runId", runId)
-                    .param("url", sourceUrl.toString())
-                    .param("sha256", sha256)
-                    .param("bytes", bytes)
-                    .update();
+            s3.putObject(PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .metadata(Map.of(SOURCE_URL, sourceUrl.toString()))
+                    .build(), RequestBody.fromFile(download));
+            record(key, runId, sourceUrl.toString(), bytes);
             return key;
         } finally {
             Files.deleteIfExists(download);
         }
+    }
+
+    /**
+     * Every file under {@code raw/}, listed from S3 rather than {@code ingest_file}, so a replay rebuilds from S3 alone
+     * (ADR 0002). A file stored before objects carried their source URL takes it from its {@code ingest_file} row. A
+     * file the database has lost is recorded again under {@code runId}.
+     */
+    List<StoredFile> storedFiles(UUID runId) {
+        var files = new ArrayList<StoredFile>();
+        for (S3Object object : s3.listObjectsV2Paginator(request -> request.bucket(bucket).prefix("raw/")).contents()) {
+            String key = object.key();
+            String sourceUrl = s3.headObject(request -> request.bucket(bucket).key(key)).metadata().get(SOURCE_URL);
+            if (sourceUrl == null) {
+                sourceUrl = jdbc.sql("SELECT source_url FROM ingest_file WHERE s3_key = :key")
+                        .param("key", key)
+                        .query(String.class)
+                        .optional()
+                        .orElseThrow(() -> new IllegalStateException("No source URL for " + key + " anywhere"));
+            }
+            record(key, runId, sourceUrl, object.size());
+            files.add(new StoredFile(key, sourceUrl));
+        }
+        return files;
+    }
+
+    /** The key ends in the file's SHA-256, so a file already recorded, under any run, is left as it is. */
+    private void record(String key, UUID runId, String sourceUrl, long bytes) {
+        String sha256 = key.substring(key.lastIndexOf('/') + 1).replace(".zip", "");
+        jdbc.sql("""
+                INSERT INTO ingest_file (s3_key, run_id, source_url, sha256, bytes, status)
+                VALUES (:key, :runId, :url, :sha256, :bytes, 'stored')
+                ON CONFLICT DO NOTHING
+                """)
+                .param("key", key)
+                .param("runId", runId)
+                .param("url", sourceUrl)
+                .param("sha256", sha256)
+                .param("bytes", bytes)
+                .update();
     }
 
     // ponytail: no retry on 429 or 5xx; the next monthly run retries a failed download.
