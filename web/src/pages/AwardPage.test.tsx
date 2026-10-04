@@ -20,6 +20,7 @@ const AWARD: Schemas['AwardDetail'] = {
     { transaction_id: 't1', modification_number: '0', action_date: '2026-07-16', federal_action_obligation: '82500.00' },
   ],
   transactions_truncated: false,
+  category: { code: 'OTHER', label: 'Other', source: 'baseline', baseline_code: 'OTHER', baseline_label: 'Other' },
   source_modified_at: '2026-09-06T03:11:00Z',
   usaspending_url: 'https://www.usaspending.gov/award/CONT_AWD_CAMPS/',
 };
@@ -61,6 +62,7 @@ describe('AwardPage', () => {
     expect(screen.getByText('Jul 16, 2026 to Sep 30, 2026')).toBeDefined();
     expect(screen.getByText('-$27,500.00')).toBeDefined();
     expect(screen.getAllByText('Deobligation')).toHaveLength(1);
+    expect(screen.getByText('Other').nextSibling?.textContent).toBe(' PSC-based');
     expect(screen.getByRole('link', { name: 'View recipient →' }).getAttribute('href')).toBe('/recipients/MN5KRX2W9R46');
   });
 

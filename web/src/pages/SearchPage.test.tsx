@@ -25,6 +25,7 @@ const RESULTS: Schemas['SearchResults'] = {
       total_obligated: '4812000.00',
       fiscal_year: 2026,
       naics_code: '481211',
+      category: { code: 'LOGISTICS_TRANSPORT', label: 'Logistics and transport', source: 'baseline' },
       subaward_count: 2,
     },
   ],
@@ -59,6 +60,7 @@ describe('SearchPage', () => {
       .toBe('/recipients/AAAAAAAAAAA1');
     expect(screen.getByText('$4.8M')).toBeDefined();
     expect(screen.getByText('2 reported subawards')).toBeDefined();
+    expect(screen.getByText('Logistics and transport')).toBeDefined();
     expect(screen.getByRole('link', { name: 'Page 3' }).getAttribute('href')).toBe('/?q=helicopter&page=3');
   });
 

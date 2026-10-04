@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router';
 import type { Schemas } from '../../api/client';
+import { CategoryBadge } from '../../components/CategoryBadge';
 import { Money } from '../../components/Money';
 import { formatDate } from '../../lib/format';
 import { ModificationsTable } from './ModificationsTable';
@@ -13,7 +14,7 @@ const AWARD_TYPES: Record<string, string> = {
   D: 'Definitive contract',
 };
 
-/** The award detail layout from doc 08. The category arrives with the phase that produces it. */
+/** The award detail layout from doc 08. */
 export function AwardDetail({ award }: { award: Schemas['AwardDetail'] }) {
   const { agency, recipient, naics, psc, period_of_performance: period, place_of_performance: place } = award;
   const transactions = award.transactions ?? [];
@@ -49,6 +50,17 @@ export function AwardDetail({ award }: { award: Schemas['AwardDetail'] }) {
             <dd>{code(naics)}</dd>
             <dt>PSC</dt>
             <dd>{code(psc)}</dd>
+            <dt>Category</dt>
+            <dd>
+              {award.category ? (
+                <>
+                  <CategoryBadge category={award.category} />
+                  {award.category.source === 'baseline' && <span className="muted"> PSC-based</span>}
+                </>
+              ) : (
+                '—'
+              )}
+            </dd>
             <dt>Funding agency</dt>
             <dd>{award.funding_agency?.name ?? '—'}</dd>
             <dt>Fiscal year</dt>

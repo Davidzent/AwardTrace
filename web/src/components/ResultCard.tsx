@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import type { Schemas } from '../api/client';
 import { formatCount } from '../lib/format';
+import { CategoryBadge } from './CategoryBadge';
 import { Highlight } from './Highlight';
 import { Money } from './Money';
 
@@ -30,6 +31,7 @@ export function ResultCard({ result }: { result: Schemas['Result'] }) {
         <Money amount={result.total_obligated} />
         {result.fiscal_year !== undefined && <span>FY{result.fiscal_year}</span>}
         {result.naics_code && <span>NAICS {result.naics_code}</span>}
+        <CategoryBadge category={result.category} />
         {result.piid && <span>PIID {result.piid}</span>}
         {/* Only prime recipients' reports, so an award without any may still have subcontractors. */}
         {(result.subaward_count ?? 0) > 0 && (
