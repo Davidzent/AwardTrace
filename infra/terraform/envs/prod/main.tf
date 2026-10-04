@@ -34,3 +34,15 @@ module "network" {
     [for offerings in data.aws_ec2_instance_type_offerings.host : offerings.locations]...
   ))[0]
 }
+
+module "registry" {
+  source = "../../modules/registry"
+
+  repositories = ["${local.name}/backend", "${local.name}/web"]
+}
+
+module "observability" {
+  source = "../../modules/observability"
+
+  log_group_name = "/${local.name}/prod"
+}
