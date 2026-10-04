@@ -16,6 +16,12 @@ resource "aws_budgets_budget" "monthly" {
   limit_unit   = "USD"
   time_unit    = "MONTHLY"
 
+  # Spend before credits. Counted against it, credits such as the free plan's cancel the whole bill, and the budget
+  # would never alert; measured before them, it shows how fast the credits are being used up.
+  cost_types {
+    include_credit = false
+  }
+
   dynamic "notification" {
     for_each = toset(var.alert_thresholds_usd)
 
