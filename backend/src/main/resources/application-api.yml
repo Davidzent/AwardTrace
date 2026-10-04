@@ -17,3 +17,10 @@ springdoc:
   default-produces-media-type: application/json
   # Errors are documented once, as each operation's default problem response (OpenApiConfig).
   override-with-generic-response: false
+management:
+  endpoints:
+    web:
+      # Every role's metrics, since production runs all roles in one process. Internal: Caddy routes only /api, so
+      # these never leave the Docker network (docs 07 and 11).
+      exposure:
+        include: health, prometheus
