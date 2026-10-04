@@ -1,0 +1,14 @@
+# Both images build from the repository root (backend/Dockerfile, web/Dockerfile) and copy only what they need;
+# this keeps local build output, dependencies, and data out of the context.
+.git
+.github
+.claude
+data
+docs
+**/node_modules
+**/target
+web/dist
+web/test-results
+web/playwright-report
+web/src/api/schema.ts
+infra/terraform

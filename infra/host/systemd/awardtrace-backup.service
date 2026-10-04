@@ -1,0 +1,10 @@
+# Dumps the database to S3 (infra/host/backup.sh). deploy.sh installs it; awardtrace-backup.timer starts it.
+[Unit]
+Description=Dump the AwardTrace database to S3
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# Always the deployed release's script, through the current symlink.
+ExecStart=/opt/awardtrace/current/infra/host/backup.sh

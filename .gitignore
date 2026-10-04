@@ -28,6 +28,13 @@ web/src/api/schema.ts
 # Source files kept locally, such as USAspending archive downloads (infra/compose/mirror-archive.sh)
 /data/
 
+# Terraform working directories, local state (the bootstrap root's), and variable files, which hold personal values
+# such as alert emails. Each root's .terraform.lock.hcl is committed.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
 # Claude Code's local preview configuration
 .claude/
 

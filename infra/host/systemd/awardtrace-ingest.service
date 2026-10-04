@@ -1,0 +1,12 @@
+# Ingests the latest USAspending delta (infra/host/ingest.sh). deploy.sh installs it; awardtrace-ingest.timer starts
+# it.
+[Unit]
+Description=Ingest the latest USAspending delta
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Always the deployed release's script, through the current symlink.
+ExecStart=/opt/awardtrace/current/infra/host/ingest.sh delta

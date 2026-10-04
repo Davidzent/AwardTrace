@@ -1,0 +1,12 @@
+# Starts awardtrace-backup.service nightly (docs 04 and 10). deploy.sh installs and enables it.
+[Unit]
+Description=Dump the AwardTrace database to S3 nightly
+
+[Timer]
+OnCalendar=*-*-* 07:00:00 UTC
+RandomizedDelaySec=15min
+# A night spent stopped, to save money, is made up at the next boot.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

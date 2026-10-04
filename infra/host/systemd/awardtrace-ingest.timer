@@ -1,0 +1,14 @@
+# Starts awardtrace-ingest.service weekly. USAspending publishes a delta monthly and keeps only the latest one (doc
+# 03), so a weekly run never misses one, and a file already stored is never downloaded again. Mondays at 08:00 UTC
+# follow the nightly backup, so a bad ingest can be undone from that night's dump.
+[Unit]
+Description=Ingest the latest USAspending delta weekly
+
+[Timer]
+OnCalendar=Mon *-*-* 08:00:00 UTC
+RandomizedDelaySec=15min
+# A Monday spent stopped, to save money, is made up at the next boot.
+Persistent=true
+
+[Install]
+WantedBy=timers.target
