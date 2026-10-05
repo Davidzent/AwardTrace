@@ -2,7 +2,7 @@
 #   docker compose --env-file /opt/awardtrace/.env -f compose.yml -f compose.prod.yml up -d
 # infra/host/write-env.sh writes the env file from SSM; IMAGE_TAG, the commit to run, comes from the deploy. Only
 # Caddy publishes ports, so Kafka, PostgreSQL, and Elasticsearch answer on the Docker network alone (invariant I6).
-# Memory limits and heaps total about 3.5 GiB of the host's 4 GiB.
+# Memory limits and heaps total about 3.6 GiB of the host's 4 GiB.
 
 x-logging: &logging
   driver: awslogs
@@ -50,7 +50,8 @@ services:
   app:
     image: ${AWARDTRACE_REGISTRY:?run write-env.sh first}/awardtrace/backend:${IMAGE_TAG:?set the commit to run}
     restart: unless-stopped
-    mem_limit: 768m
+    # 582 MiB in use before the enricher joined, against 768m; the Claude client and a fourth consumer need more room.
+    mem_limit: 896m
     depends_on:
       kafka:
         condition: service_healthy
@@ -59,8 +60,10 @@ services:
       elasticsearch:
         condition: service_healthy
     environment:
-      # Every long-running role in one JVM (ADR 0001). Ingest runs as a one-shot task with its own profile.
-      SPRING_PROFILES_ACTIVE: pipeline,indexer,api
+      # Every long-running role in one JVM (ADR 0001). Ingest and the classification backfill run as one-shot tasks
+      # with their own profiles. The enricher's first start reads every event in awards.changed.v1, a compacted topic,
+      # so it joined only after the first backfill had classified every description and each event was a cache hit.
+      SPRING_PROFILES_ACTIVE: pipeline,indexer,api,enricher
       JAVA_TOOL_OPTIONS: -Xms512m -Xmx512m
       SPRING_THREADS_VIRTUAL_ENABLED: "true"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/awardtrace
