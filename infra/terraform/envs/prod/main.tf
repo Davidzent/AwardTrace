@@ -78,7 +78,7 @@ module "compute" {
 }
 
 # Weekdays, 8:00 to 20:00 Pacific (ADR 0017). The start is 10 minutes early because the stack takes 3 to 5 minutes to
-# boot.
+# boot. infra/host/idle-stop.sh holds the same hours, so change both.
 module "schedule" {
   source = "../../modules/schedule"
 

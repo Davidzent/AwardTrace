@@ -1,0 +1,14 @@
+# Stops the host when it sits idle outside its weekday hours (infra/host/idle-stop.sh). deploy.sh installs it;
+# awardtrace-idle.timer starts it.
+[Unit]
+Description=Stop the AwardTrace host when it is idle outside its weekday hours
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# /run/awardtrace-idle holds the idle clock between runs. Like the rest of /run, it empties at boot.
+RuntimeDirectory=awardtrace-idle
+RuntimeDirectoryPreserve=yes
+# Always the deployed release's script, through the current symlink.
+ExecStart=/opt/awardtrace/current/infra/host/idle-stop.sh

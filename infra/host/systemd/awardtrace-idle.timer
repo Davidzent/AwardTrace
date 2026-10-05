@@ -1,0 +1,9 @@
+# Starts awardtrace-idle.service every 5 minutes (ADR 0017). deploy.sh installs and enables it.
+[Unit]
+Description=Check every 5 minutes whether the idle AwardTrace host should stop
+
+[Timer]
+OnCalendar=*:0/5
+
+[Install]
+WantedBy=timers.target

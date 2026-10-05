@@ -31,6 +31,9 @@ resource "aws_instance" "host" {
   iam_instance_profile   = var.instance_profile
   user_data              = file("${path.module}/user-data.sh")
 
+  # The idle stop powers the host off (infra/host/idle-stop.sh), which must stop the instance, never terminate it.
+  instance_initiated_shutdown_behavior = "stop"
+
   metadata_options {
     http_tokens = "required"
     # Containers reach the instance role through IMDS one network hop further away than the host itself.
