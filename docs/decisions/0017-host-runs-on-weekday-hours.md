@@ -15,14 +15,16 @@ EventBridge Scheduler starts the host at 7:50 and stops it at 20:00, Monday to F
 
 Outside those hours, the host stops itself after 30 minutes without API requests, so a start for a demo or a shared link never runs all night. A timer on the host checks every 5 minutes, counting only requests to routes the API serves.
 
+A deploy starts a stopped host before it runs. The Host workflow in GitHub's Actions tab starts or stops the host by hand. Both use the deploy role, which can start and stop only the host tagged `app=awardtrace`, and only from `main`; running the workflow takes write access to the repository.
+
 ## Consequences
 
 - The host costs about $29 a month instead of $69, so $100 lasts about 3.4 months.
-- Outside those hours, the site doesn't answer until someone starts the host. A host started then stops on its own once it sits idle.
+- Outside those hours, the site doesn't answer until someone starts the host, through the Host workflow or the AWS console. A host started then stops on its own once it sits idle.
 - Scanners and probes for other paths don't count as requests, so they can't keep the host awake.
 - An ingest or a deploy in progress holds off the idle stop. Consumers still catching up with Kafka don't; they resume at the next start.
 - The hours live in two places: the schedules in `envs/prod` and `infra/host/idle-stop.sh`. A change has to update both.
-- A push to `main` outside those hours fails its deploy job. Rerun the job once the host is up.
+- A deploy outside those hours starts the host, and the idle stop stops it again 30 minutes later.
 - The nightly backup runs at each weekday start instead, because its timer makes up missed runs at boot. The weekly ingest moves to Mondays at 18:00 UTC, inside the hours in both standard and daylight time, so it runs while the stack is up rather than during the boot.
 - The rebuild drill recreates the schedules along with the rest of `envs/prod`.
 

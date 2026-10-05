@@ -1,8 +1,9 @@
 # Deploys a commit of main to production (doc 10). CI calls it after every check passes on a push to main; running it
 # by hand redeploys main, as the rebuild drill does. It builds the commit's two x86 images, pushes the ones ECR
 # doesn't have yet, and runs infra/host/deploy.sh on the host through SSM, which rolls back if the new release
-# doesn't answer. AWS access comes from OIDC, so the repository holds no AWS keys: set the repository variable
-# AWS_DEPLOY_ROLE_ARN to the deploy_role_arn output of infra/terraform/envs/prod.
+# doesn't answer. A stopped host is started first; outside the weekday hours, the idle stop stops it again (ADR 0017).
+# AWS access comes from OIDC, so the repository holds no AWS keys: set the repository variable AWS_DEPLOY_ROLE_ARN to
+# the deploy_role_arn output of infra/terraform/envs/prod.
 name: Deploy
 
 on:
@@ -50,13 +51,7 @@ jobs:
           done
       - name: Deploy on the host
         run: |
-          instance=$(aws ec2 describe-instances \
-            --filters Name=tag:app,Values=awardtrace Name=instance-state-name,Values=running \
-            --query 'Reservations[].Instances[].InstanceId' --output text)
-          if [[ ! $instance =~ ^i-[0-9a-f]+$ ]]; then
-            echo "::error::Expected one running host tagged app=awardtrace, found: ${instance:-none}"
-            exit 1
-          fi
+          instance=$(.github/scripts/start-host.sh)
 
           # From a file, not a pipe: docker compose exec would read the rest of a piped script as its input.
           parameters=$(jq -n --arg repo "$GITHUB_REPOSITORY" --arg sha "$GITHUB_SHA" '{
