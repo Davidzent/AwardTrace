@@ -28,9 +28,9 @@ spring:
 
 awardtrace:
   categories:
-    # baseline or llm (CategorySource): llm only once the gold-set evaluation shows the classifier beats the PSC
-    # baseline (ADR 0007). Changing it takes a reindex.
-    default-source: baseline
+    # baseline or llm (CategorySource): llm since the gold-set evaluation showed the classifier beats the PSC
+    # baseline (ADR 0013). Changing it takes a reindex.
+    default-source: llm
   s3:
     region: us-east-1
   ingest:

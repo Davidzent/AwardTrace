@@ -140,14 +140,24 @@ class ReplayRebuildIT {
     }
 
     /**
-     * What an enrichment run leaves: a category for each description, and a snapshot of them in S3. Classifications
-     * can't be rebuilt from the source files, so the replay must restore them from the snapshot (doc 09).
+     * What an enrichment run leaves: a category for each description, a new version and an event for each award, so the
+     * index shows the classifier's category, and a snapshot of them in S3. Classifications can't be rebuilt from the
+     * source files, so the replay must restore them from the snapshot before it rebuilds the awards (doc 09).
      */
     private void classifyEveryDescription() throws IOException {
         jdbc.sql("""
                 INSERT INTO classification (description_hash, category, confidence, model, prompt_version)
                 SELECT DISTINCT description_hash, 'NATURAL_RESOURCES', 0.87, 'claude-haiku-4-5', 'v1'
                 FROM award WHERE description_hash IS NOT NULL
+                """).update();
+        jdbc.sql("""
+                WITH changed AS (
+                    UPDATE award SET index_version = index_version + 1, updated_at = now()
+                    WHERE description_hash IS NOT NULL AND deleted_at IS NULL
+                    RETURNING award_id, index_version
+                )
+                INSERT INTO outbox (aggregate_id, event_type, change_reason, index_version)
+                SELECT award_id, 'AwardChanged', 'CLASSIFICATION', index_version FROM changed
                 """).update();
         classifications.write();
     }

@@ -124,22 +124,23 @@ class AwardIndexerIT {
                        (:b, 'UNCLASSIFIABLE', 0.40, 'VAGUE', 'claude-haiku-4-5', 'v1')
                 """).param("a", "a".repeat(64)).param("b", "b".repeat(64)).update();
 
-        // The configured default, baseline, keeps the PSC category.
+        // The configured default, llm, takes the classifier's category.
         indexer.index(awards);
-        assertThat(document("CONT_AWD_INDEXER_CLASSIFIED").source())
-                .containsEntry("category", "CYBERSECURITY")
-                .containsEntry("category_source", "baseline");
-
-        // A newer version, so the second write isn't rejected as stale.
-        jdbc.sql("UPDATE award SET index_version = 2 WHERE award_id IN (:awards)").param("awards", awards).update();
-        new AwardIndexer(jdbc, elasticsearch, meters, CategorySource.LLM).index(awards);
-
         assertThat(document("CONT_AWD_INDEXER_CLASSIFIED").source())
                 .containsEntry("category", "IT_SOFTWARE")
                 .containsEntry("category_source", "llm")
                 .containsEntry("baseline_category", "CYBERSECURITY");
         assertThat(document("CONT_AWD_INDEXER_VAGUE").source())
                 .as("a description the classifier couldn't place keeps its PSC category")
+                .containsEntry("category", "CYBERSECURITY")
+                .containsEntry("category_source", "baseline");
+
+        // A newer version, so the second write isn't rejected as stale.
+        jdbc.sql("UPDATE award SET index_version = 2 WHERE award_id IN (:awards)").param("awards", awards).update();
+        new AwardIndexer(jdbc, elasticsearch, meters, CategorySource.BASELINE).index(awards);
+
+        assertThat(document("CONT_AWD_INDEXER_CLASSIFIED").source())
+                .as("the baseline default keeps the PSC category")
                 .containsEntry("category", "CYBERSECURITY")
                 .containsEntry("category_source", "baseline");
     }
