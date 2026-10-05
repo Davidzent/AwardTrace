@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mockingDetails;
 import com.zntsns.awardtrace.AwardRows;
 import com.zntsns.awardtrace.TestcontainersConfiguration;
 import com.zntsns.awardtrace.award.internal.AwardRepository;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,22 @@ class AwardQueriesIT {
         var found = queries.find(AWARD_ID, 10).orElseThrow();
 
         assertThat(found.transactions()).extracting(AwardTransaction::modificationNumber).containsExactly("0");
+    }
+
+    @Test
+    void readsTheClassifiersCategoryForTheDescription() {
+        saveAward(jdbc, AWARD_ID, 3, "55000.00", false);
+        assertThat(queries.find(AWARD_ID, 10).orElseThrow().classification()).as("before classification").isNull();
+        String hash = "a".repeat(64);
+        AwardRows.describe(jdbc, hash, AWARD_ID);
+        jdbc.sql("""
+                INSERT INTO classification (description_hash, category, confidence, model, prompt_version)
+                VALUES (:hash, 'NATURAL_RESOURCES', 0.91, 'claude-haiku-4-5', 'v1')
+                """).param("hash", hash).update();
+
+        assertThat(queries.find(AWARD_ID, 10).orElseThrow().classification()).isEqualTo(
+                new AwardQueries.ModelCategory("NATURAL_RESOURCES", new BigDecimal("0.91"), null,
+                        "claude-haiku-4-5", "v1"));
     }
 
     @Test

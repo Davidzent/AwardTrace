@@ -27,6 +27,10 @@ spring:
       concurrency: 2
 
 awardtrace:
+  categories:
+    # baseline or llm (CategorySource): llm only once the gold-set evaluation shows the classifier beats the PSC
+    # baseline (ADR 0007). Changing it takes a reindex.
+    default-source: baseline
   s3:
     region: us-east-1
   ingest:

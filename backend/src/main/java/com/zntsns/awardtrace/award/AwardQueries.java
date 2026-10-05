@@ -18,9 +18,24 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AwardQueries {
 
-    /** An award and its newest live transactions; {@code truncated} means older ones were left out. */
+    /**
+     * An award and its newest live transactions; {@code truncated} means older ones were left out.
+     *
+     * @param classification the classifier's category for the award's description; null until it has one (doc 09)
+     */
     public record AwardWithTransactions(Award award, List<AwardTransaction> transactions, boolean truncated,
-            SubawardSummary subawards) {
+            SubawardSummary subawards, ModelCategory classification) {
+    }
+
+    /**
+     * The classifier's category for a description (doc 09).
+     *
+     * @param confidence the model's confidence, from 0 to 1; null for a refusal or a failure
+     * @param reasonCode why the category is UNCLASSIFIABLE: VAGUE, REFUSAL, or FAILED; null for every other category
+     * @param model the exact model ID that answered
+     */
+    public record ModelCategory(String category, BigDecimal confidence, String reasonCode, String model,
+            String promptVersion) {
     }
 
     /** @param total the sum of the reported amounts, which corrections can lower */
@@ -47,8 +62,8 @@ public class AwardQueries {
     }
 
     /**
-     * Reads the award, its transactions, and its subaward summary from one snapshot, so a pipeline commit between the
-     * queries can't pair the award at one index version with transactions or subawards from the next. PostgreSQL's
+     * Reads the award, its transactions, its subaward summary, and its classification from one snapshot, so a commit
+     * between the queries can't pair the award at one index version with rows from the next. PostgreSQL's
      * default, READ COMMITTED, takes a new snapshot for every statement; REPEATABLE READ keeps the first one for the
      * whole transaction.
      */
@@ -60,8 +75,22 @@ public class AwardQueries {
             boolean truncated = transactions.size() > maxTransactions;
             return new AwardWithTransactions(award,
                     List.copyOf(truncated ? transactions.subList(0, maxTransactions) : transactions), truncated,
-                    subawards.summary(awardId));
+                    subawards.summary(awardId), classification(award.descriptionHash()));
         });
+    }
+
+    private ModelCategory classification(String descriptionHash) {
+        if (descriptionHash == null) {
+            return null;
+        }
+        return jdbc.sql("""
+                        SELECT category, confidence, reason_code, model, prompt_version
+                        FROM classification WHERE description_hash = :hash
+                        """)
+                .param("hash", descriptionHash)
+                .query(ModelCategory.class)
+                .optional()
+                .orElse(null);
     }
 
     /**

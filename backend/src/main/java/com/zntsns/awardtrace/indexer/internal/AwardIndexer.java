@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.core.bulk.OperationType;
 import com.zntsns.awardtrace.outbox.AwardChanged;
+import com.zntsns.awardtrace.shared.CategorySource;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.KafkaTopics;
 import io.micrometer.core.instrument.Counter;
@@ -22,6 +23,7 @@ import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -50,7 +52,9 @@ class AwardIndexer {
                    a.pop_state_code, a.total_obligated, a.potential_total_value, a.last_action_date,
                    a.pop_start_date, a.pop_end_date, a.fiscal_year,
                    s.subaward_count, coalesce(s.subaward_total, 0) AS subaward_total,
-                   baseline.category, CASE WHEN baseline.category IS NOT NULL THEN 'baseline' END AS category_source,
+                   CASE WHEN chosen.llm THEN c.category ELSE baseline.category END AS category,
+                   CASE WHEN chosen.llm THEN 'llm' WHEN baseline.category IS NOT NULL THEN 'baseline' END
+                       AS category_source,
                    baseline.category AS baseline_category,
                    a.index_version, a.deleted_at IS NOT NULL AS deleted
             FROM award a
@@ -62,21 +66,27 @@ class AwardIndexer {
                 SELECT count(*) AS subaward_count, sum(amount) AS subaward_total
                 FROM subaward WHERE prime_award_id = a.award_id
             ) s
-            -- The free baseline category from the PSC (doc 09); an award without a PSC has none. The LLM's category,
-            -- when there is one, replaces it as category in Phase 5.
+            -- The free baseline category from the PSC (doc 09); an award without a PSC has none.
             CROSS JOIN LATERAL (SELECT psc_baseline_category(a.psc_code) AS category) baseline
+            -- The classifier's category for the description replaces it when the classifier is the default and named a
+            -- real category, not UNCLASSIFIABLE (CategorySource). AwardDetail applies the same rule.
+            LEFT JOIN classification c ON c.description_hash = a.description_hash
+            CROSS JOIN LATERAL (SELECT coalesce(:llmDefault AND c.category <> 'UNCLASSIFIABLE', false) AS llm) chosen
             WHERE a.award_id IN (:awardIds)
             """;
 
     private final JdbcClient jdbc;
     private final ElasticsearchClient elasticsearch;
+    private final boolean llmDefault;
     // Is indexing healthy, and how often does a stale write lose, as designed? (doc 11)
     private final Timer bulkDuration;
     private final Counter conflictCounter;
 
-    AwardIndexer(JdbcClient jdbc, ElasticsearchClient elasticsearch, MeterRegistry meters) {
+    AwardIndexer(JdbcClient jdbc, ElasticsearchClient elasticsearch, MeterRegistry meters,
+            @Value("${awardtrace.categories.default-source}") CategorySource defaultSource) {
         this.jdbc = jdbc;
         this.elasticsearch = elasticsearch;
+        this.llmDefault = defaultSource == CategorySource.LLM;
         this.bulkDuration = meters.timer("awardtrace.indexer.bulk.duration");
         this.conflictCounter = meters.counter("awardtrace.indexer.conflicts");
     }
@@ -105,7 +115,8 @@ class AwardIndexer {
         if (awardIds.isEmpty()) {
             return new Result(0, 0, 0, 0);
         }
-        List<Map<String, Object>> rows = jdbc.sql(DOCUMENTS).param("awardIds", awardIds).query().listOfRows();
+        List<Map<String, Object>> rows = jdbc.sql(DOCUMENTS).param("awardIds", awardIds).param("llmDefault", llmDefault)
+                .query().listOfRows();
         var operations = new ArrayList<BulkOperation>();
         for (Map<String, Object> row : rows) {
             String awardId = (String) row.get("award_id");

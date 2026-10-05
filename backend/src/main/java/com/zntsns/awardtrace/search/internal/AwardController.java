@@ -1,9 +1,11 @@
 package com.zntsns.awardtrace.search.internal;
 
 import com.zntsns.awardtrace.award.AwardQueries;
+import com.zntsns.awardtrace.shared.CategorySource;
 import java.net.URI;
 import java.time.Duration;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -27,10 +29,13 @@ class AwardController {
 
     private final AwardQueries awards;
     private final Taxonomy taxonomy;
+    private final boolean llmDefault;
 
-    AwardController(AwardQueries awards, Taxonomy taxonomy) {
+    AwardController(AwardQueries awards, Taxonomy taxonomy,
+            @Value("${awardtrace.categories.default-source}") CategorySource defaultSource) {
         this.awards = awards;
         this.taxonomy = taxonomy;
+        this.llmDefault = defaultSource == CategorySource.LLM;
     }
 
     /**
@@ -43,7 +48,7 @@ class AwardController {
         return ResponseEntity.ok()
                 .eTag(Long.toString(found.award().indexVersion()))
                 .cacheControl(CACHE)
-                .body(AwardDetail.of(found, taxonomy::label));
+                .body(AwardDetail.of(found, taxonomy::label, llmDefault));
     }
 
     /** The subawards reported under a live award, newest first. */
