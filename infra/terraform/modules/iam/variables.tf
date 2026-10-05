@@ -19,7 +19,7 @@ variable "log_group_arn" {
 }
 
 variable "github_repository" {
-  description = "The GitHub repository, as owner/name, whose workflows may assume the deploy role."
+  description = "The GitHub repository, as owner@owner_id/name@repo_id, whose workflows may assume the deploy role."
   type        = string
 }
 

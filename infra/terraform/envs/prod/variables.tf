@@ -17,9 +17,11 @@ variable "instance_type" {
 }
 
 variable "github_repository" {
-  description = "The GitHub repository, as owner/name, whose main branch deploys."
+  # GitHub's OIDC subject claim names the owner and repository with their immutable IDs, so a repository deleted and
+  # recreated under the same name can't deploy.
+  description = "The GitHub repository whose main branch deploys, as owner@owner_id/name@repo_id."
   type        = string
-  default     = "Davidzent/AwardTrace"
+  default     = "Davidzent@37416103/AwardTrace@1393908058"
 }
 
 variable "alert_email" {
