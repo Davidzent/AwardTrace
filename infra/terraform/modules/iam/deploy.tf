@@ -1,6 +1,6 @@
 # The deploy role (doc 10): GitHub Actions assumes it through OIDC, only from this repository's main branch, so CI
-# holds no AWS keys. It may push the two images and run AWS-RunShellScript on the tagged host; it can't read secrets
-# or change infrastructure.
+# holds no AWS keys. It may push the two images, start and stop the tagged host, and run AWS-RunShellScript on it; it
+# can't read secrets or change infrastructure.
 
 resource "aws_iam_openid_connect_provider" "github" {
   url            = "https://token.actions.githubusercontent.com"
@@ -85,6 +85,27 @@ data "aws_iam_policy_document" "deploy" {
   statement {
     sid       = "ReadTheDeployResult"
     actions   = ["ssm:GetCommandInvocation"]
+    resources = ["*"]
+  }
+
+  # A deploy starts a stopped host first, and the Host workflow starts or stops it by hand (ADR 0017). The host's disk
+  # uses the AWS managed EBS key, whose own policy covers the start, so no KMS permission is needed.
+  statement {
+    sid       = "StartAndStopTheTaggedHost"
+    actions   = ["ec2:StartInstances", "ec2:StopInstances"]
+    resources = ["arn:aws:ec2:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:instance/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:ResourceTag/app"
+      values   = [var.name]
+    }
+  }
+
+  # After a start, SSM rejects commands until the host's agent registers.
+  statement {
+    sid       = "WaitForTheAgent"
+    actions   = ["ssm:DescribeInstanceInformation"]
     resources = ["*"]
   }
 }
