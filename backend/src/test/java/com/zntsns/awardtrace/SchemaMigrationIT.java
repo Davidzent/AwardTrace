@@ -45,11 +45,12 @@ class SchemaMigrationIT {
     }
 
     @Test
-    void seedsTheThirteenCategoriesInDisplayOrder() {
+    void seedsTheFourteenCategoriesInDisplayOrder() {
         assertThat(jdbc.sql("SELECT code FROM taxonomy_category ORDER BY sort_order").query(String.class).list())
                 .containsExactly("IT_SOFTWARE", "IT_INFRASTRUCTURE", "CYBERSECURITY", "PROFESSIONAL_SERVICES",
                         "ENGINEERING_RESEARCH", "CONSTRUCTION_FACILITIES", "HEALTH_MEDICAL", "DEFENSE_SYSTEMS",
-                        "LOGISTICS_TRANSPORT", "SUPPLIES_EQUIPMENT", "TRAINING_EDUCATION", "OTHER", "UNCLASSIFIABLE");
+                        "LOGISTICS_TRANSPORT", "SUPPLIES_EQUIPMENT", "TRAINING_EDUCATION", "NATURAL_RESOURCES",
+                        "OTHER", "UNCLASSIFIABLE");
     }
 
     @Test
@@ -71,7 +72,8 @@ class SchemaMigrationIT {
         assertThat(baselineCategoryOf("2350")).isEqualTo("DEFENSE_SYSTEMS");
         assertThat(baselineCategoryOf("R425")).isEqualTo("ENGINEERING_RESEARCH");
         assertThat(baselineCategoryOf("R408")).isEqualTo("PROFESSIONAL_SERVICES");
-        assertThat(baselineCategoryOf("F003")).isEqualTo("OTHER");
+        assertThat(baselineCategoryOf("F003")).isEqualTo("NATURAL_RESOURCES");
+        assertThat(baselineCategoryOf("G004")).isEqualTo("OTHER");
         assertThat(baselineCategoryOf(null)).isNull();
     }
 

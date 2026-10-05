@@ -93,8 +93,8 @@ class SearchControllerIT {
         json.extractingPath("$.results[0].agency.subtier_name").isEqualTo("Forest Service");
         json.extractingPath("$.results[0].total_obligated").isEqualTo("4812000.00");
         json.extractingPath("$.results[0].subaward_count").isEqualTo(2);
-        json.extractingPath("$.results[0].category.code").isEqualTo("OTHER");
-        json.extractingPath("$.results[0].category.label").isEqualTo("Other");
+        json.extractingPath("$.results[0].category.code").isEqualTo("NATURAL_RESOURCES");
+        json.extractingPath("$.results[0].category.label").isEqualTo("Natural resources and environment");
         json.extractingPath("$.results[0].category.source").isEqualTo("baseline");
     }
 
@@ -104,7 +104,7 @@ class SearchControllerIT {
 
         assertThat(result).hasStatusOk().headers().hasValue(HttpHeaders.CACHE_CONTROL, "max-age=300, public");
         var json = assertThat(result).bodyJson();
-        json.extractingPath("$[*].code").asArray().hasSize(13).startsWith("IT_SOFTWARE").endsWith("UNCLASSIFIABLE");
+        json.extractingPath("$[*].code").asArray().hasSize(14).startsWith("IT_SOFTWARE").endsWith("UNCLASSIFIABLE");
         json.extractingPath("$[2].label").isEqualTo("Cybersecurity");
         json.extractingPath("$[2].definition")
                 .isEqualTo("Security operations, assessments, identity management, and information assurance");
@@ -158,10 +158,10 @@ class SearchControllerIT {
         json.extractingPath("$.facets.agency[0].label").isEqualTo("Department of Agriculture");
         json.extractingPath("$.facets.agency[0].count").isEqualTo(2);
         json.extractingPath("$.facets.naics[0].label").isEqualTo("ALL OTHER TELECOMMUNICATIONS");
-        // Every test award's PSC is F003, natural resources, which the baseline puts in OTHER.
-        json.extractingPath("$.facets.category[*].value").asArray().containsExactly("OTHER");
+        // Every test award's PSC is F003, forest and range fire suppression.
+        json.extractingPath("$.facets.category[*].value").asArray().containsExactly("NATURAL_RESOURCES");
         json.extractingPath("$.facets.category[0].count").isEqualTo(2);
-        json.extractingPath("$.facets.category[0].label").isEqualTo("Other");
+        json.extractingPath("$.facets.category[0].label").isEqualTo("Natural resources and environment");
     }
 
     @Test

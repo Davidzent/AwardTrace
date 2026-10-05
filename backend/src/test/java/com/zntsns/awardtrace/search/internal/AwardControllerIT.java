@@ -69,13 +69,13 @@ class AwardControllerIT {
         json.extractingPath("$.transactions_truncated").isEqualTo(false);
         json.extractingPath("$.subaward_summary.count").isEqualTo(0);
         json.extractingPath("$.subaward_summary.total").isEqualTo("0.00");
-        // PSC F003, natural resources, which the baseline puts in Other.
-        json.extractingPath("$.category.code").isEqualTo("OTHER");
-        json.extractingPath("$.category.label").isEqualTo("Other");
+        // PSC F003, forest and range fire suppression.
+        json.extractingPath("$.category.code").isEqualTo("NATURAL_RESOURCES");
+        json.extractingPath("$.category.label").isEqualTo("Natural resources and environment");
         json.extractingPath("$.category.source").isEqualTo("baseline");
         json.extractingPath("$.category.confidence").isNull();
-        json.extractingPath("$.category.baseline_code").isEqualTo("OTHER");
-        json.extractingPath("$.category.baseline_label").isEqualTo("Other");
+        json.extractingPath("$.category.baseline_code").isEqualTo("NATURAL_RESOURCES");
+        json.extractingPath("$.category.baseline_label").isEqualTo("Natural resources and environment");
         json.extractingPath("$.usaspending_url").isEqualTo("https://www.usaspending.gov/award/" + AWARD_ID + "/");
     }
 
