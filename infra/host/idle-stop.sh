@@ -27,8 +27,8 @@ if ((day <= 5 && 10#$hhmm >= 750 && 10#$hhmm < 2000)); then
   exit 0
 fi
 
-# Never in the middle of an ingest or a deploy, which hold these locks while they run.
-for lock in ingest.lock deploy.lock; do
+# Never in the middle of an ingest, a classification backfill, or a deploy, which hold these locks while they run.
+for lock in ingest.lock enrich.lock deploy.lock; do
   if ! flock -n "${root}/${lock}" true; then
     exit 0
   fi
