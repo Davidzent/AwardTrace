@@ -17,7 +17,7 @@ Production ingests the Department of Agriculture, toptier code `012`, and no oth
 
 - The backfill downloads about 36 MB of archives and runs in minutes, with no larger instance.
 - Search, recipients, and categories cover one agency, which the public docs must state.
-- Classifying every description costs about $6 on Claude Haiku 4.5 (doc 09).
+- Classifying every description cost $3.25 on Claude Haiku 4.5 with Message Batches ([ADR 0013](0013-classifier-model-and-default-category.md)).
 - Widening the scope means adding agency codes and running a backfill for them. Measure disk use and duration on production first.
 
 ## Alternatives considered
