@@ -26,6 +26,7 @@ class ProfileIsolationIT {
             "ingest", List.of("ingestRuns", "sourceFileStore", "storedFilePublisher", "subawardDownloads"),
             "pipeline", List.of("transactionListener", "subawardListener", "outboxRelay"),
             "indexer", List.of("awardIndexer", "awardsIndex"),
+            "enricher", List.of("classificationStore"),
             "api", List.of("searchController", "awardController", "recipientController", "rateLimiting"));
 
     @Nested
@@ -61,6 +62,18 @@ class ProfileIsolationIT {
         @Test
         void loadsOnlyIndexerBeans(@Autowired ApplicationContext context) {
             assertLoadsOnly("indexer", context);
+        }
+    }
+
+    @Nested
+    @SpringBootTest
+    @ActiveProfiles("enricher")
+    @Import(TestcontainersConfiguration.class)
+    class Enricher {
+
+        @Test
+        void loadsOnlyEnricherBeans(@Autowired ApplicationContext context) {
+            assertLoadsOnly("enricher", context);
         }
     }
 

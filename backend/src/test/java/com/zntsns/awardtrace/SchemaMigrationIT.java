@@ -41,7 +41,22 @@ class SchemaMigrationIT {
 
         assertThat(tables).containsExactlyInAnyOrder(
                 "agency", "recipient", "award", "award_transaction", "outbox", "ingest_run", "ingest_file",
-                "subaward", "taxonomy_category", "psc_baseline_map");
+                "subaward", "taxonomy_category", "psc_baseline_map", "classification");
+    }
+
+    @Test
+    void acceptsAReasonCodeOnlyOnAnUnclassifiableDescription() {
+        insertClassification("1", "NATURAL_RESOURCES", null);
+        insertClassification("2", "UNCLASSIFIABLE", "VAGUE");
+
+        assertThatThrownBy(() -> insertClassification("3", "NATURAL_RESOURCES", "FAILED"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void requiresAReasonCodeOnAnUnclassifiableDescription() {
+        assertThatThrownBy(() -> insertClassification("4", "UNCLASSIFIABLE", null))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -129,6 +144,18 @@ class SchemaMigrationIT {
                 .param("awardId", awardId)
                 .param("uei", UEI)
                 .param("date", lastActionDate)
+                .update();
+    }
+
+    /** A classification whose description hash repeats {@code hashDigit} 64 times. */
+    private void insertClassification(String hashDigit, String category, String reasonCode) {
+        jdbc.sql("""
+                INSERT INTO classification (description_hash, category, reason_code, model, prompt_version)
+                VALUES (repeat(:digit, 64), :category, CAST(:reasonCode AS text), 'claude-haiku-4-5', 'v1')
+                """)
+                .param("digit", hashDigit)
+                .param("category", category)
+                .param("reasonCode", reasonCode)
                 .update();
     }
 
