@@ -1,5 +1,6 @@
 package com.zntsns.awardtrace.ingest.internal;
 
+import com.zntsns.awardtrace.enrichment.ClassificationSnapshots;
 import com.zntsns.awardtrace.ingest.internal.ArchiveListing.ArchiveFile;
 import com.zntsns.awardtrace.ingest.internal.ArchiveListing.Kind;
 import com.zntsns.awardtrace.ingest.internal.SourceFileStore.StoredFile;
@@ -30,7 +31,8 @@ import org.springframework.stereotype.Component;
  * Runs an ingest and records it in {@code ingest_run}. Backfill and delta store new archive files and freshly
  * generated subaward files (ADR 0014), then publish every stored file not yet published; replay publishes every
  * stored file again, from S3 alone. Contract files are published in file-date order, so a later file's deletes land
- * after the rows they delete (ADR 0012).
+ * after the rows they delete (ADR 0012). Replay first restores the newest classification snapshot, so the rebuilt
+ * awards find their categories and none goes to Claude again (doc 09).
  */
 @Component
 @Profile("ingest")
@@ -49,6 +51,7 @@ class IngestRuns {
     private final SubawardDownloads subawards;
     private final SourceFileStore store;
     private final StoredFilePublisher publisher;
+    private final ClassificationSnapshots classifications;
     private final IngestProperties properties;
     private final JdbcClient jdbc;
     private final Clock clock;
@@ -57,12 +60,13 @@ class IngestRuns {
     private final Counter rejectedRecords;
 
     IngestRuns(ArchiveListing archive, SubawardDownloads subawards, SourceFileStore store,
-            StoredFilePublisher publisher, IngestProperties properties, JdbcClient jdbc, Clock clock,
-            MeterRegistry meters) {
+            StoredFilePublisher publisher, ClassificationSnapshots classifications, IngestProperties properties,
+            JdbcClient jdbc, Clock clock, MeterRegistry meters) {
         this.archive = archive;
         this.subawards = subawards;
         this.store = store;
         this.publisher = publisher;
+        this.classifications = classifications;
         this.properties = properties;
         this.jdbc = jdbc;
         this.clock = clock;
@@ -76,7 +80,9 @@ class IngestRuns {
                 .query(UUID.class)
                 .single();
         try {
-            if (mode != Mode.REPLAY) {
+            if (mode == Mode.REPLAY) {
+                classifications.restore();
+            } else {
                 for (ArchiveFile file : archiveFiles(mode)) {
                     store.store(file.url(), runId);
                 }

@@ -9,6 +9,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.zntsns.awardtrace.ElasticsearchTestConfiguration;
 import com.zntsns.awardtrace.TestcontainersConfiguration;
+import com.zntsns.awardtrace.enrichment.ClassificationSnapshots;
 import com.zntsns.awardtrace.ingest.internal.IngestRuns.Mode;
 import com.zntsns.awardtrace.shared.KafkaTopics;
 import com.zntsns.awardtrace.shared.SearchIndexes;
@@ -74,6 +75,7 @@ class ReplayRebuildIT {
                 FROM award_transaction t""");
         TABLES.put("subaward", "SELECT subaward_key AS k, to_jsonb(t) - 'ingested_at' AS row FROM subaward t");
         TABLES.put("recipient_edge", "SELECT prime_uei || sub_uei AS k, to_jsonb(t) AS row FROM recipient_edge t");
+        TABLES.put("classification", "SELECT description_hash AS k, to_jsonb(t) AS row FROM classification t");
     }
 
     @SuppressWarnings("rawtypes")
@@ -102,6 +104,9 @@ class ReplayRebuildIT {
     IngestRuns runs;
 
     @Autowired
+    ClassificationSnapshots classifications;
+
+    @Autowired
     JdbcClient jdbc;
 
     @Autowired
@@ -122,6 +127,7 @@ class ReplayRebuildIT {
     void rebuildsPostgresqlAndTheIndexFromS3Alone() throws Exception {
         runs.run(Mode.BACKFILL);
         runs.run(Mode.DELTA);
+        classifyEveryDescription();
         Snapshot loaded = snapshotWhenQuiet();
         // Something to compare in every table and in the index.
         assertThat(loaded.tables().values()).noneMatch(table -> table.startsWith("0 rows"));
@@ -131,6 +137,19 @@ class ReplayRebuildIT {
         runs.run(Mode.REPLAY);
 
         assertThat(snapshotWhenQuiet()).isEqualTo(loaded);
+    }
+
+    /**
+     * What an enrichment run leaves: a category for each description, and a snapshot of them in S3. Classifications
+     * can't be rebuilt from the source files, so the replay must restore them from the snapshot (doc 09).
+     */
+    private void classifyEveryDescription() throws IOException {
+        jdbc.sql("""
+                INSERT INTO classification (description_hash, category, confidence, model, prompt_version)
+                SELECT DISTINCT description_hash, 'NATURAL_RESOURCES', 0.87, 'claude-haiku-4-5', 'v1'
+                FROM award WHERE description_hash IS NOT NULL
+                """).update();
+        classifications.write();
     }
 
     /** Every event consumed, every outbox row relayed, and every relayed change indexed. */
@@ -163,8 +182,10 @@ class ReplayRebuildIT {
 
     /** What a lost host looks like: an empty database, and an empty cluster in which the indexer creates the index. */
     private void wipe() throws Exception {
-        jdbc.sql("TRUNCATE award_transaction, award, recipient, agency, outbox, subaward, ingest_file, ingest_run")
-                .update();
+        jdbc.sql("""
+                TRUNCATE award_transaction, award, recipient, agency, outbox, subaward, classification, ingest_file,
+                         ingest_run
+                """).update();
         jdbc.sql("REFRESH MATERIALIZED VIEW recipient_edge").update();
         var indices = elasticsearch.indices().getAlias(request -> request.name(SearchIndexes.AWARDS)).aliases().keySet();
         elasticsearch.indices().delete(request -> request.index(List.copyOf(indices)));

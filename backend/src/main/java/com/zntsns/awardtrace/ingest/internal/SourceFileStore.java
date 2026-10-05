@@ -1,5 +1,6 @@
 package com.zntsns.awardtrace.ingest.internal;
 
+import com.zntsns.awardtrace.enrichment.ClassificationSnapshots;
 import com.zntsns.awardtrace.shared.S3Config.S3Properties;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,14 +101,18 @@ class SourceFileStore {
     }
 
     /**
-     * Every file under {@code raw/}, listed from S3 rather than {@code ingest_file}, so a replay rebuilds from S3 alone
-     * (ADR 0002). A file stored before objects carried their source URL takes it from its {@code ingest_file} row. A
-     * file the database has lost is recorded again under {@code runId}.
+     * Every source file under {@code raw/}, listed from S3 rather than {@code ingest_file}, so a replay rebuilds from
+     * S3 alone (ADR 0002). Classification snapshots share {@code raw/} but aren't source files. A file stored before
+     * objects carried their source URL takes it from its {@code ingest_file} row. A file the database has lost is
+     * recorded again under {@code runId}.
      */
     List<StoredFile> storedFiles(UUID runId) {
         var files = new ArrayList<StoredFile>();
         for (S3Object object : s3.listObjectsV2Paginator(request -> request.bucket(bucket).prefix("raw/")).contents()) {
             String key = object.key();
+            if (key.startsWith(ClassificationSnapshots.FOLDER)) {
+                continue;
+            }
             String sourceUrl = s3.headObject(request -> request.bucket(bucket).key(key)).metadata().get(SOURCE_URL);
             if (sourceUrl == null) {
                 sourceUrl = jdbc.sql("SELECT source_url FROM ingest_file WHERE s3_key = :key")
