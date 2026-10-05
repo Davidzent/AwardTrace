@@ -6,6 +6,11 @@
 # Create each secret once, before the first start; PostgreSQL keeps the password it first starts with:
 #   aws ssm put-parameter --type SecureString --name /awardtrace/postgres/password --value "$(openssl rand -hex 24)"
 #   aws ssm put-parameter --type SecureString --name /awardtrace/elasticsearch/password --value "$(openssl rand -hex 24)"
+#
+# The Anthropic API key is optional: without it the enricher can't call Claude, and the site keeps its PSC-based
+# categories (doc 09). This prompts for it, so it stays out of your shell history:
+#   read -rsp "Anthropic API key: " key && MSYS_NO_PATHCONV=1 aws ssm put-parameter --type SecureString \
+#     --name /awardtrace/anthropic/api-key --value "$key"; unset key
 set -euo pipefail
 
 env_file=${1:-/opt/awardtrace/.env}
@@ -19,8 +24,16 @@ parameter() {
     --query Parameter.Value --output text
 }
 
+# GetParameters reports a missing name instead of failing, so a key that was never created reads as empty, while any
+# other error still stops the script.
+optional_parameter() {
+  aws ssm get-parameters --region "$region" --names "/awardtrace/$1" --with-decryption \
+    --query 'Parameters[].Value' --output text
+}
+
 postgres_password=$(parameter postgres/password)
 elasticsearch_password=$(parameter elasticsearch/password)
+anthropic_api_key=$(optional_parameter anthropic/api-key)
 
 # Compose reads a single-quoted value literally, so a value can't itself hold a quote or a line break.
 line() {
@@ -43,6 +56,7 @@ trap 'rm -f "$tmp"' EXIT
   line AWARDTRACE_S3_BUCKET "awardtrace-raw-${account}"
   line POSTGRES_PASSWORD "$postgres_password"
   line ELASTICSEARCH_PASSWORD "$elasticsearch_password"
+  line ANTHROPIC_API_KEY "$anthropic_api_key"
 } > "$tmp"
 mv "$tmp" "$env_file"
 trap - EXIT
