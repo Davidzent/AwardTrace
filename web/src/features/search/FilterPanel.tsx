@@ -1,7 +1,7 @@
 import type { SearchQuery } from '../../api/client';
 import { FacetGroup } from '../../components/FacetGroup';
 import { RangeFilter } from '../../components/RangeFilter';
-import { FACETS, type Facets, selected, selecting } from './filters';
+import { CATEGORY_SOURCES, FACETS, type Facets, selected, selecting } from './filters';
 
 type Props = {
   query: SearchQuery;
@@ -10,8 +10,8 @@ type Props = {
 };
 
 /**
- * Every filter of the search page. The ranges stay usable while results load; a facet appears once it has values or
- * a selection, so the category facet waits for enrichment (Phase 5).
+ * Every filter of the search page. The ranges and the category source stay usable while results load; a facet appears
+ * once it has values or a selection.
  */
 export function FilterPanel({ query, facets, onChange }: Props) {
   return (
@@ -33,6 +33,24 @@ export function FilterPanel({ query, facets, onChange }: Props) {
           />
         );
       })}
+      <fieldset className="facet">
+        <legend>Category source</legend>
+        <ul>
+          {CATEGORY_SOURCES.map(({ value, label }) => (
+            <li key={label}>
+              <label>
+                <input
+                  type="radio"
+                  name="category_source"
+                  checked={query.category_source === value}
+                  onChange={() => onChange({ category_source: value })}
+                />
+                <span className="facet-label">{label}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      </fieldset>
       <RangeFilter
         key={`amount:${query.min_amount}:${query.max_amount}`}
         legend="Amount"
