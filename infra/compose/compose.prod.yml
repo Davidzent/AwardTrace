@@ -73,6 +73,9 @@ services:
       # The S3 client takes its credentials from the instance role, through IMDS.
       AWARDTRACE_S3_BUCKET: ${AWARDTRACE_S3_BUCKET:?run write-env.sh first}
       AWARDTRACE_S3_REGION: ${AWS_REGION}
+      # The Department of Agriculture only (ADR 0018), for the backfill, the weekly delta, and subawards. Quoted, or the
+      # code would become the number 12. To widen the scope, list more toptier agency codes, separated by commas.
+      AWARDTRACE_INGEST_AGENCIES: "012"
     logging: *logging
 
   caddy:
