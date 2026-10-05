@@ -26,7 +26,7 @@ class ProfileIsolationIT {
             "ingest", List.of("ingestRuns", "sourceFileStore", "storedFilePublisher", "subawardDownloads"),
             "pipeline", List.of("transactionListener", "subawardListener", "outboxRelay"),
             "indexer", List.of("awardIndexer", "awardsIndex"),
-            "enricher", List.of("classificationStore"),
+            "enricher", List.of("classificationStore", "groupClassifier", "anthropicClient"),
             "api", List.of("searchController", "awardController", "recipientController", "rateLimiting"));
 
     @Nested

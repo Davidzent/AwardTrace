@@ -22,6 +22,7 @@
         <spring-modulith.version>2.1.1</spring-modulith.version>
         <awssdk.version>2.55.7</awssdk.version>
         <springdoc.version>3.1.1</springdoc.version>
+        <anthropic-java.version>2.68.0</anthropic-java.version>
     </properties>
 
     <dependencyManagement>
@@ -110,6 +111,12 @@
                     <artifactId>netty-nio-client</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- The enricher's Claude client (doc 09). -->
+        <dependency>
+            <groupId>com.anthropic</groupId>
+            <artifactId>anthropic-java</artifactId>
+            <version>${anthropic-java.version}</version>
         </dependency>
 
         <dependency>
