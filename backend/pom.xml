@@ -206,6 +206,7 @@
                                         <include>com.zntsns.awardtrace.pipeline*</include>
                                         <include>com.zntsns.awardtrace.outbox*</include>
                                         <include>com.zntsns.awardtrace.indexer*</include>
+                                        <include>com.zntsns.awardtrace.enrichment*</include>
                                     </includes>
                                     <limits>
                                         <limit>
