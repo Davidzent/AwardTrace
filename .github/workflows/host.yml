@@ -1,0 +1,68 @@
+# Starts or stops the production host by hand (ADR 0017): for a demo outside the weekday hours, or before sending
+# someone a link. Run it from the Actions tab, on main, since the deploy role trusts main alone. Running it takes write
+# access to the repository. A host started this way stops itself after 30 idle minutes outside the weekday hours.
+name: Host
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to do with the production host
+        type: choice
+        options:
+          - start
+          - stop
+        default: start
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  host:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    # One request at a time, so a start and a stop can't race.
+    concurrency:
+      group: host
+      cancel-in-progress: false
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Start the host and wait for the site
+        if: inputs.action == 'start'
+        run: |
+          .github/scripts/start-host.sh > /dev/null
+          # The stack takes 3 to 5 minutes to answer after a boot.
+          for _ in $(seq 60); do
+            if curl -fsS -o /dev/null --max-time 10 https://awardtrace.zntsns.com/api/v1/status; then
+              echo "The site answers at https://awardtrace.zntsns.com"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::The host is running, but the site didn't answer within 10 minutes"
+          exit 1
+      # Stopping during a deploy would interrupt it, so check the Actions tab for a running Deploy first.
+      - name: Stop the host
+        if: inputs.action == 'stop'
+        run: |
+          instance=$(aws ec2 describe-instances \
+            --filters Name=tag:app,Values=awardtrace Name=instance-state-name,Values=pending,running \
+            --query 'Reservations[].Instances[].InstanceId' --output text)
+          if [ -z "$instance" ]; then
+            echo "The host is already stopped"
+            exit 0
+          fi
+          if [[ ! $instance =~ ^i-[0-9a-f]+$ ]]; then
+            echo "::error::Expected one host tagged app=awardtrace, found: ${instance}"
+            exit 1
+          fi
+          aws ec2 stop-instances --instance-ids "$instance" > /dev/null
+          aws ec2 wait instance-stopped --instance-ids "$instance"
+          echo "Stopped ${instance}"

@@ -77,6 +77,18 @@ module "compute" {
   alert_email       = var.alert_email
 }
 
+# Weekdays, 8:00 to 20:00 Pacific (ADR 0017). The start is 10 minutes early because the stack takes 3 to 5 minutes to
+# boot. infra/host/idle-stop.sh holds the same hours, so change both.
+module "schedule" {
+  source = "../../modules/schedule"
+
+  name        = local.name
+  instance_id = module.compute.instance_id
+  timezone    = "America/Los_Angeles"
+  start_cron  = "cron(50 7 ? * MON-FRI *)"
+  stop_cron   = "cron(0 20 ? * MON-FRI *)"
+}
+
 module "budget" {
   source = "../../modules/budget"
 
