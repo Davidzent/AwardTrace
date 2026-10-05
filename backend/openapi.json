@@ -771,6 +771,35 @@
           }
         }
       },
+      "EnrichmentStatus" : {
+        "type" : "object",
+        "properties" : {
+          "breaker_state" : {
+            "type" : "string"
+          },
+          "cache_hit_rate_pct" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "coverage_pct" : {
+            "type" : "number",
+            "format" : "double"
+          },
+          "daily_cap_usd" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          },
+          "enabled" : {
+            "type" : "boolean"
+          },
+          "spend_today_usd" : {
+            "type" : "string",
+            "format" : "decimal",
+            "example" : "4812000.00"
+          }
+        }
+      },
       "FacetValue" : {
         "type" : "object",
         "properties" : {
@@ -1241,6 +1270,9 @@
       "Status" : {
         "type" : "object",
         "properties" : {
+          "enrichment" : {
+            "$ref" : "#/components/schemas/EnrichmentStatus"
+          },
           "freshness" : {
             "$ref" : "#/components/schemas/Freshness"
           },

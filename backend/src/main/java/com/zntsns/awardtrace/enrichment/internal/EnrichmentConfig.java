@@ -2,6 +2,7 @@ package com.zntsns.awardtrace.enrichment.internal;
 
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.Clock;
 import java.time.Duration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,10 +32,10 @@ class EnrichmentConfig {
         return new CircuitBreaker(clock);
     }
 
-    /** Every request the live path sends goes through its spend controls. */
+    /** Every request the live path sends goes through its spend controls, and counts in its metrics. */
     @Bean
     GroupClassifier groupClassifier(AnthropicClassificationModel claude, SpendLedger ledger, CircuitBreaker breaker,
-            EnrichmentProperties properties, Clock clock) {
-        return new GroupClassifier(new SpendGuard(claude, ledger, breaker, properties.dailyCapUsd(), clock));
+            EnrichmentProperties properties, Clock clock, MeterRegistry meters) {
+        return new GroupClassifier(new SpendGuard(claude, ledger, breaker, properties.dailyCapUsd(), clock), meters);
     }
 }

@@ -7,6 +7,8 @@ import com.zntsns.awardtrace.enrichment.internal.ClassificationValidation.Answer
 import com.zntsns.awardtrace.enrichment.internal.ClassificationValidation.Checked;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationValidation.Rejected;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationValidation.Valid;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,9 +41,20 @@ class GroupClassifier {
     static final int ID_LENGTH = 12;
 
     private final ClassificationModel model;
+    private final MeterRegistry meters;
 
+    /** Counts nothing, for the one-off tasks, whose metrics end with their process. */
     GroupClassifier(ClassificationModel model) {
+        this(model, new SimpleMeterRegistry());
+    }
+
+    /**
+     * Counts each request it sends in {@code awardtrace.enricher.calls}, by how it ended (doc 11): {@code ok},
+     * {@code invalid} for a rejected or truncated answer, {@code refusal}, or {@code error}.
+     */
+    GroupClassifier(ClassificationModel model, MeterRegistry meters) {
         this.model = model;
+        this.meters = meters;
     }
 
     /** One classification for each distinct description hash, in the order the descriptions came. */
@@ -65,20 +78,42 @@ class GroupClassifier {
     }
 
     private List<Classification> attempt(List<Description> group, boolean retry) {
-        Reply reply = model.classify(group.stream().map(d -> new Item(id(d), d.text())).toList());
+        Reply reply = send(group.stream().map(d -> new Item(id(d), d.text())).toList());
         if (reply.stop() == Stop.REFUSAL) {
+            count("refusal");
             return unclassifiable(group, "REFUSAL");
         }
         if (reply.stop() == Stop.MAX_TOKENS && group.size() > 1) {
+            count("invalid");
             return halves(group);
         }
         return switch (checked(group, reply)) {
-            case Valid valid -> answered(group, valid);
+            case Valid valid -> {
+                count("ok");
+                yield answered(group, valid);
+            }
             case Rejected(String problem) -> {
+                count("invalid");
                 log.warn("Rejected the answer for {} descriptions: {}", group.size(), problem);
                 yield retry ? unclassifiable(group, "FAILED") : attempt(group, true);
             }
         };
+    }
+
+    /** A request the spend controls refuse was never sent, so only an error from the API counts. */
+    private Reply send(List<Item> items) {
+        try {
+            return model.classify(items);
+        } catch (SpendGuard.Refused e) {
+            throw e;
+        } catch (RuntimeException e) {
+            count("error");
+            throw e;
+        }
+    }
+
+    private void count(String result) {
+        meters.counter("awardtrace.enricher.calls", "result", result).increment();
     }
 
     /**

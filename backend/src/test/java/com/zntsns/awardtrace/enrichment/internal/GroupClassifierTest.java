@@ -1,12 +1,14 @@
 package com.zntsns.awardtrace.enrichment.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Item;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Reply;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Stop;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Usage;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -20,7 +22,8 @@ import org.junit.jupiter.api.Test;
 class GroupClassifierTest {
 
     private final ScriptedModel model = new ScriptedModel();
-    private final GroupClassifier classifier = new GroupClassifier(model);
+    private final SimpleMeterRegistry meters = new SimpleMeterRegistry();
+    private final GroupClassifier classifier = new GroupClassifier(model, meters);
 
     @Test
     void storesEachAnswerAndMarksVagueAnswers() {
@@ -122,6 +125,38 @@ class GroupClassifierTest {
         assertThat(model.requests()).containsExactly(1, 2);
         assertThat(classifications).extracting(Classification::descriptionHash)
                 .containsExactly(hash(0), hash(1), twin);
+    }
+
+    @Test
+    void countsEachRequestByHowItEnded() {
+        // The group of 4 is truncated; one half's answer is rejected and then accepted, and the other half is refused.
+        model.reply(items -> reply(Stop.MAX_TOKENS, null), items -> reply(Stop.COMPLETE, "{\"items\": []}"),
+                items -> answer(items, "OTHER"), items -> reply(Stop.REFUSAL, null));
+
+        classifier.classify(descriptions(4));
+
+        assertThat(calls("ok")).isEqualTo(1);
+        assertThat(calls("invalid")).isEqualTo(2);
+        assertThat(calls("refusal")).isEqualTo(1);
+        assertThat(calls("error")).isZero();
+    }
+
+    @Test
+    void countsAnErrorFromTheApiButNotARequestTheSpendControlsRefused() {
+        model.reply(items -> {
+            throw new IllegalStateException("Overloaded");
+        }, items -> {
+            throw new SpendGuard.Refused("The circuit breaker is open");
+        });
+
+        assertThatThrownBy(() -> classifier.classify(descriptions(1))).hasMessage("Overloaded");
+        assertThatThrownBy(() -> classifier.classify(descriptions(1))).isInstanceOf(SpendGuard.Refused.class);
+
+        assertThat(calls("error")).isEqualTo(1);
+    }
+
+    private double calls(String result) {
+        return meters.counter("awardtrace.enricher.calls", "result", result).count();
     }
 
     private static Reply reply(Stop stop, String answer) {

@@ -3,6 +3,7 @@ package com.zntsns.awardtrace.search.internal;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import com.zntsns.awardtrace.award.AwardQueries;
+import com.zntsns.awardtrace.enrichment.EnrichmentStatus;
 import com.zntsns.awardtrace.ingest.IngestHistory;
 import com.zntsns.awardtrace.outbox.OutboxQueries;
 import com.zntsns.awardtrace.shared.KafkaTopics;
@@ -12,6 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -34,7 +36,7 @@ class StatusController {
     private static final Logger log = LoggerFactory.getLogger(StatusController.class);
 
     record Status(IngestHistory.IngestStatus ingest, PipelineStatus pipeline, IndexStatus index,
-            Freshness freshness) {
+            EnrichmentStatus enrichment, Freshness freshness) {
     }
 
     /**
@@ -64,15 +66,18 @@ class StatusController {
     private final KafkaOffsets offsets;
     private final AwardQueries awards;
     private final ElasticsearchClient elasticsearch;
+    private final Optional<EnrichmentStatus.Reader> enrichment;
     private volatile Snapshot snapshot;
 
+    /** @param enrichment present only where the enricher runs in this process */
     StatusController(IngestHistory ingest, OutboxQueries outbox, KafkaOffsets offsets, AwardQueries awards,
-            ElasticsearchClient elasticsearch) {
+            ElasticsearchClient elasticsearch, Optional<EnrichmentStatus.Reader> enrichment) {
         this.ingest = ingest;
         this.outbox = outbox;
         this.offsets = offsets;
         this.awards = awards;
         this.elasticsearch = elasticsearch;
+        this.enrichment = enrichment;
     }
 
     @GetMapping("/api/v1/status")
@@ -89,6 +94,7 @@ class StatusController {
     private Status read() {
         var live = awards.liveAwards();
         return new Status(ingest.status(), pipeline(), index(live.count()),
+                enrichment.map(EnrichmentStatus.Reader::read).orElse(EnrichmentStatus.DISABLED),
                 new Freshness(live.latestSourceModifiedAt()));
     }
 
@@ -99,6 +105,10 @@ class StatusController {
             lag.put(KafkaTopics.PIPELINE_GROUP, offsets.lag(KafkaTopics.PIPELINE_GROUP, KafkaTopics.AWARD_TRANSACTIONS));
             lag.put(KafkaTopics.INDEXER_GROUP, offsets.lag(KafkaTopics.INDEXER_GROUP, KafkaTopics.AWARDS_CHANGED));
             lag.put(KafkaTopics.SUBAWARD_GROUP, offsets.lag(KafkaTopics.SUBAWARD_GROUP, KafkaTopics.SUBAWARDS));
+            if (enrichment.isPresent()) {
+                lag.put(KafkaTopics.ENRICHER_GROUP,
+                        offsets.lag(KafkaTopics.ENRICHER_GROUP, KafkaTopics.AWARDS_CHANGED));
+            }
             long deadLetters = offsets.retained(KafkaTopics.AWARD_TRANSACTIONS_DLT)
                     + offsets.retained(KafkaTopics.SUBAWARDS_DLT);
             return new PipelineStatus(true, lag, deadLetters, backlog);

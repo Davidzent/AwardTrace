@@ -1,7 +1,10 @@
 package com.zntsns.awardtrace.enrichment.internal;
 
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Usage;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -27,8 +30,13 @@ class SpendLedger {
 
     private final JdbcClient jdbc;
 
-    SpendLedger(JdbcClient jdbc) {
+    /** Gauges the live path's spend so far in the UTC day as {@code awardtrace.enricher.spend.usd}. */
+    SpendLedger(JdbcClient jdbc, Clock clock, MeterRegistry meters) {
         this.jdbc = jdbc;
+        Gauge.builder("awardtrace.enricher.spend.usd", this,
+                        ledger -> ledger.spent(LocalDate.now(clock), SpendGuard.LIVE).doubleValue())
+                .tag("period", "today")
+                .register(meters);
     }
 
     BigDecimal spent(LocalDate day, String path) {

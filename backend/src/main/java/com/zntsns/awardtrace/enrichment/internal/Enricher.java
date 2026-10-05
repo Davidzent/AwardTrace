@@ -1,5 +1,7 @@
 package com.zntsns.awardtrace.enrichment.internal;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.context.annotation.Profile;
@@ -39,11 +41,24 @@ class Enricher {
     private final JdbcClient jdbc;
     private final GroupClassifier classifier;
     private final ClassificationStore store;
+    private final Counter cacheHits;
+    private final Counter cacheMisses;
 
-    Enricher(JdbcClient jdbc, GroupClassifier classifier, ClassificationStore store) {
+    Enricher(JdbcClient jdbc, GroupClassifier classifier, ClassificationStore store, MeterRegistry meters) {
         this.jdbc = jdbc;
         this.classifier = classifier;
         this.store = store;
+        this.cacheHits = meters.counter("awardtrace.enricher.cache", "result", "hit");
+        this.cacheMisses = meters.counter("awardtrace.enricher.cache", "result", "miss");
+    }
+
+    /**
+     * The percentage of descriptions looked up since the process started that a classification already covered; null
+     * before the first lookup.
+     */
+    Double cacheHitRatePct() {
+        double lookups = cacheHits.count() + cacheMisses.count();
+        return lookups == 0 ? null : Math.round(1000 * cacheHits.count() / lookups) / 10.0;
     }
 
     /**
@@ -59,6 +74,8 @@ class Enricher {
                 .filter(row -> !row.classified())
                 .map(row -> new Description(row.hash(), row.text()))
                 .toList();
+        cacheHits.increment(rows.size() - uncached.size());
+        cacheMisses.increment(uncached.size());
         int awardsChanged = 0;
         for (int start = 0; start < uncached.size(); start += GroupClassifier.GROUP_SIZE) {
             var group = uncached.subList(start, Math.min(start + GroupClassifier.GROUP_SIZE, uncached.size()));
