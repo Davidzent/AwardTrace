@@ -24,6 +24,7 @@ public class KafkaTopics {
     public static final String PIPELINE_GROUP = "pipeline";
     public static final String INDEXER_GROUP = "indexer";
     public static final String SUBAWARD_GROUP = "subawards";
+    public static final String ENRICHER_GROUP = "enricher";
 
     // Fixed once chosen: changing it remaps award IDs to partitions. Dead-letter topics need the same
     // count, because the dead-letter recoverer writes to the record's original partition number.

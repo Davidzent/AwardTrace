@@ -28,7 +28,7 @@ class ProfileIsolationIT {
             "pipeline", List.of("transactionListener", "subawardListener", "outboxRelay"),
             "indexer", List.of("awardIndexer", "awardsIndex"),
             "enricher", List.of("classificationStore", "groupClassifier", "anthropicClient", "enricher", "spendLedger",
-                    "circuitBreaker"),
+                    "circuitBreaker", "enricherListener"),
             "api", List.of("searchController", "awardController", "recipientController", "rateLimiting"));
 
     @Nested

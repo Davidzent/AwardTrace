@@ -46,7 +46,10 @@ class Enricher {
         this.store = store;
     }
 
-    /** Classifies the descriptions of these awards that no classification covers yet, and stores the results. */
+    /**
+     * Classifies the descriptions of these awards that no classification covers yet, and stores the results a group
+     * at a time, so an error in a later group loses only that group's answers, never ones already paid for.
+     */
     Result enrich(Collection<String> awardIds) {
         if (awardIds.isEmpty()) {
             return new Result(0, 0, 0);
@@ -56,7 +59,11 @@ class Enricher {
                 .filter(row -> !row.classified())
                 .map(row -> new Description(row.hash(), row.text()))
                 .toList();
-        var stored = store.store(classifier.classify(uncached));
-        return new Result(rows.size() - uncached.size(), uncached.size(), stored.awardsChanged());
+        int awardsChanged = 0;
+        for (int start = 0; start < uncached.size(); start += GroupClassifier.GROUP_SIZE) {
+            var group = uncached.subList(start, Math.min(start + GroupClassifier.GROUP_SIZE, uncached.size()));
+            awardsChanged += store.store(classifier.classify(group)).awardsChanged();
+        }
+        return new Result(rows.size() - uncached.size(), uncached.size(), awardsChanged);
     }
 }
