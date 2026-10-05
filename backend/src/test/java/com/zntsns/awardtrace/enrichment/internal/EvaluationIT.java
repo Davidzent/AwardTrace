@@ -105,7 +105,8 @@ class EvaluationIT {
     }
 
     private Evaluation evaluation(BigDecimal cap) {
-        var properties = new EvalProperties(gold, dir.resolve("eval/results"), dir.resolve("docs/results.md"), cap);
+        var properties = new EvalProperties(gold.toString(), dir.resolve("eval/results").toString(),
+                dir.resolve("docs/results.md").toString(), cap);
         return new Evaluation(claude, jdbc, properties, CLOCK);
     }
 }

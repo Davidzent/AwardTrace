@@ -23,9 +23,10 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 /**
  * Production runs the enricher in the API's process (doc 13), so the status reports on it. This context is the only
- * one with both roles, so its counters start at zero.
+ * one with both roles, so its counters start at zero. It starts a real Tomcat, as production does: MockMvc's mock
+ * servlet context accepts what Tomcat rejects, such as a relative path that climbs above its root.
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles({"api", "enricher"})
 @Import({TestcontainersConfiguration.class, ElasticsearchTestConfiguration.class, FakeClaudeConfiguration.class})

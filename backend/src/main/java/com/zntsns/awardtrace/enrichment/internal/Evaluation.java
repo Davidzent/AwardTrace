@@ -58,7 +58,7 @@ class Evaluation {
     }
 
     EvalReport run() throws IOException {
-        List<GoldSet.Row> gold = GoldSet.read(properties.goldSet());
+        List<GoldSet.Row> gold = GoldSet.read(properties.goldSetFile());
         var budget = new EvalBudget(claude, properties.capUsd());
         Map<String, Classification> answers = new GroupClassifier(budget)
                 .classify(gold.stream().map(row -> new Description(row.descriptionHash(), row.description())).toList())
@@ -92,11 +92,11 @@ class Evaluation {
 
     /** Writes the report, then puts its row and the baseline's in the summary, replacing any from an earlier run. */
     private void write(EvalReport report) throws IOException {
-        Path reportFile = properties.reportDir().resolve(report.model() + "-" + report.promptVersion() + ".md");
-        Files.createDirectories(properties.reportDir());
+        Path reportFile = properties.reportDirectory().resolve(report.model() + "-" + report.promptVersion() + ".md");
+        Files.createDirectories(properties.reportDirectory());
         Files.writeString(reportFile, report.markdown(), StandardCharsets.UTF_8);
 
-        Path summary = properties.summary();
+        Path summary = properties.summaryFile();
         String link = summary.toAbsolutePath().getParent().relativize(reportFile.toAbsolutePath()).toString()
                 .replace(File.separatorChar, '/');
         var rows = new ArrayList<String>();
