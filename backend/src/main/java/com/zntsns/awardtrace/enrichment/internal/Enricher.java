@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 /**
  * Gives awards their categories (doc 09). A description is classified once, however many awards share it: the
  * {@code classification} table is the cache, so only descriptions it doesn't hold yet go to the model. A
- * {@code FAILED} classification counts as held; {@code enrich-retry-failed} reprocesses those. No database transaction
+ * {@code FAILED} classification counts as held; the next backfill run retries those. No database transaction
  * stays open while the model answers; the store opens its own.
  */
 @Component

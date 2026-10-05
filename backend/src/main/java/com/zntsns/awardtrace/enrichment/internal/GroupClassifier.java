@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  *   <li>A truncated answer splits the group in half, and each half is classified as a group of its own. A single
  *       description has no half, so its truncated answer counts as rejected.
  *   <li>A rejected answer is retried once. A second rejection makes the group {@code UNCLASSIFIABLE} with reason
- *       {@code FAILED}, for {@code enrich-retry-failed} to reprocess.
+ *       {@code FAILED}, which the next backfill run retries.
  *   <li>A valid answer gives each description its category. {@code UNCLASSIFIABLE} gets reason {@code VAGUE}.
  * </ul>
  *
@@ -84,7 +84,7 @@ class GroupClassifier {
     /**
      * What a reply means when there's no second attempt, as for a Message Batch request: a refusal makes the group
      * {@code REFUSAL}, a valid answer gives each description its category, and anything else makes the group
-     * {@code FAILED}, for {@code enrich-retry-failed} to reprocess.
+     * {@code FAILED}, which the next backfill run retries.
      */
     List<Classification> settled(List<Description> group, Reply reply) {
         if (reply.stop() == Stop.REFUSAL) {

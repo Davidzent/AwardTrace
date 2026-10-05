@@ -103,6 +103,23 @@ class BackfillIT {
     }
 
     @Test
+    void retriesDescriptionsWhoseClassificationFailedButNeverRefusals() throws Exception {
+        saveAward(jdbc, "CONT_AWD_A", 1, "1000.00", false);
+        saveAward(jdbc, "CONT_AWD_B", 1, "1000.00", false);
+        describe(jdbc, FIRST, "CONT_AWD_A");
+        describe(jdbc, SECOND, "CONT_AWD_B");
+        store.store(List.of(
+                new Classification(FIRST, "UNCLASSIFIABLE", null, "FAILED", "claude-haiku-4-5", "v1"),
+                new Classification(SECOND, "UNCLASSIFIABLE", null, "REFUSAL", "claude-haiku-4-5", "v1")));
+
+        backfill("1.00", 200).run();
+
+        assertThat(claude.batches()).singleElement()
+                .satisfies(batch -> assertThat(batch.requests().values()).containsExactly(List.of(id(FIRST))));
+        assertThat(categories()).containsExactly(FIRST + " OTHER", SECOND + " UNCLASSIFIABLE");
+    }
+
+    @Test
     void submitsTheGroupsInBatchesOfTheConfiguredSize() throws Exception {
         // 26 descriptions make a group of 25 and a group of 1.
         IntStream.range(0, 26).forEach(i -> {

@@ -22,7 +22,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Classifies every description no classification covers, through Message Batches at half price (doc 09). Each batch
+ * Classifies every description no classification covers, and retries each whose classification {@code FAILED}, through
+ * Message Batches at half price (doc 09). Each batch
  * carries up to {@code requestsPerBatch} groups of 25, and its requests are recorded in
  * {@code enrichment_batch_request} before it's submitted. A run that stops partway, because the host stopped or the
  * task failed, leaves them there, and the next run waits for those batches and stores their results before it submits
@@ -60,7 +61,9 @@ class Backfill {
             SELECT DISTINCT ON (a.description_hash) a.description_hash AS hash, a.description AS text
             FROM award a
             WHERE a.deleted_at IS NULL AND a.description_hash IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM classification c WHERE c.description_hash = a.description_hash)
+              -- FAILED means try again: a group whose answer was cut off or didn't validate.
+              AND NOT EXISTS (SELECT 1 FROM classification c
+                              WHERE c.description_hash = a.description_hash AND c.reason_code IS DISTINCT FROM 'FAILED')
             ORDER BY a.description_hash, a.award_id
             """;
 
