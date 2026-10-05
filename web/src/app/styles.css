@@ -746,7 +746,8 @@ legend {
   color: var(--danger);
 }
 
-.is-unknown .condition {
+.is-unknown .condition,
+.is-off .condition {
   color: var(--muted);
 }
 

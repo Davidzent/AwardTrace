@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { freshnessCondition, indexCondition, ingestCondition, pipelineCondition } from './conditions';
+import {
+  enrichmentCondition,
+  freshnessCondition,
+  indexCondition,
+  ingestCondition,
+  pipelineCondition,
+} from './conditions';
 
 const NOW = Date.parse('2026-09-29T12:00:00Z');
 
@@ -24,6 +30,14 @@ describe('conditions', () => {
     expect(indexCondition({ available: true, document_count: 61204, award_row_count: 61204 })).toBe('OK');
     expect(indexCondition({ available: true, document_count: 0, award_row_count: 61204 })).toBe('Degraded');
     expect(indexCondition({ available: false, award_row_count: 61204 })).toBe('Down');
+  });
+
+  it('reads the enricher from its breaker, and says when it is off', () => {
+    expect(enrichmentCondition({ enabled: true, breaker_state: 'CLOSED' })).toBe('OK');
+    expect(enrichmentCondition({ enabled: true, breaker_state: 'HALF_OPEN' })).toBe('Degraded');
+    expect(enrichmentCondition({ enabled: true, breaker_state: 'OPEN' })).toBe('Down');
+    expect(enrichmentCondition({ enabled: false })).toBe('Off');
+    expect(enrichmentCondition(undefined)).toBe('Unknown');
   });
 
   it('expects a source change within 45 days', () => {
