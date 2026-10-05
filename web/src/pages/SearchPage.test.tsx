@@ -28,6 +28,12 @@ const RESULTS: Schemas['SearchResults'] = {
       category: { code: 'LOGISTICS_TRANSPORT', label: 'Logistics and transport', source: 'baseline' },
       subaward_count: 2,
     },
+    {
+      award_id: 'CONT_AWD_SURVEY',
+      description: 'Cadastral survey of the Hidden Hollow tract',
+      total_obligated: '55000.00',
+      category: { code: 'ENGINEERING_RESEARCH', label: 'Engineering and research', source: 'llm' },
+    },
   ],
 };
 
@@ -61,7 +67,23 @@ describe('SearchPage', () => {
     expect(screen.getByText('$4.8M')).toBeDefined();
     expect(screen.getByText('2 reported subawards')).toBeDefined();
     expect(screen.getByText('Logistics and transport')).toBeDefined();
+    // Only the classifier's category carries the AI badge.
+    expect(screen.getAllByText('AI')).toHaveLength(1);
+    expect(screen.getByText('Engineering and research').nextElementSibling?.getAttribute('title')).toBe(
+      'Assigned by a language model from the description, so it can be wrong',
+    );
     expect(screen.getByRole('link', { name: 'Page 3' }).getAttribute('href')).toBe('/?q=helicopter&page=3');
+  });
+
+  it('filters by category source, and returns to page 1', async () => {
+    const { router } = renderAt('/?q=fire&page=3', () => Response.json(RESULTS));
+
+    fireEvent.click(await screen.findByRole('radio', { name: 'AI only' }));
+
+    await waitFor(() => expect(router.state.location.search).toBe('?q=fire&category_source=llm'));
+    expect(await screen.findByRole('link', { name: 'Remove filter: AI categories only' })).toBeDefined();
+    fireEvent.click(screen.getByRole('radio', { name: 'All' }));
+    await waitFor(() => expect(router.state.location.search).toBe('?q=fire'));
   });
 
   it('puts a new keyword in the URL and returns to page 1', async () => {

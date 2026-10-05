@@ -2,6 +2,7 @@ package com.zntsns.awardtrace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.zntsns.awardtrace.enrichment.internal.FakeClaudeConfiguration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Nested;
@@ -26,6 +27,8 @@ class ProfileIsolationIT {
             "ingest", List.of("ingestRuns", "sourceFileStore", "storedFilePublisher", "subawardDownloads"),
             "pipeline", List.of("transactionListener", "subawardListener", "outboxRelay"),
             "indexer", List.of("awardIndexer", "awardsIndex"),
+            "enricher", List.of("classificationStore", "groupClassifier", "anthropicClient", "enricher", "spendLedger",
+                    "circuitBreaker", "enricherListener", "backfill", "statusReader"),
             "api", List.of("searchController", "awardController", "recipientController", "rateLimiting"));
 
     @Nested
@@ -61,6 +64,18 @@ class ProfileIsolationIT {
         @Test
         void loadsOnlyIndexerBeans(@Autowired ApplicationContext context) {
             assertLoadsOnly("indexer", context);
+        }
+    }
+
+    @Nested
+    @SpringBootTest
+    @ActiveProfiles("enricher")
+    @Import({TestcontainersConfiguration.class, FakeClaudeConfiguration.class})
+    class Enricher {
+
+        @Test
+        void loadsOnlyEnricherBeans(@Autowired ApplicationContext context) {
+            assertLoadsOnly("enricher", context);
         }
     }
 

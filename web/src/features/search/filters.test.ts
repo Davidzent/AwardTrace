@@ -27,6 +27,12 @@ describe('activeFilters', () => {
     ]);
     expect(chips[0]?.href).toBe('?from=2026-01-01&to=2026-03-31');
   });
+
+  it('names the category source chosen', () => {
+    expect(activeFilters({ q: 'fire', category_source: 'llm' }, undefined)).toEqual([
+      { key: 'category-source', label: 'AI categories only', href: '?q=fire' },
+    ]);
+  });
 });
 
 describe('selecting', () => {

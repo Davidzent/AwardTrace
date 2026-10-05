@@ -106,6 +106,10 @@ class StatusControllerIT {
         json.extractingPath("$.index.alias_target").isEqualTo("awards-v1");
         json.extractingPath("$.index.document_count").isEqualTo(0);
         json.extractingPath("$.index.award_row_count").isEqualTo(1);
+        // The enricher doesn't run in this process: its section says so, and its consumer group isn't listed.
+        json.extractingPath("$.enrichment.enabled").isEqualTo(false);
+        json.extractingPath("$.enrichment.breaker_state").isNull();
+        json.extractingPath("$.pipeline.lag").asMap().doesNotContainKey(KafkaTopics.ENRICHER_GROUP);
         json.extractingPath("$.freshness.latest_source_modified_at").isNotNull();
 
         saveAward(jdbc, "CONT_AWD_NEWER", 1, "10.00", false);

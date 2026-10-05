@@ -13,6 +13,14 @@ const STATUS: Schemas['Status'] = {
   },
   pipeline: { available: true, lag: { pipeline: 0, indexer: 12 }, dead_letters: 0, outbox_backlog: { count: 0 } },
   index: { available: false, award_row_count: 61204 },
+  enrichment: {
+    enabled: true,
+    breaker_state: 'HALF_OPEN',
+    coverage_pct: 97.4,
+    cache_hit_rate_pct: 88.1,
+    spend_today_usd: '0.14',
+    daily_cap_usd: '1.00',
+  },
   freshness: { latest_source_modified_at: new Date().toISOString() },
 };
 
@@ -37,9 +45,19 @@ describe('StatusPage', () => {
     expect(await screen.findByRole('region', { name: 'Ingest: Degraded' })).toBeDefined();
     expect(screen.getByRole('region', { name: 'Pipeline: OK' })).toBeDefined();
     expect(screen.getByRole('region', { name: 'Index: Down' })).toBeDefined();
+    expect(screen.getByRole('region', { name: 'Enrichment: Degraded' })).toBeDefined();
     expect(screen.getByRole('region', { name: 'Freshness: OK' })).toBeDefined();
     expect(screen.getByText('indexer lag')).toBeDefined();
     expect(screen.getByText("Elasticsearch didn't answer.")).toBeDefined();
+    expect(screen.getByText('half-open')).toBeDefined();
+    expect(screen.getByText('97.4%')).toBeDefined();
+    expect(screen.getByText('$0.14')).toBeDefined();
+  });
+
+  it('says when the classifier is off', async () => {
+    renderStatus(() => Response.json({ ...STATUS, enrichment: { enabled: false } }));
+
+    expect(await screen.findByRole('region', { name: 'Enrichment: Off' })).toBeDefined();
   });
 
   it('says the status is unavailable without taking the page down', async () => {

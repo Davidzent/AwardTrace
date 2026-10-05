@@ -62,8 +62,28 @@ describe('AwardPage', () => {
     expect(screen.getByText('Jul 16, 2026 to Sep 30, 2026')).toBeDefined();
     expect(screen.getByText('-$27,500.00')).toBeDefined();
     expect(screen.getAllByText('Deobligation')).toHaveLength(1);
-    expect(screen.getByText('Other').nextSibling?.textContent).toBe(' PSC-based');
+    expect(screen.getByText('Other').parentElement?.nextSibling?.textContent).toBe(' PSC-based');
+    expect(screen.queryByText('AI')).toBeNull();
     expect(screen.getByRole('link', { name: 'View recipient →' }).getAttribute('href')).toBe('/recipients/MN5KRX2W9R46');
+  });
+
+  it("shows the classifier's category with its confidence beside the PSC-based one", async () => {
+    const category = {
+      code: 'NATURAL_RESOURCES',
+      label: 'Natural resources and environment',
+      source: 'llm',
+      confidence: 0.91,
+      model: 'claude-haiku-4-5',
+      prompt_version: 'v1',
+      baseline_code: 'OTHER',
+      baseline_label: 'Other',
+    };
+    renderAward(() => Response.json({ ...AWARD, category }));
+
+    expect(await screen.findByText('Natural resources and environment')).toBeDefined();
+    expect(screen.getByText('AI')).toBeDefined();
+    expect(screen.getByText('confidence 0.91')).toBeDefined();
+    expect(screen.getByText('PSC-based: Other')).toBeDefined();
   });
 
   it('says when no subawards are reported, without asking for them', async () => {

@@ -581,6 +581,11 @@ legend {
   font-size: 0.75rem;
 }
 
+.badge-ai {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .source {
   margin-top: 1.5rem;
   font-size: 0.9rem;
@@ -746,7 +751,8 @@ legend {
   color: var(--danger);
 }
 
-.is-unknown .condition {
+.is-unknown .condition,
+.is-off .condition {
   color: var(--muted);
 }
 

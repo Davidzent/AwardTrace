@@ -41,15 +41,32 @@ class SchemaMigrationIT {
 
         assertThat(tables).containsExactlyInAnyOrder(
                 "agency", "recipient", "award", "award_transaction", "outbox", "ingest_run", "ingest_file",
-                "subaward", "taxonomy_category", "psc_baseline_map");
+                "subaward", "taxonomy_category", "psc_baseline_map", "classification", "enrichment_spend",
+                "enrichment_batch_request");
     }
 
     @Test
-    void seedsTheThirteenCategoriesInDisplayOrder() {
+    void acceptsAReasonCodeOnlyOnAnUnclassifiableDescription() {
+        insertClassification("1", "NATURAL_RESOURCES", null);
+        insertClassification("2", "UNCLASSIFIABLE", "VAGUE");
+
+        assertThatThrownBy(() -> insertClassification("3", "NATURAL_RESOURCES", "FAILED"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void requiresAReasonCodeOnAnUnclassifiableDescription() {
+        assertThatThrownBy(() -> insertClassification("4", "UNCLASSIFIABLE", null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void seedsTheFourteenCategoriesInDisplayOrder() {
         assertThat(jdbc.sql("SELECT code FROM taxonomy_category ORDER BY sort_order").query(String.class).list())
                 .containsExactly("IT_SOFTWARE", "IT_INFRASTRUCTURE", "CYBERSECURITY", "PROFESSIONAL_SERVICES",
                         "ENGINEERING_RESEARCH", "CONSTRUCTION_FACILITIES", "HEALTH_MEDICAL", "DEFENSE_SYSTEMS",
-                        "LOGISTICS_TRANSPORT", "SUPPLIES_EQUIPMENT", "TRAINING_EDUCATION", "OTHER", "UNCLASSIFIABLE");
+                        "LOGISTICS_TRANSPORT", "SUPPLIES_EQUIPMENT", "TRAINING_EDUCATION", "NATURAL_RESOURCES",
+                        "OTHER", "UNCLASSIFIABLE");
     }
 
     @Test
@@ -71,7 +88,8 @@ class SchemaMigrationIT {
         assertThat(baselineCategoryOf("2350")).isEqualTo("DEFENSE_SYSTEMS");
         assertThat(baselineCategoryOf("R425")).isEqualTo("ENGINEERING_RESEARCH");
         assertThat(baselineCategoryOf("R408")).isEqualTo("PROFESSIONAL_SERVICES");
-        assertThat(baselineCategoryOf("F003")).isEqualTo("OTHER");
+        assertThat(baselineCategoryOf("F003")).isEqualTo("NATURAL_RESOURCES");
+        assertThat(baselineCategoryOf("G004")).isEqualTo("OTHER");
         assertThat(baselineCategoryOf(null)).isNull();
     }
 
@@ -127,6 +145,18 @@ class SchemaMigrationIT {
                 .param("awardId", awardId)
                 .param("uei", UEI)
                 .param("date", lastActionDate)
+                .update();
+    }
+
+    /** A classification whose description hash repeats {@code hashDigit} 64 times. */
+    private void insertClassification(String hashDigit, String category, String reasonCode) {
+        jdbc.sql("""
+                INSERT INTO classification (description_hash, category, reason_code, model, prompt_version)
+                VALUES (repeat(:digit, 64), :category, CAST(:reasonCode AS text), 'claude-haiku-4-5', 'v1')
+                """)
+                .param("digit", hashDigit)
+                .param("category", category)
+                .param("reasonCode", reasonCode)
                 .update();
     }
 

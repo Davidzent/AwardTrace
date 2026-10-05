@@ -76,6 +76,8 @@ services:
       # The Department of Agriculture only (ADR 0018), for the backfill, the weekly delta, and subawards. Quoted, or the
       # code would become the number 12. To widen the scope, list more toptier agency codes, separated by commas.
       AWARDTRACE_INGEST_AGENCIES: "012"
+      # Read only by the enricher's Claude client; empty until /awardtrace/anthropic/api-key exists (doc 09).
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     logging: *logging
 
   caddy:

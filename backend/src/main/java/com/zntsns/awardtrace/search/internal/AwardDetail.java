@@ -1,6 +1,7 @@
 package com.zntsns.awardtrace.search.internal;
 
 import com.zntsns.awardtrace.award.AwardQueries.AwardWithTransactions;
+import com.zntsns.awardtrace.award.AwardQueries.ModelCategory;
 import com.zntsns.awardtrace.award.AwardQueries.SubawardSummary;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -9,8 +10,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * The body of {@code GET /api/v1/awards/{award_id}} (doc 07). Until the classifier runs (Phase 5), the category is
- * the PSC baseline.
+ * The body of {@code GET /api/v1/awards/{award_id}} (doc 07).
  */
 record AwardDetail(
         String awardId,
@@ -70,10 +70,12 @@ record AwardDetail(
             BigDecimal federalActionObligation, String description) {
     }
 
-    /** @param labels the taxonomy's label for a category code */
-    static AwardDetail of(AwardWithTransactions found, Function<String, String> labels) {
+    /**
+     * @param labels the taxonomy's label for a category code
+     * @param llmDefault whether the classifier's category is the site's default (CategorySource)
+     */
+    static AwardDetail of(AwardWithTransactions found, Function<String, String> labels, boolean llmDefault) {
         var award = found.award();
-        String baseline = award.baselineCategory();
         var subtier = award.awardingSubtier();
         var funding = award.fundingToptier();
         return new AwardDetail(
@@ -94,8 +96,7 @@ record AwardDetail(
                 award.popStateCode(),
                 new Code(award.naicsCode(), award.naicsDescription()),
                 new Code(award.pscCode(), award.pscDescription()),
-                baseline == null ? null : new CategoryDetail(baseline, labels.apply(baseline), "baseline", null, null,
-                        null, baseline, labels.apply(baseline)),
+                category(found.classification(), award.baselineCategory(), llmDefault, labels),
                 new Period(award.popStartDate(), award.popEndDate()),
                 new Place(award.popStateCode(), award.popCountryCode()),
                 found.transactions().stream()
@@ -107,5 +108,21 @@ record AwardDetail(
                 found.subawards(),
                 award.sourceModifiedAt(),
                 "https://www.usaspending.gov/award/" + award.awardId() + "/");
+    }
+
+    /**
+     * The classifier's category when it's the default and it named one of the 13 real categories, otherwise the PSC
+     * baseline: the rule the indexer applies (CategorySource). Null when neither gives a category.
+     */
+    static CategoryDetail category(ModelCategory model, String baseline, boolean llmDefault,
+            Function<String, String> labels) {
+        String baselineLabel = baseline == null ? null : labels.apply(baseline);
+        if (llmDefault && model != null && !model.category().equals("UNCLASSIFIABLE")) {
+            return new CategoryDetail(model.category(), labels.apply(model.category()), "llm",
+                    model.confidence() == null ? null : model.confidence().doubleValue(), model.model(),
+                    model.promptVersion(), baseline, baselineLabel);
+        }
+        return baseline == null ? null
+                : new CategoryDetail(baseline, baselineLabel, "baseline", null, null, null, baseline, baselineLabel);
     }
 }

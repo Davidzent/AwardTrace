@@ -1,7 +1,7 @@
 import type { Schemas } from '../../api/client';
 
 /** Every status tile states its condition in a word as well as in color (doc 08). */
-export type Condition = 'OK' | 'Degraded' | 'Down' | 'Unknown';
+export type Condition = 'OK' | 'Degraded' | 'Down' | 'Off' | 'Unknown';
 
 const MINUTE = 60_000;
 const DAY = 24 * 60 * MINUTE;
@@ -40,6 +40,29 @@ export function indexCondition(index: Schemas['IndexStatus'] | undefined): Condi
     return 'Down';
   }
   return index.document_count === index.award_row_count ? 'OK' : 'Degraded';
+}
+
+/**
+ * An open breaker, after errors or at the daily cap, classifies nothing until it half-opens to make one trial call.
+ * Meanwhile new descriptions keep their PSC-based category.
+ */
+export function enrichmentCondition(enrichment: Schemas['EnrichmentStatus'] | undefined): Condition {
+  if (!enrichment) {
+    return 'Unknown';
+  }
+  if (!enrichment.enabled) {
+    return 'Off';
+  }
+  switch (enrichment.breaker_state) {
+    case 'CLOSED':
+      return 'OK';
+    case 'HALF_OPEN':
+      return 'Degraded';
+    case 'OPEN':
+      return 'Down';
+    default:
+      return 'Unknown';
+  }
 }
 
 /** USAspending republishes monthly, so a newest change older than 45 days means ingest has stopped keeping up. */

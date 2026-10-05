@@ -27,6 +27,8 @@ public class Award {
     private String parentPiid;
     private String awardType;
     private String description;
+    // Keys the classifier's category for the description (doc 09).
+    private String descriptionHash;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "awarding_toptier_code")
@@ -93,6 +95,10 @@ public class Award {
 
     public String description() {
         return description;
+    }
+
+    public String descriptionHash() {
+        return descriptionHash;
     }
 
     public Agency awardingToptier() {

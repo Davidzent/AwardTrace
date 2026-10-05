@@ -14,6 +14,13 @@ export const FACETS: { name: FacetName; title: string; chip: (value: string, lab
   { name: 'fiscal_year', title: 'Fiscal year', chip: (value) => `FY${value}` },
 ];
 
+/** Where the category came from (doc 08); All sends no category_source. */
+export const CATEGORY_SOURCES: { value: string | undefined; label: string; chip: string }[] = [
+  { value: undefined, label: 'All', chip: '' },
+  { value: 'llm', label: 'AI only', chip: 'AI categories only' },
+  { value: 'baseline', label: 'PSC-based only', chip: 'PSC-based categories only' },
+];
+
 export function selected(query: SearchQuery, name: FacetName): string[] {
   return (query[name] ?? []).map(String);
 }
@@ -57,6 +64,13 @@ export function activeFilters(query: SearchQuery, facets: Facets): Chip[] {
       key: 'last-action',
       label: range('Last action', query.from && formatDate(query.from), query.to && formatDate(query.to)),
       href: searchHref(query, { from: undefined, to: undefined }),
+    });
+  }
+  if (query.category_source) {
+    chips.push({
+      key: 'category-source',
+      label: CATEGORY_SOURCES.find((source) => source.value === query.category_source)?.chip ?? query.category_source,
+      href: searchHref(query, { category_source: undefined }),
     });
   }
   return chips;

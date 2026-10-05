@@ -51,16 +51,7 @@ export function AwardDetail({ award }: { award: Schemas['AwardDetail'] }) {
             <dt>PSC</dt>
             <dd>{code(psc)}</dd>
             <dt>Category</dt>
-            <dd>
-              {award.category ? (
-                <>
-                  <CategoryBadge category={award.category} />
-                  {award.category.source === 'baseline' && <span className="muted"> PSC-based</span>}
-                </>
-              ) : (
-                '—'
-              )}
-            </dd>
+            <dd>{award.category ? <CategoryBlock category={award.category} /> : '—'}</dd>
             <dt>Funding agency</dt>
             <dd>{award.funding_agency?.name ?? '—'}</dd>
             <dt>Fiscal year</dt>
@@ -95,6 +86,27 @@ export function AwardDetail({ award }: { award: Schemas['AwardDetail'] }) {
         )}
       </footer>
     </article>
+  );
+}
+
+/** The classifier's category with its confidence next to the PSC-based one, so the reader can compare (doc 08). */
+function CategoryBlock({ category }: { category: Schemas['CategoryDetail'] }) {
+  if (category.source !== 'llm') {
+    return (
+      <>
+        <CategoryBadge category={category} />
+        <span className="muted"> PSC-based</span>
+      </>
+    );
+  }
+  return (
+    <>
+      <CategoryBadge category={category} />
+      {typeof category.confidence === 'number' && (
+        <span className="muted"> confidence {category.confidence.toFixed(2)}</span>
+      )}
+      {category.baseline_label && <div className="muted">PSC-based: {category.baseline_label}</div>}
+    </>
   );
 }
 

@@ -2,18 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { StatusTile } from '../components/StatusTile';
 import {
+  enrichmentCondition,
   freshnessCondition,
   indexCondition,
   ingestCondition,
   pipelineCondition,
 } from '../features/status/conditions';
-import { formatCount, formatTime } from '../lib/format';
+import { formatCount, formatMoney, formatTime } from '../lib/format';
 import { useNow } from '../lib/useNow';
 
-/**
- * Polls every 15 seconds, the time the API caches the status for (doc 07). Polling pauses while the tab is hidden.
- * Enrichment arrives with Phase 5.
- */
+/** Polls every 15 seconds, the time the API caches the status for (doc 07). Polling pauses while the tab is hidden. */
 export function StatusPage() {
   const status = useQuery({
     queryKey: ['status'],
@@ -21,7 +19,7 @@ export function StatusPage() {
     refetchInterval: 15_000,
   });
   const now = useNow();
-  const { ingest, pipeline, index, freshness } = status.data ?? {};
+  const { ingest, pipeline, index, enrichment, freshness } = status.data ?? {};
   const run = ingest?.last_run;
 
   return (
@@ -49,7 +47,7 @@ export function StatusPage() {
           <p className="visually-hidden" role="status">
             Loading status
           </p>
-          {Array.from({ length: 4 }, (_, i) => (
+          {Array.from({ length: 5 }, (_, i) => (
             <div key={i} className="skeleton-block skeleton-panel" aria-hidden="true" />
           ))}
         </div>
@@ -103,6 +101,20 @@ export function StatusPage() {
             {!index?.available && <p>Elasticsearch didn't answer.</p>}
           </StatusTile>
 
+          <StatusTile title="Enrichment" condition={enrichmentCondition(enrichment)}>
+            {enrichment?.enabled ? (
+              <dl className="facts">
+                <Fact term="Breaker" value={(enrichment.breaker_state ?? '').toLowerCase().replace('_', '-')} />
+                <Fact term="Coverage" value={percent(enrichment.coverage_pct)} />
+                <Fact term="Cache hit rate" value={percent(enrichment.cache_hit_rate_pct)} />
+                <Fact term="Spent today" value={formatMoney(enrichment.spend_today_usd ?? '0')} />
+                <Fact term="Daily cap" value={formatMoney(enrichment.daily_cap_usd ?? '0')} />
+              </dl>
+            ) : (
+              <p>The classifier isn't running, so new descriptions keep their PSC-based category.</p>
+            )}
+          </StatusTile>
+
           <StatusTile title="Freshness" condition={freshnessCondition(freshness, now)}>
             <dl className="facts">
               <Fact
@@ -124,6 +136,11 @@ function Fact({ term, value }: { term: string; value: string }) {
       <dd className="num-value">{value}</dd>
     </>
   );
+}
+
+/** 97.4%, or a dash for the null the API sends before there's anything to measure. */
+function percent(value: number | undefined): string {
+  return typeof value === 'number' ? `${value.toFixed(1)}%` : '—';
 }
 
 function ago(milliseconds: number): string {

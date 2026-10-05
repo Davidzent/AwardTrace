@@ -22,6 +22,7 @@
         <spring-modulith.version>2.1.1</spring-modulith.version>
         <awssdk.version>2.55.10</awssdk.version>
         <springdoc.version>3.1.1</springdoc.version>
+        <anthropic-java.version>2.68.0</anthropic-java.version>
     </properties>
 
     <dependencyManagement>
@@ -111,6 +112,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- The enricher's Claude client (doc 09). -->
+        <dependency>
+            <groupId>com.anthropic</groupId>
+            <artifactId>anthropic-java</artifactId>
+            <version>${anthropic-java.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -199,6 +206,7 @@
                                         <include>com.zntsns.awardtrace.pipeline*</include>
                                         <include>com.zntsns.awardtrace.outbox*</include>
                                         <include>com.zntsns.awardtrace.indexer*</include>
+                                        <include>com.zntsns.awardtrace.enrichment*</include>
                                     </includes>
                                     <limits>
                                         <limit>

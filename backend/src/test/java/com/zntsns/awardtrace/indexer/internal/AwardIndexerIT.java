@@ -10,6 +10,7 @@ import com.zntsns.awardtrace.ElasticsearchTestConfiguration;
 import com.zntsns.awardtrace.TestcontainersConfiguration;
 import com.zntsns.awardtrace.indexer.internal.AwardIndexer.Result;
 import com.zntsns.awardtrace.outbox.AwardChanged;
+import com.zntsns.awardtrace.shared.CategorySource;
 import com.zntsns.awardtrace.shared.EventCodec;
 import com.zntsns.awardtrace.shared.EventEnvelope;
 import com.zntsns.awardtrace.shared.KafkaTopics;
@@ -108,6 +109,40 @@ class AwardIndexerIT {
                 .containsEntry("baseline_category", "CYBERSECURITY");
         assertThat(document("CONT_AWD_INDEXER_NO_PSC").source())
                 .doesNotContainKeys("category", "category_source", "baseline_category");
+    }
+
+    @Test
+    void usesTheClassifiersCategoryOnlyWhenItIsTheDefault() throws Exception {
+        List<String> awards = List.of("CONT_AWD_INDEXER_CLASSIFIED", "CONT_AWD_INDEXER_VAGUE");
+        awards.forEach(award -> AwardRows.saveAward(jdbc, award, 1, "10.00", false));
+        jdbc.sql("UPDATE award SET psc_code = 'DJ01' WHERE award_id IN (:awards)").param("awards", awards).update();
+        AwardRows.describe(jdbc, "a".repeat(64), "CONT_AWD_INDEXER_CLASSIFIED");
+        AwardRows.describe(jdbc, "b".repeat(64), "CONT_AWD_INDEXER_VAGUE");
+        jdbc.sql("""
+                INSERT INTO classification (description_hash, category, confidence, reason_code, model, prompt_version)
+                VALUES (:a, 'IT_SOFTWARE', 0.91, NULL, 'claude-haiku-4-5', 'v1'),
+                       (:b, 'UNCLASSIFIABLE', 0.40, 'VAGUE', 'claude-haiku-4-5', 'v1')
+                """).param("a", "a".repeat(64)).param("b", "b".repeat(64)).update();
+
+        // The configured default, llm, takes the classifier's category.
+        indexer.index(awards);
+        assertThat(document("CONT_AWD_INDEXER_CLASSIFIED").source())
+                .containsEntry("category", "IT_SOFTWARE")
+                .containsEntry("category_source", "llm")
+                .containsEntry("baseline_category", "CYBERSECURITY");
+        assertThat(document("CONT_AWD_INDEXER_VAGUE").source())
+                .as("a description the classifier couldn't place keeps its PSC category")
+                .containsEntry("category", "CYBERSECURITY")
+                .containsEntry("category_source", "baseline");
+
+        // A newer version, so the second write isn't rejected as stale.
+        jdbc.sql("UPDATE award SET index_version = 2 WHERE award_id IN (:awards)").param("awards", awards).update();
+        new AwardIndexer(jdbc, elasticsearch, meters, CategorySource.BASELINE).index(awards);
+
+        assertThat(document("CONT_AWD_INDEXER_CLASSIFIED").source())
+                .as("the baseline default keeps the PSC category")
+                .containsEntry("category", "CYBERSECURITY")
+                .containsEntry("category_source", "baseline");
     }
 
     @Test

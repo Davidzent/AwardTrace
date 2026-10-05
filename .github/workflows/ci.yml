@@ -3,13 +3,16 @@
 name: CI
 
 on:
+  # Pushes to main only: every other branch reaches main through a pull request, whose run checks it, so a branch
+  # never runs twice.
   push:
+    branches: [main]
   pull_request:
 
 permissions:
   contents: read
 
-# A newer push cancels a branch's older run, except on main, where a run may be deploying.
+# A newer push cancels a pull request's older run, except on main, where a run may be deploying.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}

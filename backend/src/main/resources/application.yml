@@ -27,6 +27,10 @@ spring:
       concurrency: 2
 
 awardtrace:
+  categories:
+    # baseline or llm (CategorySource): llm since the gold-set evaluation showed the classifier beats the PSC
+    # baseline (ADR 0013). Changing it takes a reindex.
+    default-source: llm
   s3:
     region: us-east-1
   ingest:
@@ -34,3 +38,19 @@ awardtrace:
     api-url: https://api.usaspending.gov/
     download-poll-interval: 5s
     download-deadline: 15m
+  enrichment:
+    # Haiku 4.5 classifies every description; Opus 5.5 runs once, on the gold set, as a ceiling check (doc 09).
+    model: claude-haiku-4-5
+    prompt-version: v1
+    daily-cap-usd: 1.00
+    eval:
+      # Relative to backend/, where eval/README.md runs the task. A run costs about $0.04 on Haiku 4.5 and $0.20 on Opus.
+      gold-set: ../eval/gold.csv
+      report-dir: ../eval/results
+      summary: ../docs/results.md
+      cap-usd: 1.00
+    backfill:
+      # Give cap-usd on each run. A batch's worst case counts against it before the batch is submitted: on Haiku 4.5,
+      # 200 requests could cost at most about $2.50 at batch prices, and typically cost well under $1.
+      requests-per-batch: 200
+      poll-interval: 1m
