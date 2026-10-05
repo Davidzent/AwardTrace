@@ -39,3 +39,9 @@ awardtrace:
     model: claude-haiku-4-5
     prompt-version: v1
     daily-cap-usd: 1.00
+    eval:
+      # Relative to backend/, where eval/README.md runs the task. A run costs about $0.04 on Haiku 4.5 and $0.20 on Opus.
+      gold-set: ../eval/gold.csv
+      report-dir: ../eval/results
+      summary: ../docs/results.md
+      cap-usd: 1.00

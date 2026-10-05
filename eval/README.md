@@ -136,7 +136,7 @@ Two per category. Apart from the incident orders above, they're written for this
 
 ## Run the evaluation
 
-The `eval` task classifies every row of `gold.csv` with one model and prompt version, scores the model and the PSC baseline against the labels, and writes a report. It writes nothing to the database. The task arrives with the `enrichment` module; this section describes the planned command, and changes with it if needed.
+The `eval` task classifies every row of `gold.csv` with one model and prompt version, scores the model and the PSC baseline against the labels, and writes a report. It writes nothing to the database, and it stops before sending anything if a row has no label or a label that isn't one of the 14 codes.
 
 | Requirement | Detail |
 |---|---|
@@ -145,6 +145,7 @@ The `eval` task classifies every row of `gold.csv` with one model and prompt ver
 | Database | The local stack running with migrations applied. The baseline comes from `psc_baseline_category()`, read only |
 | API key | `ANTHROPIC_API_KEY` set in the environment. Never commit it or write it to a file |
 | Cost | About $0.04 a run on Claude Haiku 4.5 and $0.20 on Claude Opus 5.5 |
+| Spending cap | $1.00 a run. A request that could take the run past it isn't sent. Change it with `--awardtrace.enrichment.eval.cap-usd` |
 
 From the repository root:
 
