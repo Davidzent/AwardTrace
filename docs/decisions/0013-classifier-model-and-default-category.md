@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Proposed. The decision rules were committed before any evaluation run; the results and the decision follow them |
+| Status | Accepted. The decision rules were committed before any evaluation run; the results and the decision follow them |
 | Date | 2026-10-05 |
 
 ## Context
@@ -18,14 +18,27 @@ Fixed before the runs, so the results can't shape them:
 
 ## Results
 
-Pending: `eval/results/claude-haiku-4-5-v1.md` and `eval/results/claude-opus-5-5-v1.md`.
+Both models ran prompt v1 on the gold set on 2026-10-05, 25 descriptions a request. [Classification results](../results.md) keeps the running table, and each report has the confusion matrix and every miss.
+
+| Classifier | Accuracy | Accuracy on the 181 clear rows | Answered `UNCLASSIFIABLE` | Cost per 100, synchronous | Report |
+|---|---|---|---|---|---|
+| PSC baseline | 54.0% | 59.7% (108) | Never | Free | - |
+| Claude Haiku 4.5 | 66.5% | 65.7% (119) | 12.5% | $0.021 | [claude-haiku-4-5-v1](../../eval/results/claude-haiku-4-5-v1.md) |
+| Claude Opus 5.5 | 76.5% | 77.9% (141) | 6.5% | $0.118 | [claude-opus-5-5-v1](../../eval/results/claude-opus-5-5-v1.md) |
+
+- Haiku beats the baseline by 6.1 points on the clear rows, 11 descriptions.
+- Opus beats Haiku by 12.2 points, at 5.6 times the cost per description.
+- Haiku's most common miss is `SUPPLIES_EQUIPMENT` for an order whose domain has its own category: 16 of its 67 misses, including all 4 firearms and ammunition orders labeled `DEFENSE_SYSTEMS`. The baseline, which reads the product code, gets 11 of the 16 right.
+
+## Decision
+
+Haiku 4.5 classifies every description (rule 1). Its 6.1-point lead clears the 3 points rule 2 requires, so the classifier's category becomes the site's default: `awardtrace.categories.default-source: llm`.
 
 ## Consequences
 
-- The classifier's cost stays at Haiku's: about $6 for the Agriculture backfill, and cents a week after.
-- If Haiku wins, one reindex moves every search document to the classifier's category, keeping the baseline beside it.
-- If Haiku doesn't win, its classifications stay stored but unshown, and a later prompt version can be evaluated the same way.
-- On 181 rows, a point is about two descriptions, so a margin smaller than 3 points could be noise.
+- Classifying Agriculture's roughly 61,000 descriptions costs about $6.40 on Haiku with batches, at the measured price. Opus would cost about $36, not the $25 estimated above.
+- Haiku's lead isn't statistically significant. Of the 73 clear rows where exactly one of the two is right, Haiku has 42 and the baseline 31, and an exact McNemar test gives p = 0.24. Opus's lead over the baseline is significant: 54 to 21, p < 0.001. Rule 2 set a margin, not a significance test, so the default follows it.
+- Production holds no classifications yet. The `llm` default ships before the first backfill, so each stored classification's `CLASSIFICATION` event reindexes its awards, and no full reindex is needed.
 
 ## Alternatives considered
 
