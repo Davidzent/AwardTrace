@@ -5,16 +5,20 @@ The gold set scores AwardTrace's LLM categories against the free PSC baseline ([
 | File | Contents |
 |---|---|
 | `gold.csv` | One row per description: `description_hash`, `description`, `psc_code`, and `label` |
+| `sample-gold.sql` | The query that drew `gold.csv` from a loaded database |
 | `results/` | One report per model and prompt version, written by the `eval` task |
 
 ## How the gold set is drawn
 
-| Requirement | Detail |
+`sample-gold.sql` drew the committed `gold.csv` from the Department of Agriculture's contract awards for fiscal years 2025 and 2026.
+
+| Property | Detail |
 |---|---|
-| Source | Department of Agriculture contract awards, fiscal years 2025 and 2026 |
-| Size | 200 rows, one per `description_hash` |
-| Spread | Stratified across PSC groups, not proportional, so small categories such as `CYBERSECURITY` appear |
-| Vague rows | 20 deliberately vague descriptions |
+| Size | 200 rows, one per `description_hash`, with 166 distinct PSC codes among them |
+| Clear rows | 180, spread evenly across the 13 baseline categories rather than in proportion to the data, so small categories such as `CYBERSECURITY` appear: 14 rows each, or 13 for `CYBERSECURITY` and `OTHER`. Each category's PSC codes take turns, so no one code dominates |
+| Terse rows | 20 whose descriptions have at most one word of three or more letters, spread across PSC codes. Some are bare codes and others name a thing in a word or two, so together they test where `UNCLASSIFIABLE` begins |
+| Order | Shuffled, so the rows don't arrive grouped by category |
+| Repeatability | A fixed seed in the draw gives the same sample from the same data |
 | `label` | Empty until you label it |
 
 ## Label the gold set
