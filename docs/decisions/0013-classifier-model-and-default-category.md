@@ -36,7 +36,7 @@ Haiku 4.5 classifies every description (rule 1). Its 6.1-point lead clears the 3
 
 ## Consequences
 
-- Classifying Agriculture's roughly 61,000 descriptions costs about $6.40 on Haiku with batches, at the measured price. Opus would cost about $36, not the $25 estimated above.
+- The Agriculture backfill on 2026-10-05 classified 31,344 descriptions on Haiku with batches, in 34 minutes, for $3.25: $0.0104 per 100, the price the gold set measured. Production holds about half the 61,000 descriptions the estimates above assumed. Opus would have cost about $18.
 - Haiku's lead isn't statistically significant. Of the 73 clear rows where exactly one of the two is right, Haiku has 42 and the baseline 31, and an exact McNemar test gives p = 0.24. Opus's lead over the baseline is significant: 54 to 21, p < 0.001. Rule 2 set a margin, not a significance test, so the default follows it.
 - Production holds no classifications yet. The `llm` default ships before the first backfill, so each stored classification's `CLASSIFICATION` event reindexes its awards, and no full reindex is needed.
 
