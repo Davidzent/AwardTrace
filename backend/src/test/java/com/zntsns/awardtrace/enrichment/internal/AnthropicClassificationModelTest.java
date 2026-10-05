@@ -10,8 +10,10 @@ import com.sun.net.httpserver.HttpServer;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Item;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Reply;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Stop;
+import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Usage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -28,6 +30,7 @@ class AnthropicClassificationModelTest {
     private static final JsonMapper JSON = JsonMapper.shared();
     private static final String ANSWER = "{\"items\": [{\"id\": \"aaaaaaaaaaaa\", \"category\": \"OTHER\", "
             + "\"confidence\": 0.9}]}";
+    private static final String USAGE = "{\"input_tokens\": 900, \"output_tokens\": 60}";
     private static final List<Item> ITEMS = List.of(new Item("aaaaaaaaaaaa", "JANITORIAL SERVICES"),
             new Item("bbbbbbbbbbbb", "SIGNS READING \"KEEP OUT\"\nAND POSTS"));
 
@@ -55,11 +58,11 @@ class AnthropicClassificationModelTest {
 
     @Test
     void sendsHaikuTheFrozenPromptWithoutEffortOrThinking() throws IOException {
-        response.set(message("end_turn", text(ANSWER)));
+        response.set(message("end_turn", USAGE, text(ANSWER)));
 
         Reply reply = model("claude-haiku-4-5").classify(ITEMS);
 
-        assertThat(reply).isEqualTo(new Reply(Stop.COMPLETE, ANSWER));
+        assertThat(reply).isEqualTo(new Reply(Stop.COMPLETE, ANSWER, new Usage(900, 60, 0, 0)));
         JsonNode body = JSON.readTree(request.get());
         assertThat(body.path("model").asString()).isEqualTo("claude-haiku-4-5");
         assertThat(body.path("max_tokens").asLong()).isEqualTo(AnthropicClassificationModel.MAX_TOKENS);
@@ -79,12 +82,14 @@ class AnthropicClassificationModelTest {
 
     @Test
     void setsOpusEffortToLowAndReadsOnlyTheAnswerAfterItsThinking() throws IOException {
-        response.set(message("end_turn", "{\"type\": \"thinking\", \"thinking\": \"\", \"signature\": \"c2ln\"}",
-                text(ANSWER)));
+        response.set(message("end_turn", """
+                {"input_tokens": 300, "output_tokens": 410, "cache_creation_input_tokens": 600,
+                 "cache_read_input_tokens": 0}""",
+                "{\"type\": \"thinking\", \"thinking\": \"\", \"signature\": \"c2ln\"}", text(ANSWER)));
 
         Reply reply = model("claude-opus-5-5").classify(ITEMS);
 
-        assertThat(reply).isEqualTo(new Reply(Stop.COMPLETE, ANSWER));
+        assertThat(reply).isEqualTo(new Reply(Stop.COMPLETE, ANSWER, new Usage(300, 410, 600, 0)));
         JsonNode body = JSON.readTree(request.get());
         assertThat(body.path("model").asString()).isEqualTo("claude-opus-5-5");
         assertThat(body.path("output_config").path("effort").asString()).isEqualTo("low");
@@ -100,14 +105,26 @@ class AnthropicClassificationModelTest {
                  "stop_details": {"type": "refusal", "category": "cyber", "explanation": null},
                  "usage": {"input_tokens": 900, "output_tokens": 0}}""");
 
-        assertThat(model("claude-opus-5-5").classify(ITEMS)).isEqualTo(new Reply(Stop.REFUSAL, null));
+        assertThat(model("claude-opus-5-5").classify(ITEMS))
+                .isEqualTo(new Reply(Stop.REFUSAL, null, new Usage(900, 0, 0, 0)));
     }
 
     @Test
     void reportsATruncatedAnswer() {
-        response.set(message("max_tokens", text("{\"items\": [{\"id\": \"aaaa")));
+        response.set(message("max_tokens", USAGE, text("{\"items\": [{\"id\": \"aaaa")));
 
-        assertThat(model("claude-haiku-4-5").classify(ITEMS)).isEqualTo(new Reply(Stop.MAX_TOKENS, null));
+        assertThat(model("claude-haiku-4-5").classify(ITEMS))
+                .isEqualTo(new Reply(Stop.MAX_TOKENS, null, new Usage(900, 60, 0, 0)));
+    }
+
+    @Test
+    void boundsARequestsCostByEveryOutputTokenItMayUse() {
+        BigDecimal haiku = model("claude-haiku-4-5").maxCost(ITEMS);
+
+        // 4,096 output tokens at $5 a million is $0.02048; the input adds a little.
+        assertThat(haiku).isGreaterThan(new BigDecimal("0.02048")).isLessThan(new BigDecimal("0.03"));
+        // Every Opus 5.5 price is four times Haiku 4.5's.
+        assertThat(model("claude-opus-5-5").maxCost(ITEMS)).isEqualByComparingTo(haiku.multiply(BigDecimal.valueOf(4)));
     }
 
     @Test
@@ -126,7 +143,7 @@ class AnthropicClassificationModelTest {
     }
 
     private AnthropicClassificationModel model(String model) {
-        return new AnthropicClassificationModel(client, new EnrichmentProperties(model, "v1"));
+        return new AnthropicClassificationModel(client, new EnrichmentProperties(model, "v1", BigDecimal.ONE));
     }
 
     private void messages(HttpExchange exchange) throws IOException {
@@ -138,13 +155,12 @@ class AnthropicClassificationModelTest {
         exchange.close();
     }
 
-    /** A Messages API response with these content blocks. */
-    private static String message(String stopReason, String... blocks) {
+    /** A Messages API response with this usage and these content blocks. */
+    private static String message(String stopReason, String usage, String... blocks) {
         return """
                 {"id": "msg_test", "type": "message", "role": "assistant", "model": "claude-test",
-                 "content": [%s], "stop_reason": "%s", "stop_sequence": null,
-                 "usage": {"input_tokens": 900, "output_tokens": 60}}"""
-                .formatted(String.join(", ", blocks), stopReason);
+                 "content": [%s], "stop_reason": "%s", "stop_sequence": null, "usage": %s}"""
+                .formatted(String.join(", ", blocks), stopReason, usage);
     }
 
     private static String text(String text) {

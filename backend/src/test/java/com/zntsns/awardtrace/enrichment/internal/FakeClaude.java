@@ -23,6 +23,7 @@ final class FakeClaude {
     private final List<List<String>> requests = new CopyOnWriteArrayList<>();
     private final HttpServer server;
     private volatile String category = "OTHER";
+    private volatile boolean failing;
 
     FakeClaude() {
         try {
@@ -47,9 +48,15 @@ final class FakeClaude {
         this.category = category;
     }
 
+    /** Answers every request with a server error, which the client throws as an exception, until told otherwise. */
+    void fail(boolean failing) {
+        this.failing = failing;
+    }
+
     void reset() {
         requests.clear();
         category = "OTHER";
+        failing = false;
     }
 
     void stop() {
@@ -63,6 +70,11 @@ final class FakeClaude {
                 .map(line -> JSON.readTree(line.substring(line.indexOf(". ") + 2)).path("id").asString())
                 .toList();
         requests.add(ids);
+        if (failing) {
+            respond(exchange, 500, JSON.writeValueAsBytes(Map.of("type", "error",
+                    "error", Map.of("type", "api_error", "message", "Internal server error"))));
+            return;
+        }
         String answer = JSON.writeValueAsString(Map.of("items", ids.stream()
                 .map(id -> Map.of("id", id, "category", category, "confidence", 0.9))
                 .toList()));
@@ -71,8 +83,12 @@ final class FakeClaude {
                 "content", List.of(Map.of("type", "text", "text", answer)),
                 "stop_reason", "end_turn",
                 "usage", Map.of("input_tokens", 900 + 50 * ids.size(), "output_tokens", 30 * ids.size())));
+        respond(exchange, 200, body);
+    }
+
+    private static void respond(HttpExchange exchange, int status, byte[] body) throws IOException {
         exchange.getResponseHeaders().add("Content-Type", "application/json");
-        exchange.sendResponseHeaders(200, body.length);
+        exchange.sendResponseHeaders(status, body.length);
         exchange.getResponseBody().write(body);
         exchange.close();
     }

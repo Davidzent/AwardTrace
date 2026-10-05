@@ -12,8 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
 
 /**
  * Classifies descriptions in groups of 25, one request a group, and decides what each way a request ends means
@@ -30,8 +28,6 @@ import org.springframework.stereotype.Component;
  *
  * An error from the API isn't an answer. It propagates, and its descriptions stay unclassified.
  */
-@Component
-@Profile("enricher")
 class GroupClassifier {
 
     private static final Logger log = LoggerFactory.getLogger(GroupClassifier.class);

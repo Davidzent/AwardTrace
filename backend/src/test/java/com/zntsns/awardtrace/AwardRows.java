@@ -128,7 +128,9 @@ public final class AwardRows {
     }
 
     public static void emptyTables(JdbcClient jdbc) {
-        jdbc.sql("TRUNCATE award_transaction, award, recipient, agency, outbox, subaward, classification").update();
+        jdbc.sql("""
+                TRUNCATE award_transaction, award, recipient, agency, outbox, subaward, classification, enrichment_spend
+                """).update();
         jdbc.sql("REFRESH MATERIALIZED VIEW recipient_edge").update();
     }
 }

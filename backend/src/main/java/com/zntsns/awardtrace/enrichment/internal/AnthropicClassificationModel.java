@@ -13,6 +13,7 @@ import com.anthropic.models.messages.TextBlockParam;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
@@ -50,18 +51,24 @@ class AnthropicClassificationModel implements ClassificationModel {
     private final AnthropicClient client;
     private final String model;
     private final String promptVersion;
+    private final Prices prices;
     private final List<TextBlockParam> system;
     private final OutputConfig outputConfig;
+    /** The characters every request sends besides its items: the system prompt and the output schema. */
+    private final int fixedChars;
 
     AnthropicClassificationModel(AnthropicClient client, EnrichmentProperties properties) {
         this.client = client;
         this.model = properties.model();
         this.promptVersion = properties.promptVersion();
+        this.prices = Prices.of(model);
+        String prompt = prompt(promptVersion);
         // Caches only where the prompt reaches the model's minimum: 512 tokens on Opus 5.5, 4,096 on Haiku 4.5.
         this.system = List.of(TextBlockParam.builder()
-                .text(prompt(promptVersion))
+                .text(prompt)
                 .cacheControl(CacheControlEphemeral.builder().build())
                 .build());
+        this.fixedChars = prompt.length() + JSON.writeValueAsString(ClassificationValidation.SCHEMA).length();
         var schema = JsonOutputFormat.Schema.builder();
         ClassificationValidation.SCHEMA.forEach((key, value) ->
                 schema.putAdditionalProperty(key, JsonValue.from(value)));
@@ -80,6 +87,16 @@ class AnthropicClassificationModel implements ClassificationModel {
         return promptVersion;
     }
 
+    /**
+     * Every output token the request may use, plus its input at 2 characters a token, which overcounts, priced as a
+     * cache write, which costs more than plain input.
+     */
+    @Override
+    public BigDecimal maxCost(List<Item> items) {
+        long inputTokens = (fixedChars + userMessage(items).length()) / 2;
+        return prices.cost(new Usage(0, MAX_TOKENS, inputTokens, 0));
+    }
+
     @Override
     public Reply classify(List<Item> items) {
         Message message = client.messages().create(MessageCreateParams.builder()
@@ -89,22 +106,25 @@ class AnthropicClassificationModel implements ClassificationModel {
                 .addUserMessage(userMessage(items))
                 .outputConfig(outputConfig)
                 .build());
+        var used = message.usage();
+        var usage = new Usage(used.inputTokens(), used.outputTokens(), used.cacheCreationInputTokens().orElse(0L),
+                used.cacheReadInputTokens().orElse(0L));
         StopReason stop = message.stopReason().orElse(null);
         if (StopReason.REFUSAL.equals(stop)) {
             message.stopDetails().ifPresent(details -> log.warn("Claude refused {} descriptions: {} {}", items.size(),
                     details.category().map(Object::toString).orElse("-"), details.explanation().orElse("")));
-            return new Reply(Stop.REFUSAL, null);
+            return new Reply(Stop.REFUSAL, null, usage);
         }
         // Either way the answer was cut off before it closed.
         if (StopReason.MAX_TOKENS.equals(stop) || StopReason.MODEL_CONTEXT_WINDOW_EXCEEDED.equals(stop)) {
-            return new Reply(Stop.MAX_TOKENS, null);
+            return new Reply(Stop.MAX_TOKENS, null, usage);
         }
         // Opus 5.5's thinking arrives as its own blocks, ahead of the answer's text.
         String answer = message.content().stream()
                 .flatMap(block -> block.text().stream())
                 .map(TextBlock::text)
                 .collect(Collectors.joining());
-        return new Reply(Stop.COMPLETE, answer);
+        return new Reply(Stop.COMPLETE, answer, usage);
     }
 
     /** {@code 1. {"id":"…","text":"…"}}, a line an item. JSON keeps a text's quotes and line breaks unambiguous. */

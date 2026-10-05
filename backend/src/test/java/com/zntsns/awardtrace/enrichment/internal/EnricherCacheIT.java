@@ -55,6 +55,14 @@ class EnricherCacheIT {
                 .query(String.class)
                 .single())
                 .isEqualTo("OTHER");
+        // FakeClaude bills 950 input and 30 output tokens for one item: $0.00095 + $0.00015 on Haiku 4.5.
+        assertThat(jdbc.sql("""
+                SELECT path || ' ' || requests || ' ' || input_tokens || ' ' || output_tokens || ' ' || usd
+                FROM enrichment_spend
+                """)
+                .query(String.class)
+                .single())
+                .isEqualTo("live 1 950 30 0.001100");
     }
 
     @Test

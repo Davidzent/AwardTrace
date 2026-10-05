@@ -38,3 +38,4 @@ awardtrace:
     # Haiku 4.5 classifies every description; Opus 5.5 runs once, on the gold set, as a ceiling check (doc 09).
     model: claude-haiku-4-5
     prompt-version: v1
+    daily-cap-usd: 1.00

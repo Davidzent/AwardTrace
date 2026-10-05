@@ -2,6 +2,7 @@ package com.zntsns.awardtrace.enrichment.internal;
 
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
+import java.time.Clock;
 import java.time.Duration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -23,5 +24,17 @@ class EnrichmentConfig {
     @Bean
     AnthropicClient anthropicClient() {
         return AnthropicOkHttpClient.builder().fromEnv().timeout(Duration.ofMinutes(2)).build();
+    }
+
+    @Bean
+    CircuitBreaker circuitBreaker(Clock clock) {
+        return new CircuitBreaker(clock);
+    }
+
+    /** Every request the live path sends goes through its spend controls. */
+    @Bean
+    GroupClassifier groupClassifier(AnthropicClassificationModel claude, SpendLedger ledger, CircuitBreaker breaker,
+            EnrichmentProperties properties, Clock clock) {
+        return new GroupClassifier(new SpendGuard(claude, ledger, breaker, properties.dailyCapUsd(), clock));
     }
 }

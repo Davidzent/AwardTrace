@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Item;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Reply;
 import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Stop;
+import com.zntsns.awardtrace.enrichment.internal.ClassificationModel.Usage;
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ class GroupClassifierTest {
 
     @Test
     void storesEachAnswerAndMarksVagueAnswers() {
-        model.reply(items -> new Reply(Stop.COMPLETE, """
+        model.reply(items -> reply(Stop.COMPLETE, """
                 {"items": [{"id": "000000000001", "category": "UNCLASSIFIABLE", "confidence": 0.4},
                            {"id": "000000000000", "category": "NATURAL_RESOURCES", "confidence": 0.85}]}"""));
 
@@ -38,7 +39,7 @@ class GroupClassifierTest {
 
     @Test
     void storesARefusedGroupAsUnclassifiableWithoutRetrying() {
-        model.reply(items -> new Reply(Stop.REFUSAL, null));
+        model.reply(items -> reply(Stop.REFUSAL, null));
 
         var classifications = classifier.classify(descriptions(3));
 
@@ -50,7 +51,7 @@ class GroupClassifierTest {
 
     @Test
     void splitsATruncatedGroupInHalf() {
-        model.reply(items -> new Reply(Stop.MAX_TOKENS, null), items -> answer(items, "OTHER"),
+        model.reply(items -> reply(Stop.MAX_TOKENS, null), items -> answer(items, "OTHER"),
                 items -> answer(items, "CONSTRUCTION_FACILITIES"));
 
         var classifications = classifier.classify(descriptions(5));
@@ -72,7 +73,7 @@ class GroupClassifierTest {
 
     @Test
     void storesAGroupRejectedTwiceAsFailed() {
-        model.reply(items -> new Reply(Stop.COMPLETE, "{\"items\": []}"));
+        model.reply(items -> reply(Stop.COMPLETE, "{\"items\": []}"));
 
         var classifications = classifier.classify(descriptions(2));
 
@@ -84,7 +85,7 @@ class GroupClassifierTest {
 
     @Test
     void retriesASingleDescriptionWhoseAnswerIsTruncated() {
-        model.reply(items -> new Reply(Stop.MAX_TOKENS, null));
+        model.reply(items -> reply(Stop.MAX_TOKENS, null));
 
         var classifications = classifier.classify(descriptions(1));
 
@@ -123,9 +124,13 @@ class GroupClassifierTest {
                 .containsExactly(hash(0), hash(1), twin);
     }
 
+    private static Reply reply(Stop stop, String answer) {
+        return new Reply(stop, answer, new Usage(0, 0, 0, 0));
+    }
+
     /** A valid answer giving every item one category, with confidence 0.9. */
     private static Reply answer(List<Item> items, String category) {
-        return new Reply(Stop.COMPLETE, items.stream()
+        return reply(Stop.COMPLETE, items.stream()
                 .map(item -> "{\"id\": \"" + item.id() + "\", \"category\": \"" + category + "\", \"confidence\": 0.9}")
                 .collect(Collectors.joining(", ", "{\"items\": [", "]}")));
     }
@@ -166,6 +171,11 @@ class GroupClassifierTest {
         @Override
         public String promptVersion() {
             return "v1";
+        }
+
+        @Override
+        public BigDecimal maxCost(List<Item> items) {
+            return BigDecimal.ZERO;
         }
 
         @Override
