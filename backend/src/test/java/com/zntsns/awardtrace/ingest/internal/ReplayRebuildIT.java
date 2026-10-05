@@ -127,6 +127,8 @@ class ReplayRebuildIT {
     void rebuildsPostgresqlAndTheIndexFromS3Alone() throws Exception {
         runs.run(Mode.BACKFILL);
         runs.run(Mode.DELTA);
+        // The pipeline writes the awards as it consumes their events, so the descriptions exist only once it's quiet.
+        awaitQuiet();
         classifyEveryDescription();
         Snapshot loaded = snapshotWhenQuiet();
         // Something to compare in every table and in the index.
@@ -163,7 +165,7 @@ class ReplayRebuildIT {
     }
 
     /** Every event consumed, every outbox row relayed, and every relayed change indexed. */
-    private Snapshot snapshotWhenQuiet() throws IOException {
+    private void awaitQuiet() {
         try (var admin = Admin.create(kafkaAdmin.getConfigurationProperties())) {
             await().atMost(Duration.ofSeconds(60)).until(() ->
                     lag(admin, KafkaTopics.PIPELINE_GROUP, KafkaTopics.AWARD_TRANSACTIONS) == 0
@@ -172,6 +174,10 @@ class ReplayRebuildIT {
                                     .single() == 0
                             && lag(admin, KafkaTopics.INDEXER_GROUP, KafkaTopics.AWARDS_CHANGED) == 0);
         }
+    }
+
+    private Snapshot snapshotWhenQuiet() throws IOException {
+        awaitQuiet();
         elasticsearch.indices().refresh(request -> request.index(SearchIndexes.AWARDS));
 
         var tables = new LinkedHashMap<String, String>();
