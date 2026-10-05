@@ -72,16 +72,37 @@ class GroupClassifier {
         if (reply.stop() == Stop.MAX_TOKENS && group.size() > 1) {
             return halves(group);
         }
-        Checked checked = reply.stop() == Stop.COMPLETE
-                ? ClassificationValidation.check(reply.answer(), group.stream().map(GroupClassifier::id).toList())
-                : new Rejected("TRUNCATED");
-        return switch (checked) {
+        return switch (checked(group, reply)) {
             case Valid valid -> answered(group, valid);
             case Rejected(String problem) -> {
                 log.warn("Rejected the answer for {} descriptions: {}", group.size(), problem);
                 yield retry ? unclassifiable(group, "FAILED") : attempt(group, true);
             }
         };
+    }
+
+    /**
+     * What a reply means when there's no second attempt, as for a Message Batch request: a refusal makes the group
+     * {@code REFUSAL}, a valid answer gives each description its category, and anything else makes the group
+     * {@code FAILED}, for {@code enrich-retry-failed} to reprocess.
+     */
+    List<Classification> settled(List<Description> group, Reply reply) {
+        if (reply.stop() == Stop.REFUSAL) {
+            return unclassifiable(group, "REFUSAL");
+        }
+        return switch (checked(group, reply)) {
+            case Valid valid -> answered(group, valid);
+            case Rejected(String problem) -> {
+                log.warn("Rejected the answer for {} descriptions: {}", group.size(), problem);
+                yield unclassifiable(group, "FAILED");
+            }
+        };
+    }
+
+    private static Checked checked(List<Description> group, Reply reply) {
+        return reply.stop() == Stop.COMPLETE
+                ? ClassificationValidation.check(reply.answer(), group.stream().map(GroupClassifier::id).toList())
+                : new Rejected("TRUNCATED");
     }
 
     private List<Classification> halves(List<Description> group) {

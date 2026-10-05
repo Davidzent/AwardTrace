@@ -41,7 +41,8 @@ class SchemaMigrationIT {
 
         assertThat(tables).containsExactlyInAnyOrder(
                 "agency", "recipient", "award", "award_transaction", "outbox", "ingest_run", "ingest_file",
-                "subaward", "taxonomy_category", "psc_baseline_map", "classification", "enrichment_spend");
+                "subaward", "taxonomy_category", "psc_baseline_map", "classification", "enrichment_spend",
+                "enrichment_batch_request");
     }
 
     @Test

@@ -28,6 +28,11 @@ record Prices(BigDecimal input, BigDecimal output, BigDecimal cacheWrite, BigDec
                 .divide(MILLION);
     }
 
+    /** What a request costs through a Message Batch, which halves every price. */
+    BigDecimal batchCost(Usage usage) {
+        return cost(usage).divide(BigDecimal.TWO);
+    }
+
     private static Prices perMillion(String input, String output, String cacheWrite, String cacheRead) {
         return new Prices(new BigDecimal(input), new BigDecimal(output), new BigDecimal(cacheWrite),
                 new BigDecimal(cacheRead));

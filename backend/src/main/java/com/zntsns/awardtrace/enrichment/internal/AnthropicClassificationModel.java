@@ -10,12 +10,16 @@ import com.anthropic.models.messages.OutputConfig;
 import com.anthropic.models.messages.StopReason;
 import com.anthropic.models.messages.TextBlock;
 import com.anthropic.models.messages.TextBlockParam;
+import com.anthropic.models.messages.batches.BatchCreateParams;
+import com.anthropic.models.messages.batches.MessageBatch;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -99,19 +103,60 @@ class AnthropicClassificationModel implements ClassificationModel {
 
     @Override
     public Reply classify(List<Item> items) {
-        Message message = client.messages().create(MessageCreateParams.builder()
+        return reply(client.messages().create(MessageCreateParams.builder()
                 .model(model)
                 .maxTokens(MAX_TOKENS)
                 .systemOfTextBlockParams(system)
                 .addUserMessage(userMessage(items))
                 .outputConfig(outputConfig)
-                .build());
+                .build()));
+    }
+
+    /**
+     * Submits one Message Batch, a request for each group under its custom ID, with the same settings as
+     * {@link #classify}, and returns the batch's ID. A batch bills half price, and most end within an hour (doc 09).
+     */
+    String submitBatch(Map<String, List<Item>> groups) {
+        var batch = BatchCreateParams.builder();
+        groups.forEach((customId, items) -> batch.addRequest(BatchCreateParams.Request.builder()
+                .customId(customId)
+                .params(BatchCreateParams.Request.Params.builder()
+                        .model(model)
+                        .maxTokens(MAX_TOKENS)
+                        .systemOfTextBlockParams(system)
+                        .addUserMessage(userMessage(items))
+                        .outputConfig(outputConfig)
+                        .build())
+                .build()));
+        return client.messages().batches().create(batch.build()).id();
+    }
+
+    /** Whether the batch has finished processing, so its results are ready. */
+    boolean batchEnded(String batchId) {
+        return MessageBatch.ProcessingStatus.ENDED.equals(
+                client.messages().batches().retrieve(batchId).processingStatus());
+    }
+
+    /**
+     * The reply to each request of an ended batch that succeeded, by custom ID. A request that errored, expired, or
+     * was canceled has none.
+     */
+    Map<String, Reply> batchReplies(String batchId) {
+        var replies = new HashMap<String, Reply>();
+        try (var results = client.messages().batches().resultsStreaming(batchId)) {
+            results.stream().forEach(result -> result.result().succeeded()
+                    .ifPresent(succeeded -> replies.put(result.customId(), reply(succeeded.message()))));
+        }
+        return replies;
+    }
+
+    private static Reply reply(Message message) {
         var used = message.usage();
         var usage = new Usage(used.inputTokens(), used.outputTokens(), used.cacheCreationInputTokens().orElse(0L),
                 used.cacheReadInputTokens().orElse(0L));
         StopReason stop = message.stopReason().orElse(null);
         if (StopReason.REFUSAL.equals(stop)) {
-            message.stopDetails().ifPresent(details -> log.warn("Claude refused {} descriptions: {} {}", items.size(),
+            message.stopDetails().ifPresent(details -> log.warn("Claude refused a group of descriptions: {} {}",
                     details.category().map(Object::toString).orElse("-"), details.explanation().orElse("")));
             return new Reply(Stop.REFUSAL, null, usage);
         }

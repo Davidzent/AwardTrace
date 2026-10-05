@@ -45,3 +45,8 @@ awardtrace:
       report-dir: ../eval/results
       summary: ../docs/results.md
       cap-usd: 1.00
+    backfill:
+      # Give cap-usd on each run. A batch's worst case counts against it before the batch is submitted: on Haiku 4.5,
+      # 200 requests could cost at most about $2.50 at batch prices, and typically cost well under $1.
+      requests-per-batch: 200
+      poll-interval: 1m
