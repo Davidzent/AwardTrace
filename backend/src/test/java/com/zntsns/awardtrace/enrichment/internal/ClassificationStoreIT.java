@@ -1,5 +1,6 @@
 package com.zntsns.awardtrace.enrichment.internal;
 
+import static com.zntsns.awardtrace.AwardRows.describe;
 import static com.zntsns.awardtrace.AwardRows.saveAward;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("enricher")
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, FakeClaudeConfiguration.class})
 class ClassificationStoreIT {
 
     private static final String SHARED = "5".repeat(64);
@@ -41,8 +42,8 @@ class ClassificationStoreIT {
         saveAward(jdbc, "CONT_AWD_SECOND", 7, "2000.00", false);
         saveAward(jdbc, "CONT_AWD_DELETED", 2, "0.00", true);
         saveAward(jdbc, "CONT_AWD_UNRELATED", 1, "500.00", false);
-        describe(SHARED, "CONT_AWD_FIRST", "CONT_AWD_SECOND", "CONT_AWD_DELETED");
-        describe(OTHER, "CONT_AWD_UNRELATED");
+        describe(jdbc, SHARED, "CONT_AWD_FIRST", "CONT_AWD_SECOND", "CONT_AWD_DELETED");
+        describe(jdbc, OTHER, "CONT_AWD_UNRELATED");
 
         Result result = store.store(List.of(classification(SHARED, "NATURAL_RESOURCES", "0.91", null)));
 
@@ -62,7 +63,7 @@ class ClassificationStoreIT {
     @Test
     void announcesNothingWhenTheSameClassificationIsStoredAgain() {
         saveAward(jdbc, "CONT_AWD_FIRST", 3, "1000.00", false);
-        describe(SHARED, "CONT_AWD_FIRST");
+        describe(jdbc, SHARED, "CONT_AWD_FIRST");
         var classification = classification(SHARED, "NATURAL_RESOURCES", "0.91", null);
 
         store.store(List.of(classification));
@@ -74,7 +75,7 @@ class ClassificationStoreIT {
     @Test
     void replacesAFailedClassificationWhenARetryAnswers() {
         saveAward(jdbc, "CONT_AWD_FIRST", 3, "1000.00", false);
-        describe(SHARED, "CONT_AWD_FIRST");
+        describe(jdbc, SHARED, "CONT_AWD_FIRST");
         store.store(List.of(classification(SHARED, "UNCLASSIFIABLE", null, "FAILED")));
 
         Result result = store.store(List.of(classification(SHARED, "CONSTRUCTION_FACILITIES", "0.80", null)));
@@ -91,13 +92,6 @@ class ClassificationStoreIT {
     void storesADescriptionNoAwardCarriesYet() {
         assertThat(store.store(List.of(classification(OTHER, "OTHER", "0.55", null)))).isEqualTo(new Result(1, 0));
         assertThat(outbox()).isEmpty();
-    }
-
-    private void describe(String descriptionHash, String... awardIds) {
-        jdbc.sql("UPDATE award SET description_hash = :hash WHERE award_id IN (:awardIds)")
-                .param("hash", descriptionHash)
-                .param("awardIds", List.of(awardIds))
-                .update();
     }
 
     private List<String> outbox() {

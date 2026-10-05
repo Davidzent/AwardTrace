@@ -1,6 +1,7 @@
 package com.zntsns.awardtrace;
 
 import java.math.BigDecimal;
+import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /** Award rows as the pipeline would have written them, for tests that only need PostgreSQL to hold awards. */
@@ -115,6 +116,14 @@ public final class AwardRows {
                 .param("subName", subName)
                 .param("amount", new BigDecimal(amount))
                 .param("actionDate", actionDate)
+                .update();
+    }
+
+    /** Gives the awards one description hash, as the pipeline does for awards whose descriptions match. */
+    public static void describe(JdbcClient jdbc, String descriptionHash, String... awardIds) {
+        jdbc.sql("UPDATE award SET description_hash = :hash WHERE award_id IN (:awardIds)")
+                .param("hash", descriptionHash)
+                .param("awardIds", List.of(awardIds))
                 .update();
     }
 

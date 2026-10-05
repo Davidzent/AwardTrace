@@ -15,7 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("enricher")
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, FakeClaudeConfiguration.class})
 class ClassifyPromptIT {
 
     @Autowired
