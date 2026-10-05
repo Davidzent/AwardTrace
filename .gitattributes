@@ -1,0 +1,3 @@
+# The classifier's prompts go to Claude byte for byte (doc 09), so every checkout gets the same line endings. Without
+# this, a Windows checkout turns them into CRLF, and an eval run there scores a different prompt than production sends.
+backend/src/main/resources/prompts/*.txt text eol=lf
