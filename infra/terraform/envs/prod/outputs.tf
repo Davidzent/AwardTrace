@@ -17,3 +17,8 @@ output "host_instance_id" {
   description = "The host's instance ID, for aws ssm start-session."
   value       = module.compute.instance_id
 }
+
+output "wake_function_url" {
+  description = "The wake function's URL, which the landing page calls (ADR 0020)."
+  value       = module.wake.function_url
+}

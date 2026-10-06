@@ -22,7 +22,7 @@ How it works:
 
 - **Readiness.** Caddy answers `/healthz` by passing it to the app's own health check. The path is outside `/api/`, so the idle stop doesn't count it, and polling it can't keep the host awake. The function checks it, not the landing page, so the page talks to one origin only.
 - **The budget.** One DynamoDB item per UTC day counts the day's wakes. The function adds to it with a conditional update that fails at 6, so two wakes at once can't both take the last one. Items expire on their own after a few days.
-- **Permissions.** The function's role can describe instances, which AWS doesn't scope by resource, and start only the instance tagged `app=awardtrace`. It can't stop or terminate anything, and it can read and write only the budget table.
+- **Permissions.** The function's role can describe instances, which AWS doesn't scope by resource, and start only the host, named by its instance ID. It can't stop or terminate anything, and it can update only the budget table.
 - **Browsers.** The function URL allows cross-origin requests from `https://awardtrace.zntsns.com` only.
 - **The page.** It calls `GET /status` on load. When the app is stopped, it offers **Start the live app**, says it takes a few minutes, and polls every 10 seconds after a wake until the app is ready.
 

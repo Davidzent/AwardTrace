@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.67"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.8"
+    }
   }
 
   # The bucket comes from the bootstrap root at init time, since a backend block can't read variables:
