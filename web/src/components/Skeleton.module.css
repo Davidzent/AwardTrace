@@ -18,3 +18,8 @@
   height: 12rem;
   margin-bottom: var(--space-4);
 }
+
+/* A category tile on the home page. */
+.tile {
+  height: 4.75rem;
+}

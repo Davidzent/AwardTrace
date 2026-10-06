@@ -6,6 +6,7 @@ import { FilterPanel } from '../features/search/FilterPanel';
 import { FiltersDrawer } from '../features/search/FiltersDrawer';
 import { activeFilters, clearFiltersHref } from '../features/search/filters';
 import { SearchBox } from '../features/search/SearchBox';
+import { SearchHome } from '../features/search/SearchHome';
 import { SearchResults } from '../features/search/SearchResults';
 import { readSearch, searchHref } from '../features/search/searchUrl';
 import { useMediaQuery } from '../lib/useMediaQuery';
@@ -26,6 +27,20 @@ export function SearchPage() {
   const chips = activeFilters(query, search.data?.facets);
   const filters = <FilterPanel query={query} facets={search.data?.facets} onChange={change} />;
 
+  // A bare address is the front page; any parameter, even a sort alone, is a search.
+  if (params.size === 0) {
+    return (
+      <>
+        <title>AwardTrace</title>
+        <SearchHome
+          results={search.data}
+          error={search.error}
+          onSearch={(q) => change({ q })}
+          onRetry={() => void search.refetch()}
+        />
+      </>
+    );
+  }
   return (
     <>
       <title>{query.q ? `${query.q} · AwardTrace` : 'AwardTrace'}</title>
