@@ -107,7 +107,9 @@ resource "aws_lambda_function" "wake" {
   handler          = "index.handler"
   filename         = data.archive_file.function.output_path
   source_code_hash = data.archive_file.function.output_base64sha256
-  memory_size      = 128
+  # 128 MB ran at 127 MB, and Lambda's CPU share at that size made a health check take over 2 seconds. Twice the
+  # memory brings twice the CPU, still inside the free tier.
+  memory_size = 256
   # The health check waits up to 3 seconds, and the AWS calls take well under one.
   timeout = 10
   # ponytail: no reserved concurrency, because AWS refuses any reservation while the account's concurrency limit is 10

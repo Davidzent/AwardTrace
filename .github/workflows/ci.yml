@@ -87,10 +87,22 @@ jobs:
             terraform -chdir="$root" validate
           done
 
+  # No secret anywhere in the repository's history, not only in this change (doc 10): gitleaks reads every commit. It
+  # runs as the runner's user, so git accepts the checkout as safe.
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - run: >-
+          docker run --rm --user "$(id -u):$(id -g)" --volume "$PWD:/repo"
+          ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --redact --no-banner --verbose
+
   # A push to this repository's main only; pull requests, forks among them, never reach it. Until AWS exists and the
   # AWS_DEPLOY_ROLE_ARN repository variable is set, there is nothing to deploy to, so the job is skipped.
   deploy:
-    needs: [backend, web, terraform]
+    needs: [backend, web, terraform, secrets]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AWS_DEPLOY_ROLE_ARN != ''
     permissions:
       contents: read

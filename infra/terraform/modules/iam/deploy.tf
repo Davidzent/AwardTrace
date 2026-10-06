@@ -43,14 +43,16 @@ data "aws_iam_policy_document" "deploy" {
     resources = ["*"]
   }
 
-  # DescribeImages lets a rerun skip an image that is already pushed, since tags are immutable.
+  # DescribeImages lets a rerun skip an image that is already pushed, since tags are immutable. GetDownloadUrlForLayer
+  # lets Trivy read a pushed image back to scan it for secrets before the host runs it.
   statement {
-    sid = "PushImages"
+    sid = "PushAndScanImages"
     actions = [
       "ecr:BatchCheckLayerAvailability",
       "ecr:BatchGetImage",
       "ecr:CompleteLayerUpload",
       "ecr:DescribeImages",
+      "ecr:GetDownloadUrlForLayer",
       "ecr:InitiateLayerUpload",
       "ecr:PutImage",
       "ecr:UploadLayerPart",
