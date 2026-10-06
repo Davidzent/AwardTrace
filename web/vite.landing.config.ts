@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { accuracies } from './landing/results.ts';
 
@@ -19,6 +20,10 @@ export default defineConfig({
   build: {
     outDir: '../dist-landing',
     emptyOutDir: true,
+    rolldownOptions: {
+      // 404.html sends old links to the app on to its new hostname (ADR 0019).
+      input: ['index.html', '404.html'].map((page) => fileURLToPath(new URL(`landing/${page}`, import.meta.url))),
+    },
   },
   plugins: [
     {

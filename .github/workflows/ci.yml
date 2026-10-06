@@ -64,6 +64,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # pages.yml publishes this on main; building it here catches a break, such as a changed docs/results.md, first.
+      - run: npm run build:landing
 
   terraform:
     runs-on: ubuntu-latest
