@@ -7,6 +7,7 @@ import searchHome from './fixtures/search-home.json' with { type: 'json' };
 import searchResults from './fixtures/search-results.json' with { type: 'json' };
 import status from './fixtures/status.json' with { type: 'json' };
 import subawards from './fixtures/subawards.json' with { type: 'json' };
+import { waitForPublicSans } from './helpers';
 
 /**
  * Each main page, whole, at both widths (doc 16), so a change that breaks a layout fails here even when every flow
@@ -56,8 +57,7 @@ for (const { name, path } of PAGES) {
     await expect(page.getByRole('heading', { level: 1 })).toBeAttached();
     await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
     await page.waitForLoadState('networkidle');
-    // Text shows in a fallback font until Public Sans arrives (font-display: swap); a screenshot must not catch that.
-    expect(await page.evaluate(async () => (await document.fonts.load('1em "Public Sans"')).length)).toBeGreaterThan(0);
+    await waitForPublicSans(page);
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
   });
 }
