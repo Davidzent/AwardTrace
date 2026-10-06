@@ -4,6 +4,10 @@ AwardTrace is a search site for U.S. federal contract awards. It loads the gover
 
 **Live site:** [awardtrace.zntsns.com](https://awardtrace.zntsns.com) explains the project and opens the app at [app.awardtrace.zntsns.com](https://app.awardtrace.zntsns.com) ([ADR 0019](docs/decisions/0019-landing-page-on-github-pages.md)). The app runs weekdays from 8:00 to 20:00 Pacific and is stopped outside those hours to save money ([ADR 0017](docs/decisions/0017-host-runs-on-weekday-hours.md)); outside them, the landing page can start it ([ADR 0020](docs/decisions/0020-wake-button.md)). It holds the Department of Agriculture's contracts ([ADR 0018](docs/decisions/0018-production-holds-agriculture-only.md)).
 
+![The search page: wildfire contracts in Colorado and Utah, filtered to the natural resources category and sorted by size](docs/screenshots/search.png)
+
+More screenshots: [an award with a deobligation](docs/screenshots/award.png), [a recipient's subaward network](docs/screenshots/recipient-network.png), and [the status page](docs/screenshots/status.png).
+
 ## How it works
 
 ```mermaid
@@ -33,9 +37,9 @@ Double brackets are Kafka topics, and cylinders are stores. The ingest task, pip
 |---|---|
 | Backend | Java 21, Spring Boot 4, Spring Modulith, Kafka in KRaft mode, PostgreSQL 18 with Flyway, Elasticsearch 9 |
 | Classifier | Claude Haiku 4.5 through the Anthropic Java SDK, with Message Batches for the backfill |
-| Web | React, TypeScript, Vite, TanStack Query |
-| Infrastructure | Terraform on AWS: EC2, S3, ECR, SSM Parameter Store, and EventBridge Scheduler; Docker Compose on the host |
-| Delivery | GitHub Actions: tests with Testcontainers, a coverage gate, an OpenAPI drift check, CodeQL, and a deploy on every merge to `main` |
+| Web | React 19, TypeScript, Vite, TanStack Query, and CSS Modules on design tokens, with a dark theme. Vitest for units, and Playwright with axe for end-to-end and accessibility checks |
+| Infrastructure | Terraform on AWS: EC2, S3, ECR, SSM Parameter Store, EventBridge Scheduler, and a Lambda function with a DynamoDB budget for the wake button; Docker Compose on the host; the landing page on GitHub Pages |
+| Delivery | GitHub Actions: tests with Testcontainers, a coverage gate, an OpenAPI drift check, CodeQL, secret scans of every commit (gitleaks) and every image (Trivy), and a deploy on every merge to `main` that rolls back if the new release fails its health check |
 
 ## Results
 
@@ -64,11 +68,11 @@ Haiku's 6-point lead clears the 3 points the rules required, though it isn't sta
 
 ## What's interesting here
 
-- **Out-of-order data.** Kafka keeps order only within a partition, so events are keyed by award, and every upsert still checks the source's version before it writes ([ADR 0004](docs/decisions/0004-kafka-keyed-by-award-id.md)).
-- **The dual write.** Writing a row and then publishing an event can lose one of the two. A transactional outbox puts the event in the same transaction as the row ([ADR 0003](docs/decisions/0003-transactional-outbox.md)).
+- **Out-of-order data.** Kafka keeps order only within a partition, so events are keyed by award, and every upsert still checks the source's version before it writes ([ADR 0004](docs/decisions/0004-kafka-keyed-by-award-id.md)). Elasticsearch versions each award the same way: during the rebuild drill, it turned away 807 writes older than the version already indexed.
+- **The dual write.** Writing a row and then publishing an event can lose one of the two. A transactional outbox puts the event in the same transaction as the row ([ADR 0003](docs/decisions/0003-transactional-outbox.md)), and the relay put each change on Kafka within 1.7 seconds, p95, during the drill.
 - **A modular monolith.** One developer and one event flow don't need microservices. It's one codebase with roles that can scale apart, and a test enforces the module boundaries ([ADR 0001](docs/decisions/0001-modular-monolith-with-runtime-roles.md)).
-- **An LLM that has to earn its place.** The classifier's categories became the default only after it beat the free baseline on a hand-labeled set ([ADR 0007](docs/decisions/0007-llm-enrichment-is-optional-and-evaluated.md)). Every AI category on the site carries an AI badge, and the award page shows its confidence beside the product-code category.
-- **Cost as a constraint.** One host, no managed Kafka, and a weekday schedule. PostgreSQL and Elasticsearch can be rebuilt from the raw files in S3, so the whole stack can be switched off and brought back ([ADR 0002](docs/decisions/0002-s3-raw-as-source-of-truth.md), [ADR 0006](docs/decisions/0006-single-node-infrastructure.md)).
+- **An LLM that has to earn its place.** The classifier's categories became the default only after it beat the free baseline on a hand-labeled set, 65.7% against 59.7% ([ADR 0007](docs/decisions/0007-llm-enrichment-is-optional-and-evaluated.md)). Every AI category on the site carries an AI badge, and the award page shows its confidence beside the product-code category.
+- **Cost as a constraint.** One host, no managed Kafka, and a weekday schedule. The host, its databases, and its search index can all be rebuilt from Terraform and the raw files in S3, so the whole stack can be switched off and brought back: a drill destroyed production and rebuilt it from Terraform and S3 in under 7 minutes, with identical checksums ([ADR 0002](docs/decisions/0002-s3-raw-as-source-of-truth.md), [ADR 0006](docs/decisions/0006-single-node-infrastructure.md)).
 
 ## Run it locally
 
@@ -108,7 +112,8 @@ Until the classifier runs, every category comes from the product codes. Running 
 | Where | What |
 |---|---|
 | [docs/decisions/](docs/decisions/) | The architecture decision records |
-| [docs/results.md](docs/results.md) | Every measured result: the load tests and the classifier's evaluation runs |
+| [docs/results.md](docs/results.md) | Every measured result: the load tests, the rebuild drill, and the classifier's evaluation runs |
+| [loadtest/README.md](loadtest/README.md) | The k6 scenarios, and how to run them against production |
 | [eval/README.md](eval/README.md) | The labeling guide, and how to run the evaluation |
 | [backend/openapi.json](backend/openapi.json) | The API's contract, also served at `/api/v1/openapi.json` |
 
