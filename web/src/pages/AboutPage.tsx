@@ -93,6 +93,10 @@ export function AboutPage() {
         <h2 id="about-links">More</h2>
         <ul>
           <li>
+            <a href="https://awardtrace.zntsns.com/">The AwardTrace home page</a>, with the results and the
+            app&apos;s hours
+          </li>
+          <li>
             <a href="https://github.com/Davidzent/awardtrace">Source code on GitHub</a>
           </li>
           <li>
