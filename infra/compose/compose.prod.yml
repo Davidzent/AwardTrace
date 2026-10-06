@@ -81,6 +81,9 @@ services:
       AWARDTRACE_INGEST_AGENCIES: "012"
       # Read only by the enricher's Claude client; empty until /awardtrace/anthropic/api-key exists (doc 09).
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # Empty, except while a load test runs: then the load generator's public address, so its requests skip the rate
+      # limits (doc 12). Set it only in the shell that recreates the app, never in .env, so it ends with the run.
+      AWARDTRACE_RATE_LIMIT_EXEMPT_ADDRESSES: ${AWARDTRACE_RATE_LIMIT_EXEMPT_ADDRESSES:-}
     logging: *logging
 
   caddy:
