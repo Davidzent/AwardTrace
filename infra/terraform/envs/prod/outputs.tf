@@ -4,7 +4,7 @@ output "repository_urls" {
 }
 
 output "host_public_ip" {
-  description = "The Elastic IP that the awardtrace.zntsns.com A record points at."
+  description = "The Elastic IP that the app.awardtrace.zntsns.com A record points at."
   value       = module.compute.public_ip
 }
 
