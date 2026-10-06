@@ -38,9 +38,15 @@ button {
   font: inherit;
 }
 
+/* A page that is only a message: not found, or failed to render. */
 .page-message {
   max-width: 40rem;
-  margin: 3rem auto;
+  margin: var(--space-12) auto;
+}
+
+.page-message h1 {
+  margin-top: 0;
+  font-size: var(--text-xl);
 }
 
 .visually-hidden {
@@ -101,64 +107,4 @@ legend {
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-}
-
-.about {
-  max-width: 48rem;
-}
-
-.about h1 {
-  margin-top: 0;
-  font-size: 1.75rem;
-}
-
-.about h2 {
-  margin: 2rem 0 0.75rem;
-  font-size: 1.2rem;
-}
-
-.lead {
-  font-size: 1.1rem;
-}
-
-/* The pipeline as a vertical list of boxes joined by arrows; it reads the same to a screen reader. */
-.flow {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.flow li {
-  display: flex;
-  flex-direction: column;
-  padding: 0.6rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-}
-
-.flow li + li {
-  position: relative;
-  margin-top: 1.5rem;
-}
-
-.flow li + li::before {
-  content: '↓';
-  position: absolute;
-  top: -1.45rem;
-  left: 1.5rem;
-  color: var(--color-text-muted);
-}
-
-.flow span {
-  color: var(--color-text-muted);
-}
-
-.guarantees dt {
-  margin-top: 1rem;
-  font-weight: 600;
-}
-
-.guarantees dd {
-  margin: 0.25rem 0 0;
 }

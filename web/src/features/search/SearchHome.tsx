@@ -4,12 +4,10 @@ import { api, type Schemas } from '../../api/client';
 import { ProblemMessage } from '../../components/ProblemMessage';
 import { Skeleton } from '../../components/Skeleton';
 import { formatCount, formatDate, formatMoneyShort } from '../../lib/format';
+import { ExampleSearches } from './ExampleSearches';
 import { SearchBox } from './SearchBox';
 import { searchHref } from './searchUrl';
 import styles from './SearchHome.module.css';
-
-/** Each one returns hundreds of awards in the Agriculture data. */
-const EXAMPLES = ['wildland fire', 'helicopter', 'beef', 'janitorial', 'road maintenance'];
 
 type Props = {
   /** The search with no keyword or filter, for the totals and the category counts. */
@@ -45,18 +43,7 @@ export function SearchHome({ results, error, onSearch, onRetry }: Props) {
           )}
         </p>
         <SearchBox initial="" onSearch={onSearch} />
-        <div className={styles.examples}>
-          <span className="muted" id="examples-label">
-            Try
-          </span>
-          <ul aria-labelledby="examples-label">
-            {EXAMPLES.map((q) => (
-              <li key={q}>
-                <Link to={searchHref({}, { q })}>{q}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ExampleSearches />
       </section>
       <section aria-labelledby="categories-title">
         <div className={styles.sectionHeader}>
