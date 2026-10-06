@@ -1,0 +1,486 @@
+{
+  "total": 61204,
+  "total_is_capped": false,
+  "total_obligated": "37193650516.28",
+  "took_ms": 12,
+  "page": 1,
+  "size": 1,
+  "results": [],
+  "facets": {
+    "agency": [
+      {
+        "value": "012",
+        "label": "Department of Agriculture",
+        "count": 61204
+      }
+    ],
+    "category": [
+      {
+        "value": "NATURAL_RESOURCES",
+        "label": "Natural resources and environment",
+        "count": 24601
+      },
+      {
+        "value": "SUPPLIES_EQUIPMENT",
+        "label": "Supplies and equipment",
+        "count": 16970
+      },
+      {
+        "value": "CONSTRUCTION_FACILITIES",
+        "label": "Construction and facilities",
+        "count": 6340
+      },
+      {
+        "value": "PROFESSIONAL_SERVICES",
+        "label": "Professional services",
+        "count": 3953
+      },
+      {
+        "value": "LOGISTICS_TRANSPORT",
+        "label": "Logistics and transport",
+        "count": 2917
+      },
+      {
+        "value": "ENGINEERING_RESEARCH",
+        "label": "Engineering and research",
+        "count": 2499
+      },
+      {
+        "value": "IT_SOFTWARE",
+        "label": "IT software",
+        "count": 1553
+      },
+      {
+        "value": "IT_INFRASTRUCTURE",
+        "label": "IT infrastructure",
+        "count": 1194
+      },
+      {
+        "value": "HEALTH_MEDICAL",
+        "label": "Health and medical",
+        "count": 608
+      },
+      {
+        "value": "TRAINING_EDUCATION",
+        "label": "Training and education",
+        "count": 250
+      },
+      {
+        "value": "DEFENSE_SYSTEMS",
+        "label": "Defense systems",
+        "count": 192
+      },
+      {
+        "value": "OTHER",
+        "label": "Other",
+        "count": 79
+      },
+      {
+        "value": "CYBERSECURITY",
+        "label": "Cybersecurity",
+        "count": 48
+      }
+    ],
+    "state": [
+      {
+        "value": "CA",
+        "label": null,
+        "count": 8093
+      },
+      {
+        "value": "OR",
+        "label": null,
+        "count": 6609
+      },
+      {
+        "value": "WA",
+        "label": null,
+        "count": 3476
+      },
+      {
+        "value": "MT",
+        "label": null,
+        "count": 3274
+      },
+      {
+        "value": "ID",
+        "label": null,
+        "count": 2827
+      },
+      {
+        "value": "CO",
+        "label": null,
+        "count": 2628
+      },
+      {
+        "value": "UT",
+        "label": null,
+        "count": 2462
+      },
+      {
+        "value": "NM",
+        "label": null,
+        "count": 1974
+      },
+      {
+        "value": "VA",
+        "label": null,
+        "count": 1652
+      },
+      {
+        "value": "PR",
+        "label": null,
+        "count": 1651
+      },
+      {
+        "value": "DC",
+        "label": null,
+        "count": 1638
+      },
+      {
+        "value": "AZ",
+        "label": null,
+        "count": 1617
+      },
+      {
+        "value": "TX",
+        "label": null,
+        "count": 1459
+      },
+      {
+        "value": "MD",
+        "label": null,
+        "count": 1242
+      },
+      {
+        "value": "MO",
+        "label": null,
+        "count": 1183
+      },
+      {
+        "value": "GA",
+        "label": null,
+        "count": 1179
+      },
+      {
+        "value": "MN",
+        "label": null,
+        "count": 1146
+      },
+      {
+        "value": "IA",
+        "label": null,
+        "count": 1127
+      },
+      {
+        "value": "NC",
+        "label": null,
+        "count": 1098
+      },
+      {
+        "value": "WY",
+        "label": null,
+        "count": 1093
+      },
+      {
+        "value": "IL",
+        "label": null,
+        "count": 1051
+      },
+      {
+        "value": "WI",
+        "label": null,
+        "count": 970
+      },
+      {
+        "value": "FL",
+        "label": null,
+        "count": 930
+      },
+      {
+        "value": "MI",
+        "label": null,
+        "count": 812
+      },
+      {
+        "value": "PA",
+        "label": null,
+        "count": 752
+      },
+      {
+        "value": "LA",
+        "label": null,
+        "count": 632
+      },
+      {
+        "value": "NE",
+        "label": null,
+        "count": 528
+      },
+      {
+        "value": "AR",
+        "label": null,
+        "count": 521
+      },
+      {
+        "value": "NY",
+        "label": null,
+        "count": 519
+      },
+      {
+        "value": "AK",
+        "label": null,
+        "count": 504
+      },
+      {
+        "value": "KS",
+        "label": null,
+        "count": 497
+      },
+      {
+        "value": "OH",
+        "label": null,
+        "count": 490
+      },
+      {
+        "value": "SC",
+        "label": null,
+        "count": 472
+      },
+      {
+        "value": "MS",
+        "label": null,
+        "count": 464
+      },
+      {
+        "value": "KY",
+        "label": null,
+        "count": 419
+      },
+      {
+        "value": "IN",
+        "label": null,
+        "count": 391
+      },
+      {
+        "value": "ND",
+        "label": null,
+        "count": 385
+      },
+      {
+        "value": "TN",
+        "label": null,
+        "count": 353
+      },
+      {
+        "value": "NV",
+        "label": null,
+        "count": 349
+      },
+      {
+        "value": "AL",
+        "label": null,
+        "count": 299
+      },
+      {
+        "value": "SD",
+        "label": null,
+        "count": 296
+      },
+      {
+        "value": "WV",
+        "label": null,
+        "count": 254
+      },
+      {
+        "value": "NJ",
+        "label": null,
+        "count": 248
+      },
+      {
+        "value": "HI",
+        "label": null,
+        "count": 218
+      },
+      {
+        "value": "MA",
+        "label": null,
+        "count": 214
+      },
+      {
+        "value": "OK",
+        "label": null,
+        "count": 193
+      },
+      {
+        "value": "VT",
+        "label": null,
+        "count": 113
+      },
+      {
+        "value": "DE",
+        "label": null,
+        "count": 109
+      },
+      {
+        "value": "ME",
+        "label": null,
+        "count": 101
+      },
+      {
+        "value": "NH",
+        "label": null,
+        "count": 98
+      },
+      {
+        "value": "CT",
+        "label": null,
+        "count": 90
+      },
+      {
+        "value": "GU",
+        "label": null,
+        "count": 37
+      },
+      {
+        "value": "RI",
+        "label": null,
+        "count": 31
+      },
+      {
+        "value": "VI",
+        "label": null,
+        "count": 31
+      },
+      {
+        "value": "AS",
+        "label": null,
+        "count": 8
+      },
+      {
+        "value": "AP",
+        "label": null,
+        "count": 1
+      },
+      {
+        "value": "MP",
+        "label": null,
+        "count": 1
+      }
+    ],
+    "naics": [
+      {
+        "value": "115310",
+        "label": "SUPPORT ACTIVITIES FOR FORESTRY",
+        "count": 17613
+      },
+      {
+        "value": "481212",
+        "label": "NONSCHEDULED CHARTERED FREIGHT AIR TRANSPORTATION",
+        "count": 1820
+      },
+      {
+        "value": "483111",
+        "label": "DEEP SEA FREIGHT TRANSPORTATION",
+        "count": 1699
+      },
+      {
+        "value": "621910",
+        "label": "AMBULANCE SERVICES",
+        "count": 1541
+      },
+      {
+        "value": "541519",
+        "label": "OTHER COMPUTER RELATED SERVICES",
+        "count": 1468
+      },
+      {
+        "value": "562991",
+        "label": "SEPTIC TANK AND RELATED SERVICES",
+        "count": 1436
+      },
+      {
+        "value": "532120",
+        "label": "TRUCK, UTILITY TRAILER, AND RV (RECREATIONAL VEHICLE) RENTAL AND LEASING",
+        "count": 1432
+      },
+      {
+        "value": "311421",
+        "label": "FRUIT AND VEGETABLE CANNING",
+        "count": 1249
+      },
+      {
+        "value": "311611",
+        "label": "ANIMAL (EXCEPT POULTRY) SLAUGHTERING",
+        "count": 1229
+      },
+      {
+        "value": "237310",
+        "label": "HIGHWAY, STREET, AND BRIDGE CONSTRUCTION",
+        "count": 1172
+      },
+      {
+        "value": "334516",
+        "label": "ANALYTICAL LABORATORY INSTRUMENT MANUFACTURING",
+        "count": 1157
+      },
+      {
+        "value": "561720",
+        "label": "JANITORIAL SERVICES",
+        "count": 1031
+      },
+      {
+        "value": "311999",
+        "label": "ALL OTHER MISCELLANEOUS FOOD MANUFACTURING",
+        "count": 917
+      },
+      {
+        "value": "481211",
+        "label": "NONSCHEDULED CHARTERED PASSENGER AIR TRANSPORTATION",
+        "count": 790
+      },
+      {
+        "value": "541330",
+        "label": "ENGINEERING SERVICES",
+        "count": 783
+      },
+      {
+        "value": "311615",
+        "label": "POULTRY PROCESSING",
+        "count": 746
+      },
+      {
+        "value": "541940",
+        "label": "VETERINARY SERVICES",
+        "count": 712
+      },
+      {
+        "value": "485999",
+        "label": "ALL OTHER TRANSIT AND GROUND PASSENGER TRANSPORTATION",
+        "count": 654
+      },
+      {
+        "value": "541611",
+        "label": "ADMINISTRATIVE MANAGEMENT AND GENERAL MANAGEMENT CONSULTING SERVICES",
+        "count": 639
+      },
+      {
+        "value": "541715",
+        "label": "RESEARCH AND DEVELOPMENT IN THE PHYSICAL, ENGINEERING, AND LIFE SCIENCES (EXCEPT NANOTECHNOLOGY AND BIOTECHNOLOGY)",
+        "count": 611
+      }
+    ],
+    "fiscal_year": [
+      {
+        "value": "2025",
+        "label": null,
+        "count": 34998
+      },
+      {
+        "value": "2026",
+        "label": null,
+        "count": 26206
+      }
+    ]
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "total": 7,
+  "total_is_capped": false,
+  "total_obligated": "219058800.32",
+  "took_ms": 9,
+  "page": 1,
+  "size": 5,
+  "results": [
+    {
+      "award_id": "CONT_AWD_12314421F0036_1205_AG3144B170007_1205",
+      "piid": "12314421F0036",
+      "description": "FINANCIAL SERVICES IT SUSTAINMENT SUPPORT.",
+      "description_highlight": null,
+      "recipient": {
+        "uei": "CKV2L9GZKJK3",
+        "name": "DELOITTE CONSULTING LLP"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Office of the Chief Financial Officer"
+      },
+      "total_obligated": "37597952.69",
+      "last_action_date": "2026-08-18",
+      "fiscal_year": 2026,
+      "naics_code": "541512",
+      "category": {
+        "code": "IT_INFRASTRUCTURE",
+        "label": "IT infrastructure",
+        "source": "baseline"
+      },
+      "pop_state_code": "LA",
+      "subaward_count": 0
+    },
+    {
+      "award_id": "CONT_AWD_12314425F0415_1205_47QRAA18D001P_4732",
+      "piid": "12314425F0415",
+      "description": "NIFA NIH ERA, TREASURY ASAP PROJECT THE OBJECTIVE OF THIS PROJECT WILL BE FOR NIFA TO TRANSITION THEIR GRANTS MANAGEMENT ACTIVITIES TO NIH ERA (A GRANTS QSMO PROVIDER).",
+      "description_highlight": null,
+      "recipient": {
+        "uei": "CKV2L9GZKJK3",
+        "name": "DELOITTE CONSULTING LLP"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Office of the Chief Financial Officer"
+      },
+      "total_obligated": "1639513.81",
+      "last_action_date": "2026-07-15",
+      "fiscal_year": 2026,
+      "naics_code": "541611",
+      "category": {
+        "code": "IT_SOFTWARE",
+        "label": "IT software",
+        "source": "baseline"
+      },
+      "pop_state_code": "VA",
+      "subaward_count": 0
+    },
+    {
+      "award_id": "CONT_AWD_12319822F0019_12F2_GS00Q14OADU113_4732",
+      "piid": "12319822F0019",
+      "description": "DEPUTY ADMINISTRATOR FOR FINANCIAL MANAGEMENT (DAFM) FINANCIAL SYSTEM SUPPORT SERVICES (FSSS)",
+      "description_highlight": null,
+      "recipient": {
+        "uei": "CKV2L9GZKJK3",
+        "name": "DELOITTE CONSULTING LLP"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Food and Nutrition Service"
+      },
+      "total_obligated": "99440632.77",
+      "last_action_date": "2026-07-09",
+      "fiscal_year": 2026,
+      "naics_code": "541330",
+      "category": {
+        "code": "PROFESSIONAL_SERVICES",
+        "label": "Professional services",
+        "source": "baseline"
+      },
+      "pop_state_code": "VA",
+      "subaward_count": 0
+    },
+    {
+      "award_id": "CONT_AWD_12639526C0037_12K3_-NONE-_-NONE-",
+      "piid": "12639526C0037",
+      "description": "THIRD-PARTY REVIEW OF THE USDA'S CENTER FOR VETERINARY BIOLOGICS (CVB) AUTHORITIES, REGULATIONS, AND GUIDANCE DOCUMENTS",
+      "description_highlight": null,
+      "recipient": {
+        "uei": "CKV2L9GZKJK3",
+        "name": "DELOITTE CONSULTING LLP"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Animal and Plant Health Inspection Service"
+      },
+      "total_obligated": "499508.00",
+      "last_action_date": "2026-06-17",
+      "fiscal_year": 2026,
+      "naics_code": "541690",
+      "category": {
+        "code": "ENGINEERING_RESEARCH",
+        "label": "Engineering and research",
+        "source": "baseline"
+      },
+      "pop_state_code": "IA",
+      "subaward_count": 0
+    },
+    {
+      "award_id": "CONT_AWD_12SAD123F0006_12E3_12314420A0034_1205",
+      "piid": "12SAD123F0006",
+      "description": "FY22 RUS PROGRAM SERVICES DME BASE PERIOD OF PERFORMANCE 01/03/2023 THROUGH 01/02/2024 OPTION PERIOD ONE - PERIOD OF PERFORMANCE 01/03/2024 THROUGH 01/02/2025 OPTION PERIOD TWO - PERIOD OF PERFORMANCE 01/03/2025 THROUGH 01/02/2026 OPTION PERIOD T",
+      "description_highlight": null,
+      "recipient": {
+        "uei": "CKV2L9GZKJK3",
+        "name": "DELOITTE CONSULTING LLP"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Rural Housing Service"
+      },
+      "total_obligated": "51887075.45",
+      "last_action_date": "2026-03-03",
+      "fiscal_year": 2026,
+      "naics_code": "541512",
+      "category": {
+        "code": "IT_INFRASTRUCTURE",
+        "label": "IT infrastructure",
+        "source": "baseline"
+      },
+      "pop_state_code": "DC",
+      "subaward_count": 0
+    }
+  ],
+  "facets": {
+    "agency": [
+      {
+        "value": "012",
+        "label": "Department of Agriculture",
+        "count": 7
+      }
+    ],
+    "category": [
+      {
+        "value": "PROFESSIONAL_SERVICES",
+        "label": "Professional services",
+        "count": 3
+      },
+      {
+        "value": "IT_INFRASTRUCTURE",
+        "label": "IT infrastructure",
+        "count": 2
+      },
+      {
+        "value": "ENGINEERING_RESEARCH",
+        "label": "Engineering and research",
+        "count": 1
+      },
+      {
+        "value": "IT_SOFTWARE",
+        "label": "IT software",
+        "count": 1
+      }
+    ],
+    "state": [
+      {
+        "value": "VA",
+        "label": null,
+        "count": 4
+      },
+      {
+        "value": "DC",
+        "label": null,
+        "count": 1
+      },
+      {
+        "value": "IA",
+        "label": null,
+        "count": 1
+      },
+      {
+        "value": "LA",
+        "label": null,
+        "count": 1
+      }
+    ],
+    "naics": [
+      {
+        "value": "541512",
+        "label": "COMPUTER SYSTEMS DESIGN SERVICES",
+        "count": 3
+      },
+      {
+        "value": "541611",
+        "label": "ADMINISTRATIVE MANAGEMENT AND GENERAL MANAGEMENT CONSULTING SERVICES",
+        "count": 2
+      },
+      {
+        "value": "541330",
+        "label": "ENGINEERING SERVICES",
+        "count": 1
+      },
+      {
+        "value": "541690",
+        "label": "OTHER SCIENTIFIC AND TECHNICAL CONSULTING SERVICES",
+        "count": 1
+      }
+    ],
+    "fiscal_year": [
+      {
+        "value": "2026",
+        "label": null,
+        "count": 5
+      },
+      {
+        "value": "2025",
+        "label": null,
+        "count": 2
+      }
+    ]
+  }
+}

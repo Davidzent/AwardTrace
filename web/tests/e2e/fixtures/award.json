@@ -1,0 +1,110 @@
+{
+  "award_id": "CONT_AWD_AG3K25C170001_12H2_-NONE-_-NONE-",
+  "piid": "AG3K25C170001",
+  "parent_piid": null,
+  "award_type": "D",
+  "description": "DESIGN-BUILD-BRIDGING CONSTRUCTION SERVICES FOR THE MODERNIZATION OF THE U.S. NATIONAL POULTRY RESEARCH CENTER (USNPRC), SEPRL CAMPUS IN ATHENS, GA  THIS IS A TWO-PHASE DESIGN-BUILD ACQUISITION. ONE SOLICITATION COVERS BOTH PHASES. PHASE I IS THE PRE-SELECTION PHASE IN WHICH THE GOVERNMENT WILL \"SHORTLIST\" MAXIMUM OF (4) OF THE MOST HIGHLY QUALIFIED OFFERORS. ONLY THOSE FIRMS SELECTED IN PHASE I WILL BE ALLOWED TO CONTINUE TO THE PHASE II. DETAILED DESIGN CRITERIA WILL THEN BE ADDED BY AMENDMENT TO THE SOLICITATION TO START THE PHASE II STAGE OF THE REQUEST FOR PROPOSALS. EACH FIRM SELECTED FOR PARTICIPATION IN PHASE II WILL THEN SUBMIT A DESIGN-BUILD TECHNICAL PROPOSAL, THE REMAINDER OF THE PERFORMANCE CAPABILITY PROPOSAL AND PRICE PROPOSAL. IGF::OT::IGF",
+  "recipient": {
+    "uei": "GPXRWUEUHZ19",
+    "name": "M. A. MORTENSON COMPANY"
+  },
+  "agency": {
+    "code": "012",
+    "name": "Department of Agriculture",
+    "subtier_name": "Agricultural Research Service"
+  },
+  "funding_agency": {
+    "code": "012",
+    "name": "Department of Agriculture"
+  },
+  "total_obligated": "149565662.00",
+  "potential_total_value": "149565662.00",
+  "last_action_date": "2025-12-05",
+  "fiscal_year": 2026,
+  "naics_code": "236220",
+  "pop_state_code": "GA",
+  "naics": {
+    "code": "236220",
+    "description": "COMMERCIAL AND INSTITUTIONAL BUILDING CONSTRUCTION"
+  },
+  "psc": {
+    "code": "Y1DB",
+    "description": "CONSTRUCTION OF LABORATORIES AND CLINICS"
+  },
+  "category": {
+    "code": "PROFESSIONAL_SERVICES",
+    "label": "Professional services",
+    "source": "llm",
+    "confidence": 0.86,
+    "model": "claude-haiku-4-5",
+    "prompt_version": "v1",
+    "baseline_code": "CONSTRUCTION_FACILITIES",
+    "baseline_label": "Construction and facilities"
+  },
+  "period_of_performance": {
+    "start": "2017-07-31",
+    "end": "2026-05-31"
+  },
+  "place_of_performance": {
+    "state_code": "GA",
+    "country_code": "USA"
+  },
+  "transactions": [
+    {
+      "transaction_id": "12H2_-NONE-_AG3K25C170001_61_-NONE-_0",
+      "modification_number": "61",
+      "action_date": "2025-12-05",
+      "federal_action_obligation": "0.00",
+      "description": "DESIGN-BUILD MODERNIZATION OF THE U.S. NATIONAL POULTRY RESEARCH CENTER (USNPRC), SEPRL"
+    },
+    {
+      "transaction_id": "12H2_-NONE-_AG3K25C170001_60_-NONE-_0",
+      "modification_number": "60",
+      "action_date": "2025-09-11",
+      "federal_action_obligation": "0.00",
+      "description": "DESIGN-BUILD MODERNIZATION OF THE U.S. NATIONAL POULTRY RESEARCH CENTER (USNPRC), SEPRL"
+    },
+    {
+      "transaction_id": "12H2_-NONE-_AG3K25C170001_59_-NONE-_0",
+      "modification_number": "59",
+      "action_date": "2025-05-28",
+      "federal_action_obligation": "0.00",
+      "description": "DESIGN-BUILD MODERNIZATION OF THE U.S. NATIONAL POULTRY RESEARCH CENTER (USNPRC), SEPRL"
+    },
+    {
+      "transaction_id": "12H2_-NONE-_AG3K25C170001_58_-NONE-_0",
+      "modification_number": "58",
+      "action_date": "2025-04-08",
+      "federal_action_obligation": "0.00",
+      "description": "DESIGN-BUILD MODERNIZATION OF THE U.S. NATIONAL POULTRY RESEARCH CENTER (USNPRC), SEPRL"
+    },
+    {
+      "transaction_id": "12H2_-NONE-_AG3K25C170001_57_-NONE-_0",
+      "modification_number": "57",
+      "action_date": "2025-02-14",
+      "federal_action_obligation": "220083.00",
+      "description": "DESIGN-BUILD MODERNIZATION OF THE U.S. NATIONAL POULTRY RESEARCH CENTER (USNPRC), SEPRL"
+    },
+    {
+      "transaction_id": "12H2_-NONE-_AG3K25C170001_56_-NONE-_0",
+      "modification_number": "56",
+      "action_date": "2025-01-07",
+      "federal_action_obligation": "69619.00",
+      "description": "DESIGN-BUILD MODERNIZATION OF THE U.S. NATIONAL POULTRY RESEARCH CENTER (USNPRC), SEPRL"
+    },
+    {
+      "transaction_id": "12H2_-NONE-_AG3K25C170001_55_-NONE-_0",
+      "modification_number": "55",
+      "action_date": "2024-11-20",
+      "federal_action_obligation": "115286.00",
+      "description": "DESIGN-BUILD MODERNIZATION OF THE U.S. NATIONAL POULTRY RESEARCH CENTER (USNPRC), SEPRL"
+    }
+  ],
+  "transactions_truncated": false,
+  "subaward_summary": {
+    "count": 3,
+    "total": "610000.00"
+  },
+  "source_modified_at": "2025-12-05T10:04:08Z",
+  "usaspending_url": "https://www.usaspending.gov/award/CONT_AWD_AG3K25C170001_12H2_-NONE-_-NONE-/"
+}

@@ -1,0 +1,41 @@
+{
+  "primes_above": [
+    {
+      "uei": "AAAAAAAAAAA1",
+      "name": "BOOZ ALLEN HAMILTON INC",
+      "total_amount": "1120000.00",
+      "subaward_count": 4,
+      "has_awards": true
+    },
+    {
+      "uei": "AAAAAAAAAAA2",
+      "name": "LEIDOS INC",
+      "total_amount": "310000.00",
+      "subaward_count": 1,
+      "has_awards": false
+    }
+  ],
+  "subs_below": [
+    {
+      "uei": "BBBBBBBBBBB1",
+      "name": "BETA DATA LLC",
+      "total_amount": "400000.00",
+      "subaward_count": 2,
+      "has_awards": true
+    },
+    {
+      "uei": "BBBBBBBBBBB2",
+      "name": "CYBERCORE INC",
+      "total_amount": "150000.00",
+      "subaward_count": 1,
+      "has_awards": false
+    },
+    {
+      "uei": "BBBBBBBBBBB3",
+      "name": "NORTHWIND ANALYTICS",
+      "total_amount": "62000.00",
+      "subaward_count": 3,
+      "has_awards": true
+    }
+  ]
+}
