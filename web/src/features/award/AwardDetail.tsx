@@ -9,6 +9,7 @@ import { formatDate } from '../../lib/format';
 import { ModificationsTable } from './ModificationsTable';
 import styles from './AwardDetail.module.css';
 import { SubawardsPanel } from './SubawardsPanel';
+import { TimelineChart } from './TimelineChart';
 
 /** USAspending's contract award types. */
 const AWARD_TYPES: Record<string, string> = {
@@ -71,6 +72,8 @@ export function AwardDetail({ award }: { award: Schemas['AwardDetail'] }) {
             <h2 id="award-category">Category</h2>
             <CategoryBlock category={award.category} />
           </section>
+          {/* A running total needs every modification; with only the newest, it would start partway. */}
+          {!award.transactions_truncated && <TimelineChart transactions={transactions} />}
         </div>
 
         <div className={styles.column}>

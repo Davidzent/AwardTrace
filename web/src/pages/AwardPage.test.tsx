@@ -40,6 +40,8 @@ function subawardPage(url: URL): Schemas['SubawardPage'] {
 
 function renderAward(respond: (url: URL) => Response) {
   vi.stubGlobal('fetch', vi.fn(async (input: string) => respond(new URL(input, 'http://localhost'))));
+  // jsdom lays nothing out, so the chart never learns its width and draws no plot; its table view still works.
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   const router = createMemoryRouter(routes, { initialEntries: ['/awards/CONT_AWD_CAMPS'] });
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -88,6 +90,25 @@ describe('AwardPage', () => {
     expect(within(classifier as HTMLElement).getByRole('button', { name: 'AI' })).toBeDefined();
     expect(classifier?.textContent).toContain('Confidence 0.91');
     expect(productCode?.textContent).toBe('Other');
+  });
+
+  it('shows the running total as a table on request, and no chart when modifications are missing', async () => {
+    renderAward(() => Response.json(AWARD));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Show as table' }));
+
+    const rows = within(screen.getByRole('table', { name: 'Obligations over time, oldest first' })).getAllByRole('row');
+    expect(rows.map((row) => row.textContent)).toEqual([
+      'DateChangeRunning total',
+      'Jul 16, 2026+$82,500.00$82,500.00',
+      'Aug 24, 2026-$27,500.00$55,000.00',
+    ]);
+    expect(screen.getByRole('button', { name: 'Show as chart' })).toBeDefined();
+
+    cleanup();
+    renderAward(() => Response.json({ ...AWARD, transactions_truncated: true }));
+    expect(await screen.findByRole('heading', { level: 1 })).toBeDefined();
+    expect(screen.queryByRole('heading', { name: 'Obligations over time' })).toBeNull();
   });
 
   it('says when no subawards are reported, without asking for them', async () => {
