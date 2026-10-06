@@ -55,6 +55,22 @@ afterEach(() => {
 });
 
 describe('SearchPage', () => {
+  it('opens on the front page, with the totals and a link to each category', async () => {
+    const facets = {
+      agency: [{ value: '012', label: 'Department of Agriculture', count: 41 }],
+      category: [{ value: 'LOGISTICS_TRANSPORT', label: 'Logistics and transport', count: 2917 }],
+    };
+    const { fetch } = renderAt('/', () => Response.json({ ...RESULTS, facets }));
+
+    expect(await screen.findByText(/41 Department of Agriculture awards, \$4\.9M obligated\./)).toBeDefined();
+    expect(fetch).toHaveBeenCalledWith('/api/v1/awards/search', expect.anything());
+    expect(screen.getByRole('heading', { level: 1, name: 'Search federal contracts' })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Logistics and transport 2,917 awards' }).getAttribute('href'))
+      .toBe('/?category=LOGISTICS_TRANSPORT');
+    expect(screen.getByRole('link', { name: 'wildland fire' }).getAttribute('href')).toBe('/?q=wildland+fire');
+    expect(screen.queryByText('Helicopter services for wildfire suppression')).toBeNull();
+  });
+
   it('searches what the URL holds and shows the results', async () => {
     const { fetch } = renderAt('/?q=helicopter&page=2', () => Response.json(RESULTS));
 
@@ -67,11 +83,13 @@ describe('SearchPage', () => {
     expect(screen.getByText('$4.8M')).toBeDefined();
     expect(screen.getByText('2 reported subawards')).toBeDefined();
     expect(screen.getByText('Logistics and transport')).toBeDefined();
-    // Only the classifier's category carries the AI badge.
+    // Only the classifier's category carries the AI badge, a button that opens its note as a popover.
+    const ai = screen.getByRole('button', { name: 'AI' });
     expect(screen.getAllByText('AI')).toHaveLength(1);
-    expect(screen.getByText('Engineering and research').nextElementSibling?.getAttribute('title')).toBe(
-      'Assigned by a language model from the description, so it can be wrong',
-    );
+    const note = document.getElementById(ai.getAttribute('popovertarget') ?? '');
+    expect(note?.getAttribute('popover')).toBe('auto');
+    expect(note?.textContent).toBe('Assigned by a language model from the description, so it can be wrong.');
+    expect(ai.getAttribute('aria-describedby')).toBe(note?.id);
     expect(screen.getByRole('link', { name: 'Page 3' }).getAttribute('href')).toBe('/?q=helicopter&page=3');
   });
 

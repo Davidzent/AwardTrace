@@ -40,6 +40,8 @@ function subawardPage(url: URL): Schemas['SubawardPage'] {
 
 function renderAward(respond: (url: URL) => Response) {
   vi.stubGlobal('fetch', vi.fn(async (input: string) => respond(new URL(input, 'http://localhost'))));
+  // jsdom lays nothing out, so the chart never learns its width and draws no plot; its table view still works.
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   const router = createMemoryRouter(routes, { initialEntries: ['/awards/CONT_AWD_CAMPS'] });
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -62,7 +64,9 @@ describe('AwardPage', () => {
     expect(screen.getByText('Jul 16, 2026 to Sep 30, 2026')).toBeDefined();
     expect(screen.getByText('-$27,500.00')).toBeDefined();
     expect(screen.getAllByText('Deobligation')).toHaveLength(1);
-    expect(screen.getByText('Other').parentElement?.nextSibling?.textContent).toBe(' PSC-based');
+    const [classifier, productCode] = within(screen.getByRole('region', { name: 'Category' })).getAllByRole('definition');
+    expect(classifier?.textContent).toBe('No category');
+    expect(productCode?.textContent).toBe('Other');
     expect(screen.queryByText('AI')).toBeNull();
     expect(screen.getByRole('link', { name: 'View recipient →' }).getAttribute('href')).toBe('/recipients/MN5KRX2W9R46');
   });
@@ -80,17 +84,52 @@ describe('AwardPage', () => {
     };
     renderAward(() => Response.json({ ...AWARD, category }));
 
-    expect(await screen.findByText('Natural resources and environment')).toBeDefined();
-    expect(screen.getByText('AI')).toBeDefined();
-    expect(screen.getByText('confidence 0.91')).toBeDefined();
-    expect(screen.getByText('PSC-based: Other')).toBeDefined();
+    const categories = within(await screen.findByRole('region', { name: 'Category' }));
+    const [classifier, productCode] = categories.getAllByRole('definition');
+    expect(classifier?.textContent).toContain('Natural resources and environment');
+    expect(within(classifier as HTMLElement).getByRole('button', { name: 'AI' })).toBeDefined();
+    expect(classifier?.textContent).toContain('Confidence 0.91');
+    expect(productCode?.textContent).toBe('Other');
+  });
+
+  it('shows the running total as a table on request, and no chart when modifications are missing', async () => {
+    renderAward(() => Response.json(AWARD));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Show as table' }));
+
+    const rows = within(screen.getByRole('table', { name: 'Obligations over time, oldest first' })).getAllByRole('row');
+    expect(rows.map((row) => row.textContent)).toEqual([
+      'DateChangeRunning total',
+      'Jul 16, 2026+$82,500.00$82,500.00',
+      'Aug 24, 2026-$27,500.00$55,000.00',
+    ]);
+    expect(screen.getByRole('button', { name: 'Show as chart' })).toBeDefined();
+    // The modifications add up to the award's total, so the chart needs no note.
+    expect(screen.queryByText(/before fiscal year 2025/)).toBeNull();
+
+    cleanup();
+    renderAward(() => Response.json({ ...AWARD, transactions_truncated: true }));
+    expect(await screen.findByRole('heading', { level: 1 })).toBeDefined();
+    expect(screen.queryByRole('heading', { name: 'Obligations over time' })).toBeNull();
+  });
+
+  it("says when the chart's running total leaves out obligations from before the data", async () => {
+    renderAward(() => Response.json({ ...AWARD, total_obligated: '149565662.00' }));
+
+    expect(
+      await screen.findByText(
+        "Adds up the modifications listed below. The award's total, $149,565,662.00, also counts obligations from " +
+          "before fiscal year 2025, which AwardTrace doesn't load.",
+      ),
+    ).toBeDefined();
   });
 
   it('says when no subawards are reported, without asking for them', async () => {
     renderAward(() => Response.json({ ...AWARD, subaward_summary: { count: 0, total: '0.00' } }));
 
     expect(await screen.findByText('No reported subawards')).toBeDefined();
-    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
+    const requested = vi.mocked(fetch).mock.calls.map(([input]) => String(input));
+    expect(requested.filter((url) => url.includes('/subawards'))).toEqual([]);
   });
 
   it('lists the newest subawards and shows more on request', async () => {

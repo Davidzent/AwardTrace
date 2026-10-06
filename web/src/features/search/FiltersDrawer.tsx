@@ -1,4 +1,6 @@
 import { type ReactNode, useRef } from 'react';
+import { Button } from '../../components/Button';
+import styles from './FiltersDrawer.module.css';
 
 /**
  * The filter column on narrow screens: a "Filters" button with the active count that opens a full-height drawer
@@ -9,20 +11,20 @@ export function FiltersDrawer({ count, children }: { count: number; children: Re
   const close = () => dialog.current?.close();
   return (
     <>
-      <button type="button" className="filters-button" onClick={() => dialog.current?.showModal()}>
+      <Button className={styles.open} onClick={() => dialog.current?.showModal()}>
         Filters{count > 0 ? ` (${count})` : ''}
-      </button>
-      <dialog ref={dialog} className="filters-drawer" aria-labelledby="filters-title">
-        <div className="drawer-header">
+      </Button>
+      <dialog ref={dialog} className={styles.drawer} aria-labelledby="filters-title">
+        <div className={styles.header}>
           <h2 id="filters-title">Filters</h2>
-          <button type="button" onClick={close}>
+          <Button variant="quiet" onClick={close}>
             Close
-          </button>
+          </Button>
         </div>
         {children}
-        <button type="button" className="drawer-done" onClick={close}>
+        <Button variant="primary" className={styles.done} onClick={close}>
           Show results
-        </button>
+        </Button>
       </dialog>
     </>
   );

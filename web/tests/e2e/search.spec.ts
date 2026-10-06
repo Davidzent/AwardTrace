@@ -3,6 +3,9 @@ import { expectAccessible, expectResultsSettled } from './helpers';
 
 test('searches by keyword, narrows by a facet, and keeps it all in the URL', async ({ page }) => {
   await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Browse by category' })).toBeVisible();
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
+  await expectAccessible(page);
   await page.getByLabel('Search awards').fill('fire');
   await page.getByRole('button', { name: 'Search', exact: true }).click();
 

@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import styles from './AboutPage.module.css';
 
 const FLOW = [
   { name: 'USAspending archive', detail: 'Monthly contract files, republished from FPDS' },
@@ -14,10 +15,10 @@ const FLOW = [
 /** How it works, in plain language (doc 08). Each guarantee is one the code enforces today. */
 export function AboutPage() {
   return (
-    <article className="about">
+    <article className={styles.about}>
       <title>How it works · AwardTrace</title>
       <h1>How AwardTrace works</h1>
-      <p className="lead">
+      <p className={styles.lead}>
         AwardTrace makes federal contract awards searchable. It reads the public award archive of{' '}
         <a href="https://www.usaspending.gov/">USAspending.gov</a>, keeps every file it reads, and rebuilds awards from
         their individual transactions, so every figure can be traced back to the source.
@@ -25,7 +26,7 @@ export function AboutPage() {
 
       <section aria-labelledby="about-flow">
         <h2 id="about-flow">From source file to search result</h2>
-        <ol className="flow">
+        <ol className={styles.flow}>
           {FLOW.map((step) => (
             <li key={step.name}>
               <strong>{step.name}</strong>
@@ -37,32 +38,42 @@ export function AboutPage() {
 
       <section aria-labelledby="about-guarantees">
         <h2 id="about-guarantees">What always holds</h2>
-        <dl className="guarantees">
-          <dt>The source files are the record</dt>
-          <dd>
-            The database and the search index are copies. Replaying the stored files rebuilds both, so nothing here depends
-            on state that can't be recreated.
-          </dd>
-          <dt>Receiving the same data twice changes nothing</dt>
-          <dd>
-            Every step may repeat after a failure. Writes are versioned, so a repeated event leaves the database and the
-            index exactly as they were.
-          </dd>
-          <dt>Order doesn't matter</dt>
-          <dd>
-            A transaction from an older file never replaces one from a newer file, and each award is recomputed from its
-            transactions, so late or replayed data can't roll an award back.
-          </dd>
-          <dt>A change and its announcement happen together</dt>
-          <dd>
-            When an award changes, the notice for the search index is written in the same database transaction, so the
-            index can't miss a change or hear about one that didn't happen.
-          </dd>
-          <dt>Money is exact</dt>
-          <dd>
-            Amounts are stored and served as exact decimals, never as floating-point numbers. Totals across search results
-            are summed by Elasticsearch and rounded to the cent.
-          </dd>
+        <dl className={styles.guarantees}>
+          <div>
+            <dt>The source files are the record</dt>
+            <dd>
+              The database and the search index are copies. Replaying the stored files rebuilds both, so nothing here
+              depends on state that can't be recreated.
+            </dd>
+          </div>
+          <div>
+            <dt>Receiving the same data twice changes nothing</dt>
+            <dd>
+              Every step may repeat after a failure. Writes are versioned, so a repeated event leaves the database and
+              the index exactly as they were.
+            </dd>
+          </div>
+          <div>
+            <dt>Order doesn't matter</dt>
+            <dd>
+              A transaction from an older file never replaces one from a newer file, and each award is recomputed from
+              its transactions, so late or replayed data can't roll an award back.
+            </dd>
+          </div>
+          <div>
+            <dt>A change and its announcement happen together</dt>
+            <dd>
+              When an award changes, the notice for the search index is written in the same database transaction, so the
+              index can't miss a change or hear about one that didn't happen.
+            </dd>
+          </div>
+          <div>
+            <dt>Money is exact</dt>
+            <dd>
+              Amounts are stored and served as exact decimals, never as floating-point numbers. Totals across search
+              results are summed by Elasticsearch and rounded to the cent.
+            </dd>
+          </div>
         </dl>
       </section>
 

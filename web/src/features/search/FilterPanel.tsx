@@ -1,5 +1,6 @@
 import type { SearchQuery } from '../../api/client';
 import { FacetGroup } from '../../components/FacetGroup';
+import facetStyles from '../../components/FacetGroup.module.css';
 import { RangeFilter } from '../../components/RangeFilter';
 import { CATEGORY_SOURCES, FACETS, type Facets, selected, selecting } from './filters';
 
@@ -33,19 +34,19 @@ export function FilterPanel({ query, facets, onChange }: Props) {
           />
         );
       })}
-      <fieldset className="facet">
+      <fieldset>
         <legend>Category source</legend>
-        <ul>
+        <ul className={facetStyles.list}>
           {CATEGORY_SOURCES.map(({ value, label }) => (
             <li key={label}>
-              <label>
+              <label className={facetStyles.option}>
                 <input
                   type="radio"
                   name="category_source"
                   checked={query.category_source === value}
                   onChange={() => onChange({ category_source: value })}
                 />
-                <span className="facet-label">{label}</span>
+                <span className={facetStyles.label}>{label}</span>
               </label>
             </li>
           ))}

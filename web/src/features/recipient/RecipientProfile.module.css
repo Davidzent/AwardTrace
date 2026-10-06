@@ -1,0 +1,61 @@
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.header h1 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xl);
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* The three numbers that sum the recipient up, as tiles. */
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-4);
+  margin: 0 0 var(--space-4);
+}
+
+.figures div {
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.figures dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.figures dd {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+}
+
+/* Stacked on a phone, so smaller, to keep the lists in reach. */
+@media (max-width: 40rem) {
+  .figures {
+    gap: var(--space-2);
+  }
+
+  .figures div {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .figures dd {
+    font-size: var(--text-lg);
+  }
+}
+
+.rollups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}

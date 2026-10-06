@@ -14,6 +14,9 @@ export async function expectAccessible(page: Page) {
 
 /** Results have loaded and aren't being replaced: no skeleton, and no dimmed previous results. */
 export async function expectResultsSettled(page: Page) {
-  await expect(page.locator('.results')).toBeVisible();
-  await expect(page.locator('.results[aria-busy="true"]')).toHaveCount(0);
+  const results = page.getByRole('region', { name: 'Results' });
+  await expect(results).toBeVisible();
+  await expect(results).not.toHaveAttribute('aria-busy', 'true');
+  // The fade back from dimmed takes 150 ms; until it ends, axe would measure contrast through the opacity.
+  await expect(results).toHaveCSS('opacity', '1');
 }

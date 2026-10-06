@@ -1,0 +1,43 @@
+{
+  "ingest": {
+    "last_run": {
+      "run_id": "01a0ee71-443b-792b-a919-218ba7d28716",
+      "mode": "backfill",
+      "status": "succeeded",
+      "started_at": "2026-09-29T18:33:15.579411Z",
+      "finished_at": "2026-09-29T18:33:23.590618Z",
+      "records_published": 91227
+    },
+    "last_success_at": "2026-09-29T18:33:23.590618Z"
+  },
+  "pipeline": {
+    "available": true,
+    "lag": {
+      "pipeline": 0,
+      "indexer": 0,
+      "subawards": 0
+    },
+    "dead_letters": 0,
+    "outbox_backlog": {
+      "count": 0,
+      "oldest_created_at": null
+    }
+  },
+  "index": {
+    "available": true,
+    "alias_target": "awards-v1-20261003194716",
+    "document_count": 61204,
+    "award_row_count": 61204
+  },
+  "enrichment": {
+    "enabled": true,
+    "breaker_state": "CLOSED",
+    "coverage_pct": 98.9,
+    "cache_hit_rate_pct": 100.0,
+    "spend_today_usd": "0.00",
+    "daily_cap_usd": "1.00"
+  },
+  "freshness": {
+    "latest_source_modified_at": "2026-09-04T23:36:28Z"
+  }
+}

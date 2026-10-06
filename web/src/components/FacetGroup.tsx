@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { Schemas } from '../api/client';
 import { formatCount } from '../lib/format';
+import { Button } from './Button';
+import styles from './FacetGroup.module.css';
 
 const COLLAPSED = 5;
 
@@ -26,12 +28,12 @@ export function FacetGroup({ title, values, selected, display, onChange }: Props
   const shown = expanded ? items : items.slice(0, Math.max(COLLAPSED, selected.length));
 
   return (
-    <fieldset className="facet">
+    <fieldset>
       <legend>{title}</legend>
-      <ul>
+      <ul className={styles.list}>
         {shown.map(({ value = '', label, count }) => (
           <li key={value}>
-            <label>
+            <label className={styles.option}>
               <input
                 type="checkbox"
                 checked={selected.includes(value)}
@@ -39,21 +41,21 @@ export function FacetGroup({ title, values, selected, display, onChange }: Props
                   onChange(event.target.checked ? [...selected, value] : selected.filter((other) => other !== value))
                 }
               />
-              <span className="facet-label">{display(value, label)}</span>
-              {count !== undefined && <span className="facet-count">{formatCount(count)}</span>}
+              <span className={styles.label}>{display(value, label)}</span>
+              {count !== undefined && <span className={styles.count}>{formatCount(count)}</span>}
             </label>
           </li>
         ))}
       </ul>
       {items.length > shown.length && (
-        <button type="button" className="link-button" onClick={() => setExpanded(true)}>
+        <Button variant="quiet" className={styles.more} onClick={() => setExpanded(true)}>
           Show {items.length - shown.length} more
-        </button>
+        </Button>
       )}
       {expanded && items.length > COLLAPSED && (
-        <button type="button" className="link-button" onClick={() => setExpanded(false)}>
+        <Button variant="quiet" className={styles.more} onClick={() => setExpanded(false)}>
           Show fewer
-        </button>
+        </Button>
       )}
     </fieldset>
   );

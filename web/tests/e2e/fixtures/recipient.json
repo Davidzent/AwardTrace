@@ -1,0 +1,65 @@
+{
+  "uei": "CKV2L9GZKJK3",
+  "name": "DELOITTE CONSULTING LLP",
+  "parent": {
+    "uei": "GT54N467W2C6",
+    "name": "DELOITTE CONSULTING LLP"
+  },
+  "location": {
+    "city": "ARLINGTON",
+    "state_code": "VA",
+    "country_code": "USA"
+  },
+  "totals": {
+    "award_count": 7,
+    "total_obligated": "219058800.32"
+  },
+  "top_agencies": [
+    {
+      "code": "012",
+      "name": "Department of Agriculture",
+      "award_count": 7,
+      "total_obligated": "219058800.32"
+    }
+  ],
+  "top_naics": [
+    {
+      "code": "541512",
+      "name": "COMPUTER SYSTEMS DESIGN SERVICES",
+      "award_count": 3,
+      "total_obligated": "114592523.38"
+    },
+    {
+      "code": "541330",
+      "name": "ENGINEERING SERVICES",
+      "award_count": 1,
+      "total_obligated": "99440632.77"
+    },
+    {
+      "code": "541611",
+      "name": "ADMINISTRATIVE MANAGEMENT AND GENERAL MANAGEMENT CONSULTING SERVICES",
+      "award_count": 2,
+      "total_obligated": "4526136.17"
+    },
+    {
+      "code": "541690",
+      "name": "OTHER SCIENTIFIC AND TECHNICAL CONSULTING SERVICES",
+      "award_count": 1,
+      "total_obligated": "499508.00"
+    }
+  ],
+  "awards_by_fiscal_year": [
+    {
+      "fiscal_year": 2025,
+      "award_count": 2,
+      "total_obligated": "27994117.60"
+    },
+    {
+      "fiscal_year": 2026,
+      "award_count": 5,
+      "total_obligated": "191064682.72"
+    }
+  ],
+  "first_action_date": "2024-10-22",
+  "last_action_date": "2026-08-18"
+}

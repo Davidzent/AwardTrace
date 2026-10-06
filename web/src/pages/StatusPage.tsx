@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
+import { Button } from '../components/Button';
+import problemStyles from '../components/ProblemMessage.module.css';
+import { Skeleton } from '../components/Skeleton';
 import { StatusTile } from '../components/StatusTile';
 import {
   enrichmentCondition,
@@ -10,6 +13,7 @@ import {
 } from '../features/status/conditions';
 import { formatCount, formatMoney, formatTime } from '../lib/format';
 import { useNow } from '../lib/useNow';
+import styles from './StatusPage.module.css';
 
 /** Polls every 15 seconds, the time the API caches the status for (doc 07). Polling pauses while the tab is hidden. */
 export function StatusPage() {
@@ -23,41 +27,41 @@ export function StatusPage() {
   const run = ingest?.last_run;
 
   return (
-    <section className="status">
+    <section>
       <title>Pipeline status · AwardTrace</title>
-      <div className="status-header">
+      <div className={styles.header}>
         <h1>Pipeline status</h1>
-        <p className="muted" aria-live="polite">
+        <p aria-live="polite">
           {status.dataUpdatedAt > 0 && `Updated ${ago(now - status.dataUpdatedAt)}`}{' '}
-          <button type="button" onClick={() => void status.refetch()} disabled={status.isFetching}>
+          <Button onClick={() => void status.refetch()} busy={status.isFetching}>
             Refresh
-          </button>
+          </Button>
         </p>
       </div>
 
       {status.error && (
-        <p className="problem" role="alert">
+        <p className={problemStyles.problem} role="alert">
           <strong>Status unavailable.</strong>{' '}
           {status.data ? 'Showing the last status received.' : 'The rest of the site keeps working.'}
         </p>
       )}
 
       {!status.data && !status.error && (
-        <div className="status-grid" aria-busy="true">
+        <div className={styles.grid} aria-busy="true">
           <p className="visually-hidden" role="status">
             Loading status
           </p>
           {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="skeleton-block skeleton-panel" aria-hidden="true" />
+            <Skeleton key={i} shape="panel" />
           ))}
         </div>
       )}
 
       {status.data && (
-        <div className="status-grid">
+        <div className={styles.grid}>
           <StatusTile title="Ingest" condition={ingestCondition(ingest)}>
             {run ? (
-              <dl className="facts">
+              <dl>
                 <dt>Last run</dt>
                 <dd>
                   {run.mode}, {run.status}
@@ -76,7 +80,7 @@ export function StatusPage() {
 
           <StatusTile title="Pipeline" condition={pipelineCondition(pipeline, now)}>
             {pipeline?.available ? (
-              <dl className="facts">
+              <dl>
                 {Object.entries(pipeline.lag ?? {}).map(([group, lag]) => (
                   <Fact key={group} term={`${group} lag`} value={formatCount(lag)} />
                 ))}
@@ -89,7 +93,7 @@ export function StatusPage() {
           </StatusTile>
 
           <StatusTile title="Index" condition={indexCondition(index)}>
-            <dl className="facts">
+            <dl>
               {index?.available && (
                 <>
                   <Fact term="Alias" value={`awards → ${index.alias_target}`} />
@@ -103,7 +107,7 @@ export function StatusPage() {
 
           <StatusTile title="Enrichment" condition={enrichmentCondition(enrichment)}>
             {enrichment?.enabled ? (
-              <dl className="facts">
+              <dl>
                 <Fact term="Breaker" value={(enrichment.breaker_state ?? '').toLowerCase().replace('_', '-')} />
                 <Fact term="Coverage" value={percent(enrichment.coverage_pct)} />
                 <Fact term="Cache hit rate" value={percent(enrichment.cache_hit_rate_pct)} />
@@ -116,7 +120,7 @@ export function StatusPage() {
           </StatusTile>
 
           <StatusTile title="Freshness" condition={freshnessCondition(freshness, now)}>
-            <dl className="facts">
+            <dl>
               <Fact
                 term="Source modified"
                 value={freshness?.latest_source_modified_at ? formatTime(freshness.latest_source_modified_at) : '—'}
@@ -133,7 +137,7 @@ function Fact({ term, value }: { term: string; value: string }) {
   return (
     <>
       <dt>{term}</dt>
-      <dd className="num-value">{value}</dd>
+      <dd>{value}</dd>
     </>
   );
 }

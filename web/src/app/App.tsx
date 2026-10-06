@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { ApiError } from '../api/client';
 import { routes } from './routes';
+import './tokens.css';
 import './styles.css';
 
 const router = createBrowserRouter(routes);

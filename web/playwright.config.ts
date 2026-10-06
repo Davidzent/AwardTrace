@@ -8,6 +8,9 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: 'tests/e2e',
   fullyParallel: true,
+  // Ten Chrome windows at once starve each other: lazy pages miss their timeouts and text paints in the fallback font
+  // after Public Sans has loaded, which fails the screenshots. Four keep every run stable for a few seconds more.
+  workers: 4,
   reporter: 'list',
   use: {
     baseURL: 'http://localhost:5173',

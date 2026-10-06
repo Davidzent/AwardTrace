@@ -27,7 +27,7 @@ describe('routes', () => {
   it('opens the search page at the root', () => {
     renderAt('/');
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Search awards');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Search federal contracts');
     expect(screen.getByRole('link', { name: 'Search' }).getAttribute('aria-current')).toBe('page');
   });
 

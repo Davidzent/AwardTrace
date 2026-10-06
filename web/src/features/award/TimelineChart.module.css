@@ -1,0 +1,91 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.note {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* The height is fixed, so the page doesn't move while the chart measures its width. */
+.plot {
+  position: relative;
+  height: 200px;
+  border-radius: var(--radius-md);
+}
+
+.plot svg {
+  display: block;
+  overflow: visible;
+  touch-action: pan-y;
+}
+
+/* Recessive chrome: hairline gridlines and muted axis text; only the data is loud. */
+.grid {
+  stroke: var(--color-border);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.axis {
+  fill: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.line {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.area {
+  fill: var(--color-primary);
+  fill-opacity: 0.1;
+}
+
+/* The total at the line's end, in text color: the mark carries the color, the label stays ink. */
+.end {
+  fill: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.crosshair {
+  stroke: var(--color-border-input);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+/* A surface-colored ring keeps the marker legible where it sits on the line. */
+.marker {
+  fill: var(--color-primary);
+  stroke: var(--color-bg);
+  stroke-width: 2;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  display: grid;
+  width: 11rem;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-md);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltip span {
+  color: var(--color-text-muted);
+}

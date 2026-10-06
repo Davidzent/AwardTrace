@@ -1,4 +1,5 @@
 import { isRouteErrorResponse, useRouteError } from 'react-router';
+import { Button } from '../components/Button';
 
 /** A page that failed to render. Failed API requests are shown inside the page instead, with a retry. */
 export function RouteError() {
@@ -13,9 +14,7 @@ export function RouteError() {
       <title>Something went wrong · AwardTrace</title>
       <h1>Something went wrong</h1>
       <p>{detail}</p>
-      <button type="button" onClick={() => window.location.reload()}>
-        Reload the page
-      </button>
+      <Button onClick={() => window.location.reload()}>Reload the page</Button>
     </section>
   );
 }

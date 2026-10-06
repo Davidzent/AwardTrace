@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Button } from './Button';
+import styles from './RangeFilter.module.css';
 
 type Props = {
   legend: string;
@@ -38,7 +40,7 @@ export function RangeFilter({ legend, kind, min, max, onApply }: Props) {
   }
 
   return (
-    <fieldset className="range">
+    <fieldset>
       <legend>{legend}</legend>
       <form
         onSubmit={(event) => {
@@ -46,8 +48,8 @@ export function RangeFilter({ legend, kind, min, max, onApply }: Props) {
           apply();
         }}
       >
-        <div className="range-fields">
-          <label>
+        <div className={styles.fields}>
+          <label className={styles.field}>
             {kind === 'money' ? 'Min' : 'From'}
             <input
               type={kind === 'date' ? 'date' : 'text'}
@@ -58,7 +60,7 @@ export function RangeFilter({ legend, kind, min, max, onApply }: Props) {
               onChange={(event) => setFrom(event.target.value)}
             />
           </label>
-          <label>
+          <label className={styles.field}>
             {kind === 'money' ? 'Max' : 'To'}
             <input
               type={kind === 'date' ? 'date' : 'text'}
@@ -71,11 +73,11 @@ export function RangeFilter({ legend, kind, min, max, onApply }: Props) {
           </label>
         </div>
         {error && (
-          <p id={`${id}-error`} className="range-error" role="alert">
+          <p id={`${id}-error`} className={styles.error} role="alert">
             {error}
           </p>
         )}
-        <button type="submit">Apply</button>
+        <Button type="submit">Apply</Button>
       </form>
     </fieldset>
   );

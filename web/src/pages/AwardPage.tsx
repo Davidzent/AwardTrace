@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { ProblemMessage } from '../components/ProblemMessage';
+import { Skeleton } from '../components/Skeleton';
 import { AwardDetail } from '../features/award/AwardDetail';
-import { SearchBox } from '../features/search/SearchBox';
-import { searchHref } from '../features/search/searchUrl';
+import styles from '../features/award/AwardDetail.module.css';
 
 export function AwardPage() {
   const { awardId = '' } = useParams();
@@ -21,31 +21,32 @@ export function AwardPage() {
   }
   if (!award.data) {
     return (
-      <div className="award" aria-busy="true">
+      <div aria-busy="true">
         <p className="visually-hidden" role="status">
           Loading award
         </p>
-        <div className="skeleton-block skeleton-title" aria-hidden="true" />
-        <div className="award-grid" aria-hidden="true">
-          <div className="skeleton-block skeleton-panel" />
-          <div className="skeleton-block skeleton-panel" />
+        <Skeleton shape="title" />
+        <div className={styles.grid}>
+          <Skeleton shape="panel" />
+          <Skeleton shape="panel" />
         </div>
-        <div className="skeleton-block skeleton-panel" aria-hidden="true" />
+        <Skeleton shape="panel" />
       </div>
     );
   }
   return <AwardDetail award={award.data} />;
 }
 
-/** A 404 shows a search box, since the reader most likely wants to find the award another way (doc 08). */
+/** A 404 points to the header's search box, since the reader most likely wants to find the award another way. */
 function AwardNotFound() {
-  const navigate = useNavigate();
   return (
     <section className="page-message">
       <title>Award not found · AwardTrace</title>
       <h1>No award with this ID</h1>
-      <p>USAspending may have removed it, or the address may be mistyped. Search for it instead.</p>
-      <SearchBox initial="" onSearch={(q) => navigate(`/${searchHref({}, { q })}`)} />
+      <p>
+        USAspending may have removed it, or the address may be mistyped. Search for it with the box at the top of the
+        page.
+      </p>
     </section>
   );
 }

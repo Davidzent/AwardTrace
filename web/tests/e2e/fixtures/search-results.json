@@ -1,0 +1,562 @@
+{
+  "total": 4007,
+  "total_is_capped": false,
+  "total_obligated": "583812943.52",
+  "took_ms": 18,
+  "page": 1,
+  "size": 5,
+  "results": [
+    {
+      "award_id": "CONT_AWD_1204H126M7852_12C2_1204H125T7246_12C2",
+      "piid": "1204H126M7852",
+      "description": "FLASHBACK FIRE ORMHF000688 E444",
+      "description_highlight": "FLASHBACK <mark>FIRE</mark> ORMHF000688 E444",
+      "recipient": {
+        "uei": "DM6WCDS6F356",
+        "name": "FLASHBACK FIRE"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Forest Service"
+      },
+      "total_obligated": "25800.00",
+      "last_action_date": "2026-08-08",
+      "fiscal_year": 2026,
+      "naics_code": "115310",
+      "category": {
+        "code": "NATURAL_RESOURCES",
+        "label": "Natural resources and environment",
+        "source": "llm"
+      },
+      "pop_state_code": "OR",
+      "subaward_count": 0
+    },
+    {
+      "award_id": "CONT_AWD_1204H126M7316_12C2_1204H125T7246_12C2",
+      "piid": "1204H126M7316",
+      "description": "FLASHBACK FIRE ORWWF000224 E142",
+      "description_highlight": "FLASHBACK <mark>FIRE</mark> ORWWF000224 E142",
+      "recipient": {
+        "uei": "DM6WCDS6F356",
+        "name": "FLASHBACK FIRE"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Forest Service"
+      },
+      "total_obligated": "51483.38",
+      "last_action_date": "2026-07-12",
+      "fiscal_year": 2026,
+      "naics_code": "115310",
+      "category": {
+        "code": "NATURAL_RESOURCES",
+        "label": "Natural resources and environment",
+        "source": "llm"
+      },
+      "pop_state_code": "OR",
+      "subaward_count": 0
+    },
+    {
+      "award_id": "CONT_AWD_1204H126M7303_12C2_1204H125T7246_12C2",
+      "piid": "1204H126M7303",
+      "description": "FLASHBACK FIRE ORUMF000222 E142",
+      "description_highlight": "FLASHBACK <mark>FIRE</mark> ORUMF000222 E142",
+      "recipient": {
+        "uei": "DM6WCDS6F356",
+        "name": "FLASHBACK FIRE"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Forest Service"
+      },
+      "total_obligated": "6450.00",
+      "last_action_date": "2026-07-11",
+      "fiscal_year": 2026,
+      "naics_code": "115310",
+      "category": {
+        "code": "NATURAL_RESOURCES",
+        "label": "Natural resources and environment",
+        "source": "baseline"
+      },
+      "pop_state_code": "OR",
+      "subaward_count": 0
+    },
+    {
+      "award_id": "CONT_AWD_1202SB26M1279_12C2_1202SB25T7701_12C2",
+      "piid": "1202SB26M1279",
+      "description": "FLASHBACK FIRE UTMLF005112 E126",
+      "description_highlight": "FLASHBACK <mark>FIRE</mark> UTMLF005112 E126",
+      "recipient": {
+        "uei": "DM6WCDS6F356",
+        "name": "FLASHBACK FIRE"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Forest Service"
+      },
+      "total_obligated": "64500.00",
+      "last_action_date": "2026-07-03",
+      "fiscal_year": 2026,
+      "naics_code": "115310",
+      "category": {
+        "code": "NATURAL_RESOURCES",
+        "label": "Natural resources and environment",
+        "source": "baseline"
+      },
+      "pop_state_code": "UT",
+      "subaward_count": 0
+    },
+    {
+      "award_id": "CONT_AWD_1202SB26M1171_12C2_1202SB25T7701_12C2",
+      "piid": "1202SB26M1171",
+      "description": "FLASHBACK FIRE UTMLF005112 E133",
+      "description_highlight": "FLASHBACK <mark>FIRE</mark> UTMLF005112 E133",
+      "recipient": {
+        "uei": "DM6WCDS6F356",
+        "name": "FLASHBACK FIRE"
+      },
+      "agency": {
+        "code": "012",
+        "name": "Department of Agriculture",
+        "subtier_name": "Forest Service"
+      },
+      "total_obligated": "73100.00",
+      "last_action_date": "2026-07-02",
+      "fiscal_year": 2026,
+      "naics_code": "115310",
+      "category": {
+        "code": "NATURAL_RESOURCES",
+        "label": "Natural resources and environment",
+        "source": "baseline"
+      },
+      "pop_state_code": "UT",
+      "subaward_count": 0
+    }
+  ],
+  "facets": {
+    "agency": [
+      {
+        "value": "012",
+        "label": "Department of Agriculture",
+        "count": 4007
+      }
+    ],
+    "category": [
+      {
+        "value": "NATURAL_RESOURCES",
+        "label": "Natural resources and environment",
+        "count": 2880
+      },
+      {
+        "value": "SUPPLIES_EQUIPMENT",
+        "label": "Supplies and equipment",
+        "count": 616
+      },
+      {
+        "value": "CONSTRUCTION_FACILITIES",
+        "label": "Construction and facilities",
+        "count": 211
+      },
+      {
+        "value": "ENGINEERING_RESEARCH",
+        "label": "Engineering and research",
+        "count": 82
+      },
+      {
+        "value": "IT_INFRASTRUCTURE",
+        "label": "IT infrastructure",
+        "count": 58
+      },
+      {
+        "value": "LOGISTICS_TRANSPORT",
+        "label": "Logistics and transport",
+        "count": 50
+      },
+      {
+        "value": "PROFESSIONAL_SERVICES",
+        "label": "Professional services",
+        "count": 44
+      },
+      {
+        "value": "DEFENSE_SYSTEMS",
+        "label": "Defense systems",
+        "count": 23
+      },
+      {
+        "value": "TRAINING_EDUCATION",
+        "label": "Training and education",
+        "count": 19
+      },
+      {
+        "value": "HEALTH_MEDICAL",
+        "label": "Health and medical",
+        "count": 18
+      },
+      {
+        "value": "IT_SOFTWARE",
+        "label": "IT software",
+        "count": 3
+      },
+      {
+        "value": "OTHER",
+        "label": "Other",
+        "count": 3
+      }
+    ],
+    "state": [
+      {
+        "value": "CA",
+        "label": null,
+        "count": 727
+      },
+      {
+        "value": "OR",
+        "label": null,
+        "count": 593
+      },
+      {
+        "value": "UT",
+        "label": null,
+        "count": 349
+      },
+      {
+        "value": "CO",
+        "label": null,
+        "count": 325
+      },
+      {
+        "value": "NM",
+        "label": null,
+        "count": 280
+      },
+      {
+        "value": "WA",
+        "label": null,
+        "count": 268
+      },
+      {
+        "value": "MT",
+        "label": null,
+        "count": 255
+      },
+      {
+        "value": "AZ",
+        "label": null,
+        "count": 209
+      },
+      {
+        "value": "ID",
+        "label": null,
+        "count": 208
+      },
+      {
+        "value": "WY",
+        "label": null,
+        "count": 123
+      },
+      {
+        "value": "MN",
+        "label": null,
+        "count": 98
+      },
+      {
+        "value": "FL",
+        "label": null,
+        "count": 94
+      },
+      {
+        "value": "NC",
+        "label": null,
+        "count": 59
+      },
+      {
+        "value": "DC",
+        "label": null,
+        "count": 50
+      },
+      {
+        "value": "VA",
+        "label": null,
+        "count": 45
+      },
+      {
+        "value": "NV",
+        "label": null,
+        "count": 32
+      },
+      {
+        "value": "GA",
+        "label": null,
+        "count": 30
+      },
+      {
+        "value": "SD",
+        "label": null,
+        "count": 23
+      },
+      {
+        "value": "TX",
+        "label": null,
+        "count": 23
+      },
+      {
+        "value": "KY",
+        "label": null,
+        "count": 18
+      },
+      {
+        "value": "AL",
+        "label": null,
+        "count": 17
+      },
+      {
+        "value": "NE",
+        "label": null,
+        "count": 17
+      },
+      {
+        "value": "MD",
+        "label": null,
+        "count": 14
+      },
+      {
+        "value": "LA",
+        "label": null,
+        "count": 13
+      },
+      {
+        "value": "MI",
+        "label": null,
+        "count": 13
+      },
+      {
+        "value": "TN",
+        "label": null,
+        "count": 13
+      },
+      {
+        "value": "IL",
+        "label": null,
+        "count": 12
+      },
+      {
+        "value": "AK",
+        "label": null,
+        "count": 11
+      },
+      {
+        "value": "MO",
+        "label": null,
+        "count": 10
+      },
+      {
+        "value": "AR",
+        "label": null,
+        "count": 9
+      },
+      {
+        "value": "WI",
+        "label": null,
+        "count": 9
+      },
+      {
+        "value": "SC",
+        "label": null,
+        "count": 8
+      },
+      {
+        "value": "IA",
+        "label": null,
+        "count": 7
+      },
+      {
+        "value": "KS",
+        "label": null,
+        "count": 5
+      },
+      {
+        "value": "MS",
+        "label": null,
+        "count": 5
+      },
+      {
+        "value": "WV",
+        "label": null,
+        "count": 4
+      },
+      {
+        "value": "MA",
+        "label": null,
+        "count": 3
+      },
+      {
+        "value": "NJ",
+        "label": null,
+        "count": 3
+      },
+      {
+        "value": "PA",
+        "label": null,
+        "count": 3
+      },
+      {
+        "value": "CT",
+        "label": null,
+        "count": 2
+      },
+      {
+        "value": "IN",
+        "label": null,
+        "count": 2
+      },
+      {
+        "value": "ND",
+        "label": null,
+        "count": 2
+      },
+      {
+        "value": "NY",
+        "label": null,
+        "count": 2
+      },
+      {
+        "value": "OH",
+        "label": null,
+        "count": 2
+      },
+      {
+        "value": "OK",
+        "label": null,
+        "count": 2
+      },
+      {
+        "value": "PR",
+        "label": null,
+        "count": 2
+      },
+      {
+        "value": "RI",
+        "label": null,
+        "count": 1
+      }
+    ],
+    "naics": [
+      {
+        "value": "115310",
+        "label": "SUPPORT ACTIVITIES FOR FORESTRY",
+        "count": 2614
+      },
+      {
+        "value": "532120",
+        "label": "TRUCK, UTILITY TRAILER, AND RV (RECREATIONAL VEHICLE) RENTAL AND LEASING",
+        "count": 142
+      },
+      {
+        "value": "485999",
+        "label": "ALL OTHER TRANSIT AND GROUND PASSENGER TRANSPORTATION",
+        "count": 79
+      },
+      {
+        "value": "621910",
+        "label": "AMBULANCE SERVICES",
+        "count": 78
+      },
+      {
+        "value": "237310",
+        "label": "HIGHWAY, STREET, AND BRIDGE CONSTRUCTION",
+        "count": 52
+      },
+      {
+        "value": "517410",
+        "label": "SATELLITE TELECOMMUNICATIONS",
+        "count": 52
+      },
+      {
+        "value": "811111",
+        "label": "GENERAL AUTOMOTIVE REPAIR",
+        "count": 42
+      },
+      {
+        "value": "722310",
+        "label": "FOOD SERVICE CONTRACTORS",
+        "count": 41
+      },
+      {
+        "value": "561621",
+        "label": "SECURITY SYSTEMS SERVICES (EXCEPT LOCKSMITHS)",
+        "count": 40
+      },
+      {
+        "value": "532289",
+        "label": "ALL OTHER CONSUMER GOODS RENTAL",
+        "count": 34
+      },
+      {
+        "value": "532490",
+        "label": "OTHER COMMERCIAL AND INDUSTRIAL MACHINERY AND EQUIPMENT RENTAL AND LEASING",
+        "count": 34
+      },
+      {
+        "value": "561210",
+        "label": "FACILITIES SUPPORT SERVICES",
+        "count": 33
+      },
+      {
+        "value": "236220",
+        "label": "COMMERCIAL AND INSTITUTIONAL BUILDING CONSTRUCTION",
+        "count": 28
+      },
+      {
+        "value": "541715",
+        "label": "RESEARCH AND DEVELOPMENT IN THE PHYSICAL, ENGINEERING, AND LIFE SCIENCES (EXCEPT NANOTECHNOLOGY AND BIOTECHNOLOGY)",
+        "count": 26
+      },
+      {
+        "value": "532412",
+        "label": "CONSTRUCTION, MINING, AND FORESTRY MACHINERY AND EQUIPMENT RENTAL AND LEASING",
+        "count": 22
+      },
+      {
+        "value": "531190",
+        "label": "LESSORS OF OTHER REAL ESTATE PROPERTY",
+        "count": 21
+      },
+      {
+        "value": "531120",
+        "label": "LESSORS OF NONRESIDENTIAL BUILDINGS (EXCEPT MINIWAREHOUSES)",
+        "count": 20
+      },
+      {
+        "value": "561720",
+        "label": "JANITORIAL SERVICES",
+        "count": 20
+      },
+      {
+        "value": "541330",
+        "label": "ENGINEERING SERVICES",
+        "count": 19
+      },
+      {
+        "value": "312111",
+        "label": "SOFT DRINK MANUFACTURING",
+        "count": 18
+      }
+    ],
+    "fiscal_year": [
+      {
+        "value": "2025",
+        "label": null,
+        "count": 2211
+      },
+      {
+        "value": "2026",
+        "label": null,
+        "count": 1796
+      }
+    ]
+  }
+}

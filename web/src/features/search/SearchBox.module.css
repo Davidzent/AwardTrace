@@ -1,0 +1,23 @@
+.label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-weight: var(--weight-semibold);
+}
+
+.row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The header's version is shorter, so it sits on one line with the navigation. */
+.compact .input,
+.compact .submit {
+  min-height: 2rem;
+  padding-block: var(--space-1);
+  font-size: var(--text-sm);
+}
