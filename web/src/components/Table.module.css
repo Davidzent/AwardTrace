@@ -52,6 +52,11 @@
   white-space: nowrap;
 }
 
+/* A column of running text keeps a readable width; on a narrow screen the table scrolls sideways instead. */
+.text {
+  min-width: 16rem;
+}
+
 /* A label under a cell's value, aligned with it, so a narrow column keeps its width. */
 .below {
   display: table;

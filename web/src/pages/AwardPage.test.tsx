@@ -62,7 +62,9 @@ describe('AwardPage', () => {
     expect(screen.getByText('Jul 16, 2026 to Sep 30, 2026')).toBeDefined();
     expect(screen.getByText('-$27,500.00')).toBeDefined();
     expect(screen.getAllByText('Deobligation')).toHaveLength(1);
-    expect(screen.getByText('Other').parentElement?.nextSibling?.textContent).toBe(' PSC-based');
+    const [classifier, productCode] = within(screen.getByRole('region', { name: 'Category' })).getAllByRole('definition');
+    expect(classifier?.textContent).toBe('No category');
+    expect(productCode?.textContent).toBe('Other');
     expect(screen.queryByText('AI')).toBeNull();
     expect(screen.getByRole('link', { name: 'View recipient →' }).getAttribute('href')).toBe('/recipients/MN5KRX2W9R46');
   });
@@ -80,10 +82,12 @@ describe('AwardPage', () => {
     };
     renderAward(() => Response.json({ ...AWARD, category }));
 
-    expect(await screen.findByText('Natural resources and environment')).toBeDefined();
-    expect(screen.getByText('AI')).toBeDefined();
-    expect(screen.getByText('confidence 0.91')).toBeDefined();
-    expect(screen.getByText('PSC-based: Other')).toBeDefined();
+    const categories = within(await screen.findByRole('region', { name: 'Category' }));
+    const [classifier, productCode] = categories.getAllByRole('definition');
+    expect(classifier?.textContent).toContain('Natural resources and environment');
+    expect(within(classifier as HTMLElement).getByRole('button', { name: 'AI' })).toBeDefined();
+    expect(classifier?.textContent).toContain('Confidence 0.91');
+    expect(productCode?.textContent).toBe('Other');
   });
 
   it('says when no subawards are reported, without asking for them', async () => {

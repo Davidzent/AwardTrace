@@ -21,7 +21,9 @@ export function ModificationsTable({ transactions, truncated }: Props) {
               <th scope="col" className={table.num}>
                 Obligation
               </th>
-              <th scope="col">Description</th>
+              <th scope="col" className={table.text}>
+                Description
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -35,7 +37,7 @@ export function ModificationsTable({ transactions, truncated }: Props) {
                     <Badge className={table.below}>Deobligation</Badge>
                   )}
                 </td>
-                <td>{transaction.description}</td>
+                <td className={table.text}>{transaction.description}</td>
               </tr>
             ))}
           </tbody>

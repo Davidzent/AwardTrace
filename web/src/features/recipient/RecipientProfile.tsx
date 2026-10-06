@@ -1,5 +1,6 @@
 import type { Schemas } from '../../api/client';
 import { Money } from '../../components/Money';
+import panel from '../../components/Panel.module.css';
 import table from '../../components/Table.module.css';
 import { formatCount } from '../../lib/format';
 
@@ -42,7 +43,7 @@ export function RecipientProfile({ recipient }: { recipient: Schemas['RecipientD
           rows={recipient.top_naics ?? []}
           label={(row) => [row.code, row.name].filter(Boolean).join(' ')}
         />
-        <section className="panel" aria-labelledby="by-fiscal-year">
+        <section className={panel.panel} aria-labelledby="by-fiscal-year">
           <h2 id="by-fiscal-year">By fiscal year</h2>
           <table className={table.table}>
             <thead>
@@ -81,7 +82,7 @@ type RollupsProps = { title: string; rows: Rollup[]; label: (row: Rollup) => str
 function Rollups({ title, rows, label }: RollupsProps) {
   const id = title.toLowerCase().replaceAll(' ', '-');
   return (
-    <section className="panel" aria-labelledby={id}>
+    <section className={panel.panel} aria-labelledby={id}>
       <h2 id={id}>{title}</h2>
       <ol className="rollup-list">
         {rows.map((row) => (

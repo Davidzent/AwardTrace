@@ -4,6 +4,7 @@ import { api, ApiError } from '../api/client';
 import { ProblemMessage } from '../components/ProblemMessage';
 import { Skeleton } from '../components/Skeleton';
 import { AwardDetail } from '../features/award/AwardDetail';
+import styles from '../features/award/AwardDetail.module.css';
 
 export function AwardPage() {
   const { awardId = '' } = useParams();
@@ -20,12 +21,12 @@ export function AwardPage() {
   }
   if (!award.data) {
     return (
-      <div className="award" aria-busy="true">
+      <div aria-busy="true">
         <p className="visually-hidden" role="status">
           Loading award
         </p>
         <Skeleton shape="title" />
-        <div className="award-grid">
+        <div className={styles.grid}>
           <Skeleton shape="panel" />
           <Skeleton shape="panel" />
         </div>

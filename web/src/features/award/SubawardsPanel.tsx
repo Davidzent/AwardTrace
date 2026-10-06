@@ -2,6 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { api, type Schemas } from '../../api/client';
 import { Button } from '../../components/Button';
 import { Money } from '../../components/Money';
+import panel from '../../components/Panel.module.css';
 import { ProblemMessage } from '../../components/ProblemMessage';
 import { formatCount, formatDate } from '../../lib/format';
 
@@ -23,7 +24,7 @@ export function SubawardsPanel({ awardId, summary }: Props) {
   const items = subawards.data?.pages.flatMap((page) => page.results ?? []) ?? [];
 
   return (
-    <section className="panel" aria-labelledby="award-subawards">
+    <section className={panel.panel} aria-labelledby="award-subawards">
       <h2 id="award-subawards">Subawards (reported)</h2>
       {count === 0 ? (
         <p className="muted">No reported subawards</p>

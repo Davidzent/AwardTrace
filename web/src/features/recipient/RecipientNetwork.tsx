@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import type { Schemas } from '../../api/client';
 import { Money } from '../../components/Money';
+import panel from '../../components/Panel.module.css';
 import { ProblemMessage } from '../../components/ProblemMessage';
 import { formatCount } from '../../lib/format';
 
@@ -11,7 +12,7 @@ export function RecipientNetwork({ network, error, onRetry }: Props) {
   const primes = network?.primes_above ?? [];
   const subs = network?.subs_below ?? [];
   return (
-    <section className="panel network" aria-labelledby="recipient-network">
+    <section className={`${panel.panel} network`} aria-labelledby="recipient-network">
       <h2 id="recipient-network">Network (reported subawards)</h2>
       {error ? (
         <ProblemMessage error={error} onRetry={onRetry} />
