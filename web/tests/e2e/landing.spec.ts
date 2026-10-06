@@ -26,3 +26,11 @@ test('the landing page explains the project and offers to wake the app', async (
   await waitForPublicSans(page);
   await expect(page).toHaveScreenshot('landing.png', { fullPage: true });
 });
+
+test('the landing page is accessible in dark mode', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto(LANDING);
+
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expectAccessible(page);
+});

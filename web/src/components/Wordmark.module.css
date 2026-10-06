@@ -16,19 +16,19 @@
 }
 
 .ground {
-  fill: var(--color-primary-hover);
+  fill: var(--color-mark);
 }
 
 .trail {
   fill: none;
-  stroke: var(--color-bg);
+  stroke: var(--color-mark-line);
   stroke-width: 2.25;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .source {
-  fill: var(--color-bg);
+  fill: var(--color-mark-line);
 }
 
 .destination {
