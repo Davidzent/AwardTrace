@@ -13,8 +13,9 @@ import subawards from './fixtures/subawards.json' with { type: 'json' };
  * still works. Every API call answers from tests/e2e/fixtures and the clock stands still, so a screenshot changes only
  * when the page does, whatever data the local stack holds. The fixtures are real responses from the Agriculture data,
  * except the network and the subawards, which the local data lacks, and a few classifier categories added to show
- * the AI mark. Run `npx playwright test screenshots --update-snapshots` after an intended change, and review the
- * new images before committing them.
+ * the AI mark. Run `npx playwright test screenshots --update-snapshots` after an intended change, review the new
+ * images, and commit only those of the pages you meant to change: the update also rewrites images that differ by a
+ * few pixels of antialiasing, which the comparison already tolerates.
  */
 const PAGES = [
   { name: 'home', path: '/' },
