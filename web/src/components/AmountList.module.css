@@ -1,0 +1,33 @@
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The name and the amount on one line, the bar under them across the row. */
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-4);
+  padding: var(--space-2) 0;
+}
+
+.label {
+  overflow-wrap: anywhere;
+}
+
+/* A second line under the name, such as a date or a count. */
+.note {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* A thin mark, square where it starts and rounded at its end; a zero amount draws nothing. */
+.bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 0 3px 3px 0;
+  background: var(--color-primary);
+}

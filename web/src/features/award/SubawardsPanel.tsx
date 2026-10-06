@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { api, type Schemas } from '../../api/client';
+import { AmountList } from '../../components/AmountList';
 import { Button } from '../../components/Button';
 import { Money } from '../../components/Money';
 import panel from '../../components/Panel.module.css';
@@ -35,19 +36,16 @@ export function SubawardsPanel({ awardId, summary }: Props) {
           </p>
           {subawards.error && <ProblemMessage error={subawards.error} onRetry={() => void subawards.refetch()} />}
           {subawards.isPending && <p className="muted">Loading subawards</p>}
-          <ol className="rollup-list" aria-label="Subawards, newest first">
-            {items.map((subaward) => (
-              <li key={subaward.subaward_key}>
-                <span className="rollup-label">
-                  {subaward.sub_recipient?.name}
-                  <span className="muted rollup-note">
-                    {subaward.action_date && formatDate(subaward.action_date)}
-                  </span>
-                </span>
-                <Money amount={subaward.amount} exact />
-              </li>
-            ))}
-          </ol>
+          <AmountList
+            label="Subawards, newest first"
+            exact
+            items={items.map((subaward) => ({
+              key: subaward.subaward_key ?? '',
+              label: subaward.sub_recipient?.name,
+              note: subaward.action_date && formatDate(subaward.action_date),
+              amount: subaward.amount,
+            }))}
+          />
           {subawards.hasNextPage && (
             <Button variant="quiet" busy={subawards.isFetchingNextPage} onClick={() => void subawards.fetchNextPage()}>
               {subawards.isFetchingNextPage ? 'Loading' : 'Show more'}

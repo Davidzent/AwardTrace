@@ -1,8 +1,10 @@
 import type { Schemas } from '../../api/client';
+import { AmountList } from '../../components/AmountList';
 import { Money } from '../../components/Money';
 import panel from '../../components/Panel.module.css';
 import table from '../../components/Table.module.css';
 import { formatCount } from '../../lib/format';
+import styles from './RecipientProfile.module.css';
 
 /** The recipient header, summary tiles, and rollups from doc 08. */
 export function RecipientProfile({ recipient }: { recipient: Schemas['RecipientDetail'] }) {
@@ -11,9 +13,9 @@ export function RecipientProfile({ recipient }: { recipient: Schemas['RecipientD
   const awardCount = totals?.award_count ?? 0;
   return (
     <>
-      <header className="award-header">
+      <header className={styles.header}>
         <h1>{recipient.name}</h1>
-        <p className="muted">
+        <p className={styles.meta}>
           UEI {recipient.uei}
           {location && ` · ${[location.city, location.state_code, location.country_code].filter(Boolean).join(', ')}`}
           {/* USAspending names a top-level company as its own parent. */}
@@ -21,22 +23,24 @@ export function RecipientProfile({ recipient }: { recipient: Schemas['RecipientD
         </p>
       </header>
 
-      <div className="tiles">
-        <p className="tile">
-          <strong>{formatCount(awardCount)}</strong> {awardCount === 1 ? 'award' : 'awards'}
-        </p>
-        <p className="tile">
-          <strong>
+      <dl className={styles.figures}>
+        <div>
+          <dt>{awardCount === 1 ? 'Award' : 'Awards'}</dt>
+          <dd>{formatCount(awardCount)}</dd>
+        </div>
+        <div>
+          <dt>Obligated</dt>
+          <dd>
             <Money amount={totals?.total_obligated} />
-          </strong>{' '}
-          obligated
-        </p>
-        <p className="tile">
-          Active <strong>{fiscalYears(years)}</strong>
-        </p>
-      </div>
+          </dd>
+        </div>
+        <div>
+          <dt>Active</dt>
+          <dd>{fiscalYears(years)}</dd>
+        </div>
+      </dl>
 
-      <div className="rollups">
+      <div className={styles.rollups}>
         <Rollups title="Top agencies" rows={recipient.top_agencies ?? []} label={(row) => row.name ?? row.code} />
         <Rollups
           title="Top NAICS"
@@ -84,14 +88,9 @@ function Rollups({ title, rows, label }: RollupsProps) {
   return (
     <section className={panel.panel} aria-labelledby={id}>
       <h2 id={id}>{title}</h2>
-      <ol className="rollup-list">
-        {rows.map((row) => (
-          <li key={row.code}>
-            <span className="rollup-label">{label(row)}</span>
-            <Money amount={row.total_obligated} />
-          </li>
-        ))}
-      </ol>
+      <AmountList
+        items={rows.map((row) => ({ key: row.code ?? '', label: label(row), amount: row.total_obligated }))}
+      />
     </section>
   );
 }

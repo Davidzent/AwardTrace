@@ -7,6 +7,7 @@ import { RecipientNetwork } from '../features/recipient/RecipientNetwork';
 import { RecipientProfile } from '../features/recipient/RecipientProfile';
 import { SearchResults } from '../features/search/SearchResults';
 import { readSearch, searchHref } from '../features/search/searchUrl';
+import styles from './RecipientPage.module.css';
 
 /**
  * The profile, the network, and the recipient's awards load in parallel. The awards take the search page's parameters from the URL,
@@ -49,7 +50,7 @@ export function RecipientPage() {
   }
 
   return (
-    <article className="recipient">
+    <article>
       {profile.data ? (
         <>
           <title>{`${profile.data.name} · AwardTrace`}</title>
@@ -65,7 +66,7 @@ export function RecipientPage() {
           <Skeleton shape="panel" />
         </div>
       )}
-      <section aria-labelledby="recipient-awards" className="recipient-awards">
+      <section aria-labelledby="recipient-awards" className={styles.awards}>
         <h2 id="recipient-awards">Awards</h2>
         <SearchResults
           query={query}

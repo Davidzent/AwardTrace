@@ -1,0 +1,16 @@
+.network {
+  margin-bottom: var(--space-8);
+}
+
+/* Primes above and subs below, side by side when there's room. */
+.sides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4) var(--space-8);
+}
+
+.sides h3 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
