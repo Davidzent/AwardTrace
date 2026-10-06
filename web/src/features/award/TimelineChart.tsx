@@ -21,12 +21,14 @@ const monthYears = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'num
  * modification is signed, with a table of the same numbers a button away. Hover, touch, or the arrow keys read a day.
  * It needs every modification and at least two days to say anything, so otherwise the table below stands alone.
  */
-export function TimelineChart({ transactions }: { transactions: Schemas['Modification'][] }) {
+export function TimelineChart({ transactions, total }: { transactions: Schemas['Modification'][]; total?: string }) {
   const points = cumulative(transactions);
   const [asTable, setAsTable] = useState(false);
   if (points.length < 2) {
     return null;
   }
+  // The award's total is the source's running total, which counts obligations from before the data begins (ADR 0012).
+  const partial = total !== undefined && Math.round(Number(total) * 100) !== points.at(-1)?.total;
   return (
     <section className={panel.panel} aria-labelledby="award-timeline">
       <div className={styles.header}>
@@ -35,6 +37,12 @@ export function TimelineChart({ transactions }: { transactions: Schemas['Modific
           {asTable ? 'Show as chart' : 'Show as table'}
         </Button>
       </div>
+      {partial && (
+        <p className={styles.note}>
+          Adds up the modifications listed below. The award&apos;s total, {formatMoney(total)}, also counts obligations
+          from before fiscal year 2025, which AwardTrace doesn&apos;t load.
+        </p>
+      )}
       {asTable ? <TimelineTable points={points} /> : <Plot points={points} />}
     </section>
   );
@@ -62,7 +70,8 @@ function Plot({ points }: { points: Point[] }) {
     `M ${x(first.date)} ${y(0)}`,
   );
   const area = `${line} V ${baseline} H ${x(first.date)} Z`;
-  const tickCount = width < 480 ? 3 : 5;
+  // One date label per 90 pixels, enough for "Sep 2025" and a gap, so labels never run together.
+  const tickCount = Math.min(5, Math.max(2, Math.floor(plotWidth / 90)));
   const dateFormat = span > 300 * 86_400_000 ? monthYears : monthDays;
   const xTicks = Array.from({ length: tickCount }, (_, index) => start + (span * index) / (tickCount - 1));
 

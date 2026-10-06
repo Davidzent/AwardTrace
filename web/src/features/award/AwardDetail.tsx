@@ -73,7 +73,7 @@ export function AwardDetail({ award }: { award: Schemas['AwardDetail'] }) {
             <CategoryBlock category={award.category} />
           </section>
           {/* A running total needs every modification; with only the newest, it would start partway. */}
-          {!award.transactions_truncated && <TimelineChart transactions={transactions} />}
+          {!award.transactions_truncated && <TimelineChart transactions={transactions} total={award.total_obligated} />}
         </div>
 
         <div className={styles.column}>

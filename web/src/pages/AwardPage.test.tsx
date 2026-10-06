@@ -104,11 +104,24 @@ describe('AwardPage', () => {
       'Aug 24, 2026-$27,500.00$55,000.00',
     ]);
     expect(screen.getByRole('button', { name: 'Show as chart' })).toBeDefined();
+    // The modifications add up to the award's total, so the chart needs no note.
+    expect(screen.queryByText(/before fiscal year 2025/)).toBeNull();
 
     cleanup();
     renderAward(() => Response.json({ ...AWARD, transactions_truncated: true }));
     expect(await screen.findByRole('heading', { level: 1 })).toBeDefined();
     expect(screen.queryByRole('heading', { name: 'Obligations over time' })).toBeNull();
+  });
+
+  it("says when the chart's running total leaves out obligations from before the data", async () => {
+    renderAward(() => Response.json({ ...AWARD, total_obligated: '149565662.00' }));
+
+    expect(
+      await screen.findByText(
+        "Adds up the modifications listed below. The award's total, $149,565,662.00, also counts obligations from " +
+          "before fiscal year 2025, which AwardTrace doesn't load.",
+      ),
+    ).toBeDefined();
   });
 
   it('says when no subawards are reported, without asking for them', async () => {
