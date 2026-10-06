@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "dev:landing": "vite --config vite.landing.config.ts",
     "build:landing": "vite build --config vite.landing.config.ts",
+    "preview:landing": "vite preview --config vite.landing.config.ts",
     "pretypecheck": "npm run generate:api",
     "typecheck": "tsc",
     "lint": "eslint .",
