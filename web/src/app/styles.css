@@ -103,30 +103,6 @@ legend {
   text-transform: uppercase;
 }
 
-.status-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  margin-bottom: 1rem;
-}
-
-.status-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.status-header p {
-  margin: 0;
-}
-
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 1rem;
-}
-
 .about {
   max-width: 48rem;
 }

@@ -3,7 +3,7 @@
   padding: var(--space-4) var(--space-6);
   border: 1px solid var(--color-border);
   border-left-width: 4px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--color-bg);
 }
 
@@ -17,6 +17,9 @@
 }
 
 .condition {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   margin: 0 0 var(--space-3);
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
@@ -51,13 +54,24 @@
   color: var(--color-text-muted);
 }
 
-/* Numbers sit right-aligned against their labels. */
-.tile :global(.facts) {
-  grid-template-columns: minmax(0, 1fr) auto;
+/* The numbers behind the condition, right-aligned against labels that stay on one line. */
+.tile dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: var(--space-1) var(--space-4);
+  margin: 0;
 }
 
-.tile :global(.facts) dd {
-  overflow-wrap: normal;
+.tile dt {
+  color: var(--color-text-muted);
+}
+
+.tile dd {
+  margin: 0;
+  overflow-wrap: anywhere;
   text-align: right;
+}
+
+.tile p:last-child {
+  margin-bottom: 0;
 }
