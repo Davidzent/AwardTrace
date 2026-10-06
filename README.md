@@ -4,6 +4,10 @@ AwardTrace is a search site for U.S. federal contract awards. It loads the gover
 
 **Live site:** [awardtrace.zntsns.com](https://awardtrace.zntsns.com) explains the project and opens the app at [app.awardtrace.zntsns.com](https://app.awardtrace.zntsns.com) ([ADR 0019](docs/decisions/0019-landing-page-on-github-pages.md)). The app runs weekdays from 8:00 to 20:00 Pacific and is stopped outside those hours to save money ([ADR 0017](docs/decisions/0017-host-runs-on-weekday-hours.md)); outside them, the landing page can start it ([ADR 0020](docs/decisions/0020-wake-button.md)). It holds the Department of Agriculture's contracts ([ADR 0018](docs/decisions/0018-production-holds-agriculture-only.md)).
 
+![The search page: wildfire contracts in Colorado and Utah, filtered to the natural resources category and sorted by size](docs/screenshots/search.png)
+
+More screenshots: [an award with a deobligation](docs/screenshots/award.png), [a recipient's subaward network](docs/screenshots/recipient-network.png), and [the status page](docs/screenshots/status.png).
+
 ## How it works
 
 ```mermaid
