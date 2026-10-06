@@ -1,0 +1,63 @@
+/* The condition word carries the meaning; its color and the tile's edge repeat it (doc 08). */
+.tile {
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.title {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.condition {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+}
+
+.ok {
+  border-left-color: var(--color-success);
+}
+
+.ok .condition {
+  color: var(--color-success);
+}
+
+.degraded {
+  border-left-color: var(--color-warning);
+}
+
+.degraded .condition {
+  color: var(--color-warning);
+}
+
+.down {
+  border-left-color: var(--color-danger);
+}
+
+.down .condition {
+  color: var(--color-danger);
+}
+
+.unknown .condition,
+.off .condition {
+  color: var(--color-text-muted);
+}
+
+/* Numbers sit right-aligned against their labels. */
+.tile :global(.facts) {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-1) var(--space-4);
+}
+
+.tile :global(.facts) dd {
+  overflow-wrap: normal;
+  text-align: right;
+}

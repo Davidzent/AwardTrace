@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import styles from './Pager.module.css';
 
 /** The pages to list around the current one, with null for a gap: 1 … 4 5 6 … 125. A one-page gap shows the page. */
 export function pageItems(current: number, last: number): (number | null)[] {
@@ -25,15 +26,15 @@ export function Pager({ page, lastPage, href }: { page: number; lastPage: number
     return null;
   }
   return (
-    <nav className="pager" aria-label="Pages">
+    <nav className={styles.pager} aria-label="Pages">
       {page > 1 ? (
         <Link to={href(page - 1)} rel="prev">
           Previous
         </Link>
       ) : (
-        <span aria-disabled="true">Previous</span>
+        <span className={styles.disabled} aria-disabled="true">Previous</span>
       )}
-      <ol className="pager-pages">
+      <ol className={styles.pages}>
         {pageItems(page, lastPage).map((item, index) => (
           <li key={item ?? `gap-${index}`}>
             {item === null ? (
@@ -48,7 +49,7 @@ export function Pager({ page, lastPage, href }: { page: number; lastPage: number
           </li>
         ))}
       </ol>
-      <span className="pager-compact">
+      <span className={styles.compact}>
         Page {page} of {lastPage}
       </span>
       {page < lastPage ? (
@@ -56,7 +57,7 @@ export function Pager({ page, lastPage, href }: { page: number; lastPage: number
           Next
         </Link>
       ) : (
-        <span aria-disabled="true">Next</span>
+        <span className={styles.disabled} aria-disabled="true">Next</span>
       )}
     </nav>
   );

@@ -120,49 +120,6 @@ mark {
   gap: 0.5rem;
 }
 
-.result-card {
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.result-title {
-  margin: 0 0 0.25rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  /* At most two lines of description (doc 08). */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
-}
-
-.result-title a {
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.result-title a:hover {
-  text-decoration: underline;
-}
-
-.result-parties,
-.result-facts {
-  margin: 0.15rem 0 0;
-}
-
-.result-facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  color: var(--color-text-muted);
-}
-
-.result-facts .money {
-  color: var(--color-text);
-  font-weight: 600;
-}
-
 .skeleton-card {
   height: 6.5rem;
   margin: 1rem 0;
@@ -181,54 +138,6 @@ mark {
 .empty-title {
   margin-top: 0;
   font-weight: var(--weight-semibold);
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.pager [aria-disabled='true'] {
-  color: var(--color-text-muted);
-}
-
-.pager-pages {
-  display: flex;
-  gap: 0.25rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pager-pages a,
-.pager-pages span {
-  display: inline-block;
-  min-width: 2rem;
-  padding: 0.2rem 0.4rem;
-  text-align: center;
-}
-
-.pager-pages [aria-current='page'] {
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-}
-
-.pager-compact {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  .pager-pages {
-    display: none;
-  }
-
-  .pager-compact {
-    display: inline;
-  }
 }
 
 /* Filters sit in a column on wide screens and in a drawer on narrow ones (doc 08). */
@@ -263,34 +172,6 @@ legend {
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
-}
-
-.active-filters {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.active-filters ul {
-  display: contents;
-  list-style: none;
-}
-
-.chip {
-  display: inline-block;
-  padding: 0.1rem 0.65rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.9rem;
-  text-decoration: none;
-}
-
-.chip:hover {
-  border-color: var(--color-text-muted);
 }
 
 .back {
@@ -395,10 +276,6 @@ legend {
   text-align: right;
 }
 
-.money {
-  white-space: nowrap;
-}
-
 /* Under the amount, so a narrow screen keeps room for the description. */
 .modifications .badge {
   display: table;
@@ -417,11 +294,6 @@ legend {
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
   font-size: 0.75rem;
-}
-
-.badge-ai {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
 }
 
 .source {
@@ -552,60 +424,6 @@ legend {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 1rem;
-}
-
-/* The condition word carries the meaning; its color and the tile's edge repeat it (doc 08). */
-.status-tile {
-  border-left-width: 4px;
-}
-
-.condition {
-  margin: -0.25rem 0 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.is-ok {
-  border-left-color: var(--color-success);
-}
-
-.is-ok .condition {
-  color: var(--color-success);
-}
-
-.is-degraded {
-  border-left-color: var(--color-warning);
-}
-
-.is-degraded .condition {
-  color: var(--color-warning);
-}
-
-.is-down {
-  border-left-color: var(--color-danger);
-}
-
-.is-down .condition {
-  color: var(--color-danger);
-}
-
-.is-unknown .condition,
-.is-off .condition {
-  color: var(--color-text-muted);
-}
-
-.num-value {
-  font-variant-numeric: tabular-nums;
-}
-
-.status-tile .facts {
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.35rem 1rem;
-}
-
-.status-tile .facts dd {
-  overflow-wrap: normal;
-  text-align: right;
 }
 
 .about {

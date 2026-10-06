@@ -67,11 +67,13 @@ describe('SearchPage', () => {
     expect(screen.getByText('$4.8M')).toBeDefined();
     expect(screen.getByText('2 reported subawards')).toBeDefined();
     expect(screen.getByText('Logistics and transport')).toBeDefined();
-    // Only the classifier's category carries the AI badge.
+    // Only the classifier's category carries the AI badge, a button that opens its note as a popover.
+    const ai = screen.getByRole('button', { name: 'AI' });
     expect(screen.getAllByText('AI')).toHaveLength(1);
-    expect(screen.getByText('Engineering and research').nextElementSibling?.getAttribute('title')).toBe(
-      'Assigned by a language model from the description, so it can be wrong',
-    );
+    const note = document.getElementById(ai.getAttribute('popovertarget') ?? '');
+    expect(note?.getAttribute('popover')).toBe('auto');
+    expect(note?.textContent).toBe('Assigned by a language model from the description, so it can be wrong.');
+    expect(ai.getAttribute('aria-describedby')).toBe(note?.id);
     expect(screen.getByRole('link', { name: 'Page 3' }).getAttribute('href')).toBe('/?q=helicopter&page=3');
   });
 

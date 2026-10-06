@@ -135,7 +135,7 @@ function Fact({ term, value }: { term: string; value: string }) {
   return (
     <>
       <dt>{term}</dt>
-      <dd className="num-value">{value}</dd>
+      <dd>{value}</dd>
     </>
   );
 }
