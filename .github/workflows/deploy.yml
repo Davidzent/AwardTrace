@@ -49,6 +49,14 @@ jobs:
               --cache-from "type=gha,scope=${image}" --cache-to "type=gha,scope=${image},mode=max" \
               --tag "${REGISTRY}/awardtrace/${image}:${GITHUB_SHA}" --push
           done
+      # No secret ships in an image (doc 10). Trivy reads both images back from ECR with the login above, before the
+      # host runs either; its secret scanner needs no vulnerability database.
+      - name: Scan the images for secrets
+        run: |
+          for image in backend web; do
+            docker run --rm --volume "$HOME/.docker/config.json:/root/.docker/config.json:ro" aquasec/trivy:0.75.0 \
+              image --scanners secret --exit-code 1 --no-progress "${REGISTRY}/awardtrace/${image}:${GITHUB_SHA}"
+          done
       - name: Deploy on the host
         run: |
           instance=$(.github/scripts/start-host.sh)
