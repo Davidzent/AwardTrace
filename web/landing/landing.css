@@ -1,0 +1,311 @@
+/* The landing page (ADR 0019), on the app's tokens and base rules, so the two read as one product. */
+@import '../src/app/tokens.css';
+@import '../src/app/styles.css';
+
+/* Elements below set display, which would otherwise show them while hidden. */
+[hidden] {
+  display: none !important;
+}
+
+.inner {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.header {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-6);
+  padding-block: var(--space-3);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-display);
+  text-decoration: none;
+}
+
+.header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.header nav a {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast),
+    color var(--duration-fast);
+}
+
+.header nav a:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.hero {
+  padding-block: var(--space-16) var(--space-12);
+}
+
+.hero h1 {
+  max-width: 20ch;
+  margin: 0 0 var(--space-4);
+  font-size: clamp(var(--text-xl), 5vw, 3rem);
+}
+
+.lead {
+  max-width: 44rem;
+  margin: 0 0 var(--space-6);
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+}
+
+/* The app's secondary and primary buttons, as links. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-6);
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast),
+    border-color var(--duration-fast);
+}
+
+.button:hover {
+  border-color: var(--color-text-muted);
+  background: var(--color-surface);
+}
+
+.button.primary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.button.primary:hover {
+  border-color: var(--color-primary-hover);
+  background: var(--color-primary-hover);
+}
+
+/* The live app's state, with a dot that repeats it in color: green when up, amber while starting or stopping. */
+.live {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-2);
+}
+
+.live p {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.dot {
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--radius-full);
+  background: var(--color-text-muted);
+}
+
+.live[data-state='ready'] .dot {
+  background: var(--color-success);
+}
+
+.live[data-state='starting'] .dot,
+.live[data-state='stopping'] .dot {
+  background: var(--color-warning);
+}
+
+.button:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.hours {
+  margin: 0 0 var(--space-12);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.screenshot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* Alternate sections sit on the surface color. */
+.band {
+  padding-block: var(--space-12);
+  background: var(--color-surface);
+}
+
+.section {
+  padding-block: var(--space-12);
+}
+
+h2 {
+  margin: 0 0 var(--space-6);
+  font-size: var(--text-xl);
+}
+
+h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-md);
+}
+
+/* The pipeline as a row of steps joined by arrows, a column on a phone; it reads the same to a screen reader. */
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  margin: 0 0 var(--space-8);
+  padding: 0;
+  list-style: none;
+}
+
+.flow li {
+  position: relative;
+  display: flex;
+  flex: 1 1 10rem;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.flow li + li::before {
+  content: '→';
+  position: absolute;
+  top: 50%;
+  left: calc(-1 * var(--space-6));
+  width: var(--space-6);
+  color: var(--color-text-muted);
+  text-align: center;
+  transform: translateY(-50%);
+}
+
+.flow span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 40rem) {
+  .flow {
+    flex-direction: column;
+  }
+
+  /* In a column, the row's basis would set each step's height. */
+  .flow li {
+    flex-basis: auto;
+  }
+
+  .flow li + li::before {
+    content: '↓';
+    top: calc(-1 * var(--space-6));
+    left: var(--space-6);
+    width: auto;
+    line-height: var(--space-6);
+    transform: none;
+  }
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-6) var(--space-8);
+}
+
+.columns p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+}
+
+.figures div {
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.figures dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.figures dd {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.figures .figure {
+  margin: var(--space-1) 0;
+  color: var(--color-text);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer {
+  padding-block: var(--space-6) var(--space-8);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.footer p {
+  margin: 0;
+}

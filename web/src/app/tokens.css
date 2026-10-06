@@ -16,6 +16,9 @@
 }
 
 :root {
+  /* Native controls and scrollbars follow the color scheme too. */
+  color-scheme: light dark;
+
   /* Palette */
   --ink: #13202f;
   --slate: #566273;
@@ -54,6 +57,9 @@
   --color-highlight: var(--highlight);
   --color-money-trail: var(--gold);
   --color-backdrop: rgb(19 32 47 / 0.35);
+  /* The wordmark keeps the brand's navy square and white trail in both color schemes. */
+  --color-mark: var(--navy-deep);
+  --color-mark-line: var(--paper);
 
   /* Type: Public Sans for everything people read; the system monospace for identifiers, which are codes */
   --font-sans: 'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -98,6 +104,37 @@
   --content-max: 75rem;
   --gutter: var(--space-6);
   --duration-fast: 150ms;
+}
+
+/*
+ * Dark mode (doc 16): the same roles in dark values, computed against WCAG 2.2 AA like the light ones. Text clears 4.5:1
+ * on the background and the surface, and the input border clears 3:1. Light text needs a dark ink on primary buttons,
+ * so --color-on-primary turns dark.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0e1621;
+    --color-surface: #16212f;
+    --color-text: #e4e9ef;
+    --color-text-muted: #9eabbb;
+    --color-border: #2b3747;
+    --color-border-input: #717f90;
+    --color-primary: #8fb6ee;
+    --color-primary-hover: #b5cff5;
+    --color-primary-tint: #1b2d45;
+    --color-on-primary: #0b1726;
+    --color-focus: #8fb6ee;
+    --color-ai: #bba6f5;
+    --color-ai-tint: #2a2246;
+    --color-success: #5cc77f;
+    --color-warning: #e1b545;
+    --color-danger: #f28b81;
+    --color-highlight: #5b4813;
+    --color-backdrop: rgb(0 0 0 / 0.55);
+    --color-mark: #1f4c86;
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 2px 8px rgb(0 0 0 / 0.45);
+  }
 }
 
 @media (max-width: 40rem) {

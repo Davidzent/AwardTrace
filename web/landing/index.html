@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AwardTrace: federal contract search, with every AI label measured</title>
+    <meta
+      name="description"
+      content="AwardTrace searches the Department of Agriculture's federal contract awards from USAspending.gov, with a Claude classifier scored against the government's own product codes."
+    />
+    <link rel="canonical" href="https://awardtrace.zntsns.com/" />
+    <!-- How a shared link previews on LinkedIn and elsewhere. Open Graph needs absolute URLs. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://awardtrace.zntsns.com/" />
+    <meta property="og:title" content="AwardTrace: federal contract search, with every AI label measured" />
+    <meta
+      property="og:description"
+      content="The Department of Agriculture's contract awards, searchable, with a Claude classifier scored against the government's own product codes."
+    />
+    <meta property="og:image" content="https://awardtrace.zntsns.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="AwardTrace: search federal contracts, with every AI label measured." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Fetched before the stylesheet asks for it, so text appears in Public Sans without a visible swap. -->
+    <link rel="preload" href="../src/assets/fonts/public-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="./landing.css" />
+    <script type="module" src="./main.ts"></script>
+  </head>
+  <body>
+    <!-- This page never calls the app's API, which would keep the host awake (ADR 0019); the wake function answers instead. -->
+    <header class="header">
+      <div class="inner header-inner">
+        <a class="brand" href="./">
+          <img src="/favicon.svg" width="28" height="28" alt="" />
+          AwardTrace
+        </a>
+        <nav aria-label="Main">
+          <a href="#how">How it works</a>
+          <a href="#results">Results</a>
+          <a href="https://github.com/Davidzent/AwardTrace">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="inner hero">
+        <h1>Search federal contracts, with every AI label measured.</h1>
+        <p class="lead">
+          AwardTrace makes the Department of Agriculture's contract awards searchable, from USAspending.gov data updated
+          weekly. A Claude classifier sorts each award into a category, and it had to beat the government's own product
+          codes before the site would show its answers.
+        </p>
+        <p class="actions">
+          <a class="button primary" href="https://app.awardtrace.zntsns.com/">Open the live app →</a>
+          <a class="button" href="https://github.com/Davidzent/AwardTrace">Read the code</a>
+        </p>
+        <!-- The live app's state, from the wake function (ADR 0020). Hidden until the function answers, so without it the
+             hours below stand alone. -->
+        <div class="live" data-wake data-wake-url="{{wakeUrl}}" hidden>
+          <p role="status"><span class="dot" aria-hidden="true"></span><span data-message></span></p>
+          <button class="button" type="button" hidden>Start it</button>
+        </div>
+        <p class="hours">The live app runs weekdays from 8:00 to 20:00 Pacific, and sleeps the rest of the time to save money.</p>
+        <img
+          class="screenshot"
+          src="./search.jpg"
+          width="1280"
+          height="800"
+          fetchpriority="high"
+          alt="The AwardTrace search page: results for “fire”, with filters by agency, category, and state beside them."
+        />
+      </section>
+
+      <section class="band" id="how" aria-labelledby="how-title">
+        <div class="inner">
+          <h2 id="how-title">How it works</h2>
+          <ol class="flow">
+            <li><strong>USAspending</strong><span>Monthly contract files</span></li>
+            <li><strong>Kafka</strong><span>One event per transaction</span></li>
+            <li><strong>PostgreSQL</strong><span>Awards rebuilt from transactions</span></li>
+            <li><strong>Elasticsearch</strong><span>Search, filters, and sorting</span></li>
+            <li><strong>The app</strong><span>React and a REST API</span></li>
+          </ol>
+          <div class="columns">
+            <div>
+              <h3>The pipeline</h3>
+              <p>
+                Every file is kept in S3 as downloaded, then published to Kafka one transaction at a time, keyed by award
+                so each award's events stay in order. Each award is rebuilt from its transactions, so late or replayed
+                data can't roll it back.
+              </p>
+            </div>
+            <div>
+              <h3>The outbox</h3>
+              <p>
+                When an award changes, the notice for the search index is written in the same database transaction. A
+                relay publishes it and the indexer copies the award into Elasticsearch, so the index never misses a
+                change or hears about one that didn't happen.
+              </p>
+            </div>
+            <div>
+              <h3>The classifier</h3>
+              <p>
+                Claude Haiku 4.5 reads each description once and picks a category, through half-price batches for the
+                backfill and under a $1 daily cap after that. Every AI category on the site carries an AI badge.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="inner section" id="results" aria-labelledby="results-title">
+        <h2 id="results-title">Results</h2>
+        <p>
+          The classifier and a baseline built from the government's product codes were scored on the same hand-labeled
+          descriptions, under decision rules fixed before either ran.
+        </p>
+        <dl class="figures">
+          <div>
+            <dt>Classifier accuracy</dt>
+            <dd class="figure">{{classifier}}</dd>
+            <dd>Claude Haiku 4.5, the model the site uses</dd>
+          </div>
+          <div>
+            <dt>Product-code baseline</dt>
+            <dd class="figure">{{baseline}}</dd>
+            <dd>The government's codes, mapped to the same categories</dd>
+          </div>
+          <div>
+            <dt>Hosting</dt>
+            <dd class="figure">$29 a month</dd>
+            <dd>One EC2 host, running on weekday hours</dd>
+          </div>
+        </dl>
+        <p><a href="https://github.com/Davidzent/AwardTrace/blob/main/docs/results.md">Every run, with its misses →</a></p>
+      </section>
+
+      <section class="band" aria-labelledby="more-title">
+        <div class="inner">
+          <h2 id="more-title">More</h2>
+          <ul class="links">
+            <li><a href="https://app.awardtrace.zntsns.com/">Open the live app</a></li>
+            <li><a href="https://github.com/Davidzent/AwardTrace">Read the code</a></li>
+            <li><a href="https://github.com/Davidzent/AwardTrace/tree/main/docs/decisions">Read the design decisions</a></li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="inner">
+        <p>AwardTrace is an independent project, not affiliated with USAspending.gov or any government agency.</p>
+      </div>
+    </footer>
+  </body>
+</html>

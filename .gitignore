@@ -19,6 +19,7 @@ build/
 # Web dependencies, build output, and Playwright results
 node_modules/
 dist/
+dist-landing/
 test-results/
 playwright-report/
 

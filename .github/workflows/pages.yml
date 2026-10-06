@@ -1,0 +1,63 @@
+# Builds the landing page and publishes it to GitHub Pages (ADR 0019), on each push to main that changes the page or
+# what it's built from, and by hand. Before the first run, set Settings → Pages → Source to "GitHub Actions" and the
+# custom domain to awardtrace.zntsns.com, and verify the domain in the account's Pages settings.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - web/landing/**
+      - web/public/**
+      - web/src/app/tokens.css
+      - web/src/app/styles.css
+      - web/src/assets/fonts/**
+      - web/vite.landing.config.ts
+      - web/package-lock.json
+      - docs/results.md
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One publish at a time, in order; a newer push waits rather than cancelling one halfway.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      # Writes the classifier's results in from docs/results.md, and fails if it can't find them. The wake button needs
+      # the repository variable WAKE_FUNCTION_URL, set to Terraform's wake_function_url output (ADR 0020).
+      - run: npm run build:landing
+        env:
+          WAKE_FUNCTION_URL: ${{ vars.WAKE_FUNCTION_URL }}
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist-landing
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

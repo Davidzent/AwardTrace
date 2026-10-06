@@ -89,6 +89,18 @@ module "schedule" {
   stop_cron   = "cron(0 20 ? * MON-FRI *)"
 }
 
+# The landing page's wake button (ADR 0020). The landing page calls it from its own origin, and the function asks the
+# app's /healthz, which Caddy answers outside /api/, so asking can't keep the host awake.
+module "wake" {
+  source = "../../modules/wake"
+
+  name            = local.name
+  instance_id     = module.compute.instance_id
+  app_url         = "https://app.${local.name}.zntsns.com"
+  allowed_origins = ["https://${local.name}.zntsns.com"]
+  wakes_per_day   = 6
+}
+
 module "budget" {
   source = "../../modules/budget"
 

@@ -20,3 +20,8 @@ export async function expectResultsSettled(page: Page) {
   // The fade back from dimmed takes 150 ms; until it ends, axe would measure contrast through the opacity.
   await expect(results).toHaveCSS('opacity', '1');
 }
+
+/** Text shows in a fallback font until Public Sans arrives (font-display: swap); a screenshot must not catch that. */
+export async function waitForPublicSans(page: Page) {
+  expect(await page.evaluate(async () => (await document.fonts.load('1em "Public Sans"')).length)).toBeGreaterThan(0);
+}

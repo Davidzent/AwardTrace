@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig([
   // schema.ts is generated from backend/openapi.json.
-  globalIgnores(['dist', 'test-results', 'playwright-report', 'src/api/schema.ts']),
+  globalIgnores(['dist', 'dist-landing', 'test-results', 'playwright-report', 'src/api/schema.ts']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, tseslint.configs.recommended, reactHooks.configs.flat.recommended],

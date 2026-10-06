@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import award from './fixtures/award.json' with { type: 'json' };
 import network from './fixtures/network.json' with { type: 'json' };
 import recipientAwards from './fixtures/recipient-awards.json' with { type: 'json' };
@@ -7,6 +7,7 @@ import searchHome from './fixtures/search-home.json' with { type: 'json' };
 import searchResults from './fixtures/search-results.json' with { type: 'json' };
 import status from './fixtures/status.json' with { type: 'json' };
 import subawards from './fixtures/subawards.json' with { type: 'json' };
+import { expectAccessible, waitForPublicSans } from './helpers';
 
 /**
  * Each main page, whole, at both widths (doc 16), so a change that breaks a layout fails here even when every flow
@@ -46,18 +47,33 @@ function fixture(url: URL): unknown {
   return path.endsWith('/awards') ? recipientAwards : recipient;
 }
 
+/** Opens a page against the fixtures and the stopped clock, and waits until it has rendered with nothing left to load. */
+async function open(page: Page, path: string) {
+  await page.clock.setFixedTime(new Date('2026-10-05T16:00:00Z'));
+  await page.route('**/api/v1/**', (route) => route.fulfill({ json: fixture(new URL(route.request().url())) }));
+  await page.goto(path);
+  // A lazy page shows no heading until its code arrives.
+  await expect(page.getByRole('heading', { level: 1 })).toBeAttached();
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
+  await page.waitForLoadState('networkidle');
+}
+
 for (const { name, path } of PAGES) {
   test(`${name} page looks as it did`, async ({ page }) => {
-    await page.clock.setFixedTime(new Date('2026-10-05T16:00:00Z'));
-    await page.route('**/api/v1/**', (route) => route.fulfill({ json: fixture(new URL(route.request().url())) }));
-    await page.goto(path);
-
-    // Rendered, with nothing left loading: a lazy page shows no heading until its code arrives.
-    await expect(page.getByRole('heading', { level: 1 })).toBeAttached();
-    await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
-    await page.waitForLoadState('networkidle');
-    // Text shows in a fallback font until Public Sans arrives (font-display: swap); a screenshot must not catch that.
-    expect(await page.evaluate(async () => (await document.fonts.load('1em "Public Sans"')).length)).toBeGreaterThan(0);
+    await open(page, path);
+    await waitForPublicSans(page);
     await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
   });
 }
+
+// Dark mode's colors are a second set of token values (doc 16); axe checks their contrast on every page.
+test.describe('in dark mode', () => {
+  test.use({ colorScheme: 'dark' });
+
+  for (const { name, path } of PAGES) {
+    test(`${name} page is accessible`, async ({ page }) => {
+      await open(page, path);
+      await expectAccessible(page);
+    });
+  }
+});

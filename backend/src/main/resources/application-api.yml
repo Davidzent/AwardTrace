@@ -20,7 +20,7 @@ springdoc:
 management:
   endpoints:
     web:
-      # Every role's metrics, since production runs all roles in one process. Internal: Caddy routes only /api, so
-      # these never leave the Docker network (docs 07 and 11).
+      # Every role's metrics, since production runs all roles in one process. Internal: Caddy routes only /api, and
+      # /healthz to the health status alone, so the rest never leaves the Docker network (docs 07 and 11, ADR 0020).
       exposure:
         include: health, prometheus

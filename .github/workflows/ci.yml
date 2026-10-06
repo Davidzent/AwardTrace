@@ -64,6 +64,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # pages.yml publishes this on main; building it here catches a break, such as a changed docs/results.md, first.
+      - run: npm run build:landing
 
   terraform:
     runs-on: ubuntu-latest
@@ -74,6 +76,8 @@ jobs:
           terraform_version: 1.16.5
           terraform_wrapper: false
       - run: terraform fmt -check -recursive infra/terraform
+      # The wake function's logic, with stand-ins for AWS (ADR 0020). The runner's own Node.js runs it.
+      - run: node --test infra/terraform/modules/wake/function/wake.test.mjs
       # Every root, without its backend, so validation needs no AWS credentials. Modules are checked through the
       # roots that use them.
       - run: |
