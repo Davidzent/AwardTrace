@@ -90,7 +90,8 @@ describe('AwardPage', () => {
     renderAward(() => Response.json({ ...AWARD, subaward_summary: { count: 0, total: '0.00' } }));
 
     expect(await screen.findByText('No reported subawards')).toBeDefined();
-    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
+    const requested = vi.mocked(fetch).mock.calls.map(([input]) => String(input));
+    expect(requested.filter((url) => url.includes('/subawards'))).toEqual([]);
   });
 
   it('lists the newest subawards and shows more on request', async () => {
