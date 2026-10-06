@@ -39,6 +39,19 @@ Double brackets are Kafka topics, and cylinders are stores. The ingest task, pip
 
 ## Results
 
+Every number was measured on production, and each links to how in [docs/results.md](docs/results.md).
+
+| Measure | Result |
+|---|---|
+| Search p95 at 20 requests a second | [155 ms](docs/results.md#search-under-load), with none of 19,888 requests failing |
+| Pipeline throughput | [1,068 transactions a second](docs/results.md#throughput) on one 2-vCPU host |
+| Freshness | [Every award searchable within 30 s](docs/results.md#freshness) of a full replay's last write |
+| Rebuild from Terraform and S3 | [6 min 54 s](docs/results.md#rebuild-drill), with [identical counts and checksums](docs/results.md#the-replay-reproduced-the-data-exactly) |
+| Classifier against the product-code baseline | [65.7% against 59.7%](docs/results.md#classification) on 181 hand-labeled descriptions |
+| Monthly cost | Not measured yet: October's bill closes on November 1 |
+
+### The classifier
+
 The classifier and a baseline built from the government's product codes were both scored against 200 hand-labeled descriptions, under decision rules fixed before the runs ([ADR 0013](docs/decisions/0013-classifier-model-and-default-category.md)). Accuracy counts the 181 descriptions not labeled too vague to classify.
 
 | Classifier | Accuracy | Cost per 100 descriptions |
@@ -47,9 +60,7 @@ The classifier and a baseline built from the government's product codes were bot
 | Claude Haiku 4.5, the one the site uses | 65.7% | $0.021, or half that through Message Batches |
 | Claude Opus 5.5, run once as a ceiling | 77.9% | $0.118 |
 
-Haiku's 6-point lead clears the 3 points the rules required, though it isn't statistically significant. [docs/results.md](docs/results.md) has every run, and each run's report has its confusion matrix and misses.
-
-Under 20 requests a second against production, searches had a p95 of 155 ms and award pages 134 ms, with no failed requests ([load tests](docs/results.md#search-under-load)). Ingest throughput and the rebuild time aren't measured yet.
+Haiku's 6-point lead clears the 3 points the rules required, though it isn't statistically significant. [docs/results.md](docs/results.md#classification) has every run, and each run's report has its confusion matrix and misses.
 
 ## What's interesting here
 
