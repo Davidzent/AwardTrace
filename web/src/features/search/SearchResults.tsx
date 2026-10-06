@@ -4,6 +4,7 @@ import { Money } from '../../components/Money';
 import { Pager } from '../../components/Pager';
 import { ProblemMessage } from '../../components/ProblemMessage';
 import { ResultCard } from '../../components/ResultCard';
+import { Skeleton } from '../../components/Skeleton';
 import { formatCount } from '../../lib/format';
 import type { Chip } from './filters';
 import { searchHref } from './searchUrl';
@@ -41,7 +42,7 @@ export function SearchResults({ query, results, error, updating, lastFilter, onS
           Loading results
         </p>
         {Array.from({ length: 5 }, (_, index) => (
-          <div key={index} className="skeleton-card" aria-hidden="true" />
+          <Skeleton key={index} shape="card" />
         ))}
       </div>
     );

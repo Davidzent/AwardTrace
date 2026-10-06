@@ -1,5 +1,7 @@
 import type { Schemas } from '../../api/client';
+import { Badge } from '../../components/Badge';
 import { Money } from '../../components/Money';
+import table from '../../components/Table.module.css';
 import { formatDate } from '../../lib/format';
 
 type Props = { transactions: Schemas['Modification'][]; truncated: boolean };
@@ -9,14 +11,14 @@ export function ModificationsTable({ transactions, truncated }: Props) {
   return (
     <>
       {/* On a narrow screen the table scrolls sideways; focusable, so the keyboard can scroll it too. */}
-      <div className="table-scroll" tabIndex={0} role="region" aria-label="Modifications table">
-        <table className="modifications">
+      <div className={table.scroll} tabIndex={0} role="region" aria-label="Modifications table">
+        <table className={table.table}>
           <caption className="visually-hidden">Modifications, newest first</caption>
           <thead>
             <tr>
               <th scope="col">Date</th>
               <th scope="col">Mod</th>
-              <th scope="col" className="num">
+              <th scope="col" className={table.num}>
                 Obligation
               </th>
               <th scope="col">Description</th>
@@ -25,12 +27,12 @@ export function ModificationsTable({ transactions, truncated }: Props) {
           <tbody>
             {transactions.map((transaction) => (
               <tr key={transaction.transaction_id}>
-                <td className="nowrap">{transaction.action_date && formatDate(transaction.action_date)}</td>
+                <td className={table.nowrap}>{transaction.action_date && formatDate(transaction.action_date)}</td>
                 <td>{transaction.modification_number}</td>
-                <td className="num">
+                <td className={table.num}>
                   <Money amount={transaction.federal_action_obligation} exact />
                   {transaction.federal_action_obligation?.startsWith('-') && (
-                    <span className="badge">Deobligation</span>
+                    <Badge className={table.below}>Deobligation</Badge>
                   )}
                 </td>
                 <td>{transaction.description}</td>

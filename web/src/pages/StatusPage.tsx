@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { Button } from '../components/Button';
 import problemStyles from '../components/ProblemMessage.module.css';
+import { Skeleton } from '../components/Skeleton';
 import { StatusTile } from '../components/StatusTile';
 import {
   enrichmentCondition,
@@ -50,7 +51,7 @@ export function StatusPage() {
             Loading status
           </p>
           {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="skeleton-block skeleton-panel" aria-hidden="true" />
+            <Skeleton key={i} shape="panel" />
           ))}
         </div>
       )}

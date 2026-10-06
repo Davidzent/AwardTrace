@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { ProblemMessage } from '../components/ProblemMessage';
+import { Skeleton } from '../components/Skeleton';
 import { RecipientNetwork } from '../features/recipient/RecipientNetwork';
 import { RecipientProfile } from '../features/recipient/RecipientProfile';
 import { SearchResults } from '../features/search/SearchResults';
@@ -60,8 +61,8 @@ export function RecipientPage() {
           <p className="visually-hidden" role="status">
             Loading recipient
           </p>
-          <div className="skeleton-block skeleton-title" aria-hidden="true" />
-          <div className="skeleton-block skeleton-panel" aria-hidden="true" />
+          <Skeleton shape="title" />
+          <Skeleton shape="panel" />
         </div>
       )}
       <section aria-labelledby="recipient-awards" className="recipient-awards">

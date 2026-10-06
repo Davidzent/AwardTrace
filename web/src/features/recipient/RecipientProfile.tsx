@@ -1,5 +1,6 @@
 import type { Schemas } from '../../api/client';
 import { Money } from '../../components/Money';
+import table from '../../components/Table.module.css';
 import { formatCount } from '../../lib/format';
 
 /** The recipient header, summary tiles, and rollups from doc 08. */
@@ -43,14 +44,14 @@ export function RecipientProfile({ recipient }: { recipient: Schemas['RecipientD
         />
         <section className="panel" aria-labelledby="by-fiscal-year">
           <h2 id="by-fiscal-year">By fiscal year</h2>
-          <table className="rollup-table">
+          <table className={table.table}>
             <thead>
               <tr>
                 <th scope="col">Year</th>
-                <th scope="col" className="num">
+                <th scope="col" className={table.num}>
                   Awards
                 </th>
-                <th scope="col" className="num">
+                <th scope="col" className={table.num}>
                   Obligated
                 </th>
               </tr>
@@ -59,8 +60,8 @@ export function RecipientProfile({ recipient }: { recipient: Schemas['RecipientD
               {(recipient.awards_by_fiscal_year ?? []).map((year) => (
                 <tr key={year.fiscal_year}>
                   <td>FY{year.fiscal_year}</td>
-                  <td className="num">{formatCount(year.award_count ?? 0)}</td>
-                  <td className="num">
+                  <td className={table.num}>{formatCount(year.award_count ?? 0)}</td>
+                  <td className={table.num}>
                     <Money amount={year.total_obligated} />
                   </td>
                 </tr>

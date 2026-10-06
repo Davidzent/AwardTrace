@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { ProblemMessage } from '../components/ProblemMessage';
+import { Skeleton } from '../components/Skeleton';
 import { AwardDetail } from '../features/award/AwardDetail';
 
 export function AwardPage() {
@@ -23,12 +24,12 @@ export function AwardPage() {
         <p className="visually-hidden" role="status">
           Loading award
         </p>
-        <div className="skeleton-block skeleton-title" aria-hidden="true" />
-        <div className="award-grid" aria-hidden="true">
-          <div className="skeleton-block skeleton-panel" />
-          <div className="skeleton-block skeleton-panel" />
+        <Skeleton shape="title" />
+        <div className="award-grid">
+          <Skeleton shape="panel" />
+          <Skeleton shape="panel" />
         </div>
-        <div className="skeleton-block skeleton-panel" aria-hidden="true" />
+        <Skeleton shape="panel" />
       </div>
     );
   }

@@ -120,13 +120,6 @@ mark {
   gap: 0.5rem;
 }
 
-.skeleton-card {
-  height: 6.5rem;
-  margin: 1rem 0;
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-}
-
 .empty {
   margin: var(--space-6) 0;
   padding: var(--space-4) var(--space-6);
@@ -249,71 +242,9 @@ legend {
   font-weight: 600;
 }
 
-.table-scroll {
-  overflow-x: auto;
-}
-
-.modifications {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.modifications th,
-.modifications td {
-  padding: 0.45rem 0.75rem 0.45rem 0;
-  border-bottom: 1px solid var(--color-border);
-  text-align: left;
-  vertical-align: top;
-}
-
-.modifications th {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.modifications .num {
-  text-align: right;
-}
-
-/* Under the amount, so a narrow screen keeps room for the description. */
-.modifications .badge {
-  display: table;
-  margin: 0.2rem 0 0 auto;
-}
-
-.nowrap {
-  white-space: nowrap;
-}
-
-.badge {
-  display: inline-block;
-  margin-left: 0.5rem;
-  padding: 0 0.4rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text-muted);
-  font-size: 0.75rem;
-}
-
 .source {
   margin-top: 1.5rem;
   font-size: 0.9rem;
-}
-
-.skeleton-block {
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-}
-
-.skeleton-title {
-  height: 3.5rem;
-  margin-bottom: 1.25rem;
-}
-
-.skeleton-panel {
-  height: 12rem;
-  margin-bottom: 1rem;
 }
 
 .tiles {
@@ -374,27 +305,6 @@ legend {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 1rem 2rem;
-}
-
-.rollup-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.rollup-table th,
-.rollup-table td {
-  padding: 0.25rem 0;
-  text-align: left;
-}
-
-.rollup-table th {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.rollup-table .num {
-  text-align: right;
 }
 
 .recipient-awards > h2 {
