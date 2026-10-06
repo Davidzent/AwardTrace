@@ -5,7 +5,7 @@ test('opens an award from the results, then its recipient, and back', async ({ p
   await page.goto('/?q=fire&sort=largest');
   await expectResultsSettled(page);
   // A card shows the highlighted fragment, not the whole description, so the award is matched by its address.
-  const firstResult = page.locator('.result-title a').first();
+  const firstResult = page.getByRole('article').first().getByRole('heading').getByRole('link');
   const href = (await firstResult.getAttribute('href')) ?? '';
   await firstResult.click();
 
