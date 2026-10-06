@@ -17,4 +17,6 @@ export async function expectResultsSettled(page: Page) {
   const results = page.getByRole('region', { name: 'Results' });
   await expect(results).toBeVisible();
   await expect(results).not.toHaveAttribute('aria-busy', 'true');
+  // The fade back from dimmed takes 150 ms; until it ends, axe would measure contrast through the opacity.
+  await expect(results).toHaveCSS('opacity', '1');
 }
