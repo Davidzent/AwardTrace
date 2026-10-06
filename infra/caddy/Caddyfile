@@ -1,6 +1,6 @@
-# Caddy terminates TLS, serves the web build, and proxies the API (docs 07 and 10). It routes nothing else, so the
-# actuator endpoints never leave the Docker network. SITE_ADDRESS overrides the domain, such as localhost for a local
-# run with Caddy's own certificate authority.
+# Caddy terminates TLS, serves the web build, and proxies the API (docs 07 and 10). It routes nothing else, so of the
+# actuator endpoints only the health status leaves the Docker network, as /healthz. SITE_ADDRESS overrides the domain,
+# such as localhost for a local run with Caddy's own certificate authority.
 {
 	# Only TCP 80 and 443 are open (invariant I6), so HTTP/3, which runs over UDP, is off rather than unreachable.
 	servers {
@@ -18,6 +18,14 @@
 		X-Frame-Options DENY
 		Referrer-Policy strict-origin-when-cross-origin
 		-Server
+	}
+
+	# Whether the app is up, for the wake function (ADR 0020): UP with 200, or 502 or 503 while it isn't. The path is
+	# outside /api/, so the idle stop doesn't count it, and asking can't keep the host awake.
+	handle /healthz {
+		header Cache-Control no-store
+		rewrite * /actuator/health
+		reverse_proxy app:8080
 	}
 
 	# The API sets its own Cache-Control and ETag headers.
