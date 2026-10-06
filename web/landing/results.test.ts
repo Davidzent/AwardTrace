@@ -15,6 +15,11 @@ describe('accuracies', () => {
     expect(accuracies(RESULTS, 'claude-haiku-4-5')).toEqual({ baseline: '59.7%', classifier: '65.7%' });
   });
 
+  it('finds the classification table among the page\'s other tables', () => {
+    const page = `# Results\n\n| Scenario | p95 |\n|---|---|\n| search | 155 ms |\n\n${RESULTS}`;
+    expect(accuracies(page, 'claude-haiku-4-5')).toEqual({ baseline: '59.7%', classifier: '65.7%' });
+  });
+
   it('refuses a model or a column the table lacks', () => {
     expect(() => accuracies(RESULTS, 'claude-sonnet-5-5')).toThrow('claude-sonnet-5-5');
     expect(() => accuracies(RESULTS.replace('Accuracy on clear rows', 'Accuracy'), 'claude-haiku-4-5')).toThrow();
