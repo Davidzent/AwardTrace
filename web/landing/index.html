@@ -26,9 +26,10 @@
     <!-- Fetched before the stylesheet asks for it, so text appears in Public Sans without a visible swap. -->
     <link rel="preload" href="../src/assets/fonts/public-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./landing.css" />
+    <script type="module" src="./main.ts"></script>
   </head>
   <body>
-    <!-- Static on purpose: this page never calls the app's API, which would keep the host awake (ADR 0019). -->
+    <!-- This page never calls the app's API, which would keep the host awake (ADR 0019); the wake function answers instead. -->
     <header class="header">
       <div class="inner header-inner">
         <a class="brand" href="./">
@@ -55,6 +56,12 @@
           <a class="button primary" href="https://app.awardtrace.zntsns.com/">Open the live app →</a>
           <a class="button" href="https://github.com/Davidzent/AwardTrace">Read the code</a>
         </p>
+        <!-- The live app's state, from the wake function (ADR 0020). Hidden until the function answers, so without it the
+             hours below stand alone. -->
+        <div class="live" data-wake data-wake-url="{{wakeUrl}}" hidden>
+          <p role="status"><span class="dot" aria-hidden="true"></span><span data-message></span></p>
+          <button class="button" type="button" hidden>Start it</button>
+        </div>
         <p class="hours">The live app runs weekdays from 8:00 to 20:00 Pacific, and sleeps the rest of the time to save money.</p>
         <img
           class="screenshot"

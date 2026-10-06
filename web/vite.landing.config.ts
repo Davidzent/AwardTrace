@@ -31,7 +31,11 @@ export default defineConfig({
       transformIndexHtml(html) {
         const results = readFileSync(new URL('../docs/results.md', import.meta.url), 'utf8');
         const { baseline, classifier } = accuracies(results, SITE_MODEL);
-        return html.replaceAll('{{baseline}}', baseline).replaceAll('{{classifier}}', classifier);
+        return html
+          .replaceAll('{{baseline}}', baseline)
+          .replaceAll('{{classifier}}', classifier)
+          // The wake function's URL (ADR 0020), from Terraform's wake_function_url output; empty leaves the button off.
+          .replaceAll('{{wakeUrl}}', process.env.WAKE_FUNCTION_URL ?? '');
       },
     },
   ],
