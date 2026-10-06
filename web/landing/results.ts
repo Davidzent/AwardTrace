@@ -7,7 +7,8 @@ export function accuracies(markdown: string, model: string): { baseline: string;
     .split('\n')
     .filter((line) => line.startsWith('|'))
     .map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()));
-  const column = rows[0]?.indexOf('Accuracy on clear rows') ?? -1;
+  // The page has other tables, such as the load tests', so the classification table is found by its column.
+  const column = rows.find((row) => row.includes('Accuracy on clear rows'))?.indexOf('Accuracy on clear rows') ?? -1;
   const accuracy = (matches: (name: string) => boolean, what: string) => {
     const value = rows.find((row) => matches(row[0] ?? ''))?.[column];
     if (column < 0 || !value) {

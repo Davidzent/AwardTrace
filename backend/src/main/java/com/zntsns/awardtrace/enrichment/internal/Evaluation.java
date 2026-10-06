@@ -29,8 +29,11 @@ import org.springframework.stereotype.Component;
 @Profile("enricher")
 class Evaluation {
 
+    /** The summary page's section this writes; the rest of the page, such as the load tests, isn't its own. */
+    private static final Pattern SECTION = Pattern.compile("(?m)^## Classification\\r?$");
+
     private static final String SUMMARY_HEAD = """
-            # Classification results
+            ## Classification
 
             Each row scores one model and prompt version on the gold set in `eval/`, against the free PSC baseline \
             (ADR 0007). A model's categories become the site's default only if they beat the baseline. Each model \
@@ -90,7 +93,10 @@ class Evaluation {
         return baselines;
     }
 
-    /** Writes the report, then puts its row and the baseline's in the summary, replacing any from an earlier run. */
+    /**
+     * Writes the report, then puts its row and the baseline's in the summary page's classification section, replacing
+     * any from an earlier run. The section runs to the next {@code ## } heading; the rest of the page stays as it is.
+     */
     private void write(EvalReport report) throws IOException {
         Path reportFile = properties.reportDirectory().resolve(report.model() + "-" + report.promptVersion() + ".md");
         Files.createDirectories(properties.reportDirectory());
@@ -99,21 +105,28 @@ class Evaluation {
         Path summary = properties.summaryFile();
         String link = summary.toAbsolutePath().getParent().relativize(reportFile.toAbsolutePath()).toString()
                 .replace(File.separatorChar, '/');
+        String page = Files.exists(summary) ? Files.readString(summary, StandardCharsets.UTF_8) : "";
+        Matcher heading = SECTION.matcher(page);
+        boolean found = heading.find();
+        int start = found ? heading.start() : page.length();
+        int next = found ? page.indexOf("\n## ", heading.end()) : -1;
+        int end = next < 0 ? page.length() : next + 1;
+        String before = found || page.isEmpty() ? page.substring(0, start) : page.stripTrailing() + "\n\n";
         var rows = new ArrayList<String>();
-        if (Files.exists(summary)) {
-            boolean table = false;
-            for (String line : Files.readAllLines(summary, StandardCharsets.UTF_8)) {
-                if (line.startsWith("|---")) {
-                    table = true;
-                } else if (table && line.startsWith("| ")) {
-                    rows.add(line);
-                }
+        boolean table = false;
+        for (String line : page.substring(start, end).lines().toList()) {
+            if (line.startsWith("|---")) {
+                table = true;
+            } else if (table && line.startsWith("| ")) {
+                rows.add(line);
             }
         }
         put(rows, report.baselineSummaryRow());
         put(rows, report.summaryRow(link));
+        String after = end < page.length() ? "\n" + page.substring(end) : "";
         Files.createDirectories(summary.toAbsolutePath().getParent());
-        Files.writeString(summary, SUMMARY_HEAD + String.join("\n", rows) + "\n", StandardCharsets.UTF_8);
+        Files.writeString(summary, before + SUMMARY_HEAD + String.join("\n", rows) + "\n" + after,
+                StandardCharsets.UTF_8);
     }
 
     /** Replaces the row for the same classifier and prompt version, or adds the row at the end. */

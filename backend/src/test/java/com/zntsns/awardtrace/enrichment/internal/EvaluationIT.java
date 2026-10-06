@@ -76,7 +76,7 @@ class EvaluationIT {
                 .contains("| Accuracy | 25.0% (1 of 4) | 75.0% (3 of 4) |")
                 .contains("| Accuracy on rows not labeled UNCLASSIFIABLE | 33.3% (1 of 3) | 100.0% (3 of 3) |");
         assertThat(Files.readString(dir.resolve("docs/results.md")))
-                .startsWith("# Classification results")
+                .startsWith("## Classification")
                 .contains("| PSC baseline | - | 75.0% | 100.0% | 0.0% | - | Free | 2026-10-06 |")
                 .contains("| [claude-haiku-4-5](../eval/results/claude-haiku-4-5-v1.md) | v1 | 25.0% | 33.3% |");
         // The run writes no classification and spends nothing on the live path's ledger.
@@ -92,6 +92,44 @@ class EvaluationIT {
         assertThat(Files.readAllLines(dir.resolve("docs/results.md")))
                 .filteredOn(line -> line.startsWith("| PSC baseline") || line.startsWith("| [claude-haiku-4-5]"))
                 .hasSize(2);
+    }
+
+    @Test
+    void rewritesOnlyItsOwnSectionOfTheSummaryPage() throws IOException {
+        Path page = dir.resolve("docs/results.md");
+        Files.createDirectories(page.getParent());
+        Files.writeString(page, """
+                # Results
+
+                ## Search under load
+
+                | Scenario | p95 |
+                |---|---|
+                | search | 155 ms |
+
+                ## Classification
+
+                An earlier introduction.
+
+                | Classifier | Prompt | Accuracy |
+                |---|---|---|
+                | [claude-opus-5-5](../eval/results/claude-opus-5-5-v1.md) | v1 | 76.5% |
+
+                ## Cost
+
+                Measured in November.
+                """);
+
+        evaluation(new BigDecimal("1.00")).run();
+
+        assertThat(Files.readString(page))
+                .startsWith("# Results\n\n## Search under load\n\n| Scenario | p95 |\n|---|---|\n| search | 155 ms |\n\n"
+                        + "## Classification\n")
+                .containsOnlyOnce("| search | 155 ms |")
+                .contains("| [claude-opus-5-5](../eval/results/claude-opus-5-5-v1.md) | v1 | 76.5% |")
+                .contains("| [claude-haiku-4-5](../eval/results/claude-haiku-4-5-v1.md) | v1 | 25.0% |")
+                .doesNotContain("An earlier introduction.")
+                .endsWith("|\n\n## Cost\n\nMeasured in November.\n");
     }
 
     @Test

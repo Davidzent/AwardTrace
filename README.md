@@ -47,7 +47,9 @@ The classifier and a baseline built from the government's product codes were bot
 | Claude Haiku 4.5, the one the site uses | 65.7% | $0.021, or half that through Message Batches |
 | Claude Opus 5.5, run once as a ceiling | 77.9% | $0.118 |
 
-Haiku's 6-point lead clears the 3 points the rules required, though it isn't statistically significant. [docs/results.md](docs/results.md) has every run, and each run's report has its confusion matrix and misses. Search latency, ingest throughput, and the rebuild time aren't measured yet.
+Haiku's 6-point lead clears the 3 points the rules required, though it isn't statistically significant. [docs/results.md](docs/results.md) has every run, and each run's report has its confusion matrix and misses.
+
+Under 20 requests a second against production, searches had a p95 of 155 ms and award pages 134 ms, with no failed requests ([load tests](docs/results.md#search-under-load)). Ingest throughput and the rebuild time aren't measured yet.
 
 ## What's interesting here
 
@@ -95,7 +97,7 @@ Until the classifier runs, every category comes from the product codes. Running 
 | Where | What |
 |---|---|
 | [docs/decisions/](docs/decisions/) | The architecture decision records |
-| [docs/results.md](docs/results.md) | The classifier's evaluation runs |
+| [docs/results.md](docs/results.md) | Every measured result: the load tests and the classifier's evaluation runs |
 | [eval/README.md](eval/README.md) | The labeling guide, and how to run the evaluation |
 | [backend/openapi.json](backend/openapi.json) | The API's contract, also served at `/api/v1/openapi.json` |
 
