@@ -8,6 +8,7 @@ import { Skeleton } from '../../components/Skeleton';
 import { formatCount } from '../../lib/format';
 import type { Chip } from './filters';
 import { searchHref } from './searchUrl';
+import styles from './SearchResults.module.css';
 
 /** The API refuses pages past Elasticsearch's result window (doc 07), so the pager stops there. */
 const RESULT_WINDOW = 10_000;
@@ -37,14 +38,14 @@ export function SearchResults({ query, results, error, updating, lastFilter, onS
   }
   if (!results) {
     return (
-      <div className="results" aria-busy="true">
+      <section aria-label="Results" className={styles.results} aria-busy="true">
         <p className="visually-hidden" role="status">
           Loading results
         </p>
         {Array.from({ length: 5 }, (_, index) => (
           <Skeleton key={index} shape="card" />
         ))}
-      </div>
+      </section>
     );
   }
 
@@ -54,19 +55,21 @@ export function SearchResults({ query, results, error, updating, lastFilter, onS
   const sort = query.sort ?? (query.q ? 'relevance' : 'newest');
   return (
     // aria-busy tells assistive technology, and tests, that dimmed results are about to be replaced.
-    <div className={updating ? 'results is-updating' : 'results'} aria-busy={updating || undefined}>
-      <div className="results-header">
-        <p aria-live="polite">
-          <strong>
+    <section
+      aria-label="Results"
+      className={updating ? `${styles.results} ${styles.updating}` : styles.results}
+      aria-busy={updating || undefined}
+    >
+      <div className={styles.header}>
+        <p className={styles.summary} aria-live="polite">
+          <strong className={styles.count}>
             {formatCount(total)}
             {results.total_is_capped ? '+' : ''} {total === 1 ? 'award' : 'awards'}
           </strong>
-          <span className="results-sep"> · </span>
-          <Money amount={results.total_obligated} /> obligated
-          <span className="results-sep"> · </span>
-          <span className="muted">{results.took_ms} ms</span>
+          {' · '}
+          <Money amount={results.total_obligated} /> obligated · {results.took_ms}&nbsp;ms
         </p>
-        <label className="sort">
+        <label className={styles.sort}>
           Sort
           <select value={sort} onChange={(event) => onSort(event.target.value)}>
             {SORTS.map((option) => (
@@ -78,8 +81,8 @@ export function SearchResults({ query, results, error, updating, lastFilter, onS
         </label>
       </div>
       {total === 0 ? (
-        <div className="empty">
-          <p className="empty-title">No awards match.</p>
+        <div className={styles.empty}>
+          <p className={styles.emptyTitle}>No awards match.</p>
           {lastFilter ? (
             <p>
               Remove the last filter, <Link to={lastFilter.href}>{lastFilter.label}</Link>, or{' '}
@@ -97,6 +100,6 @@ export function SearchResults({ query, results, error, updating, lastFilter, onS
           <Pager page={results.page ?? 1} lastPage={lastPage} href={(page) => searchHref(query, { page })} />
         </>
       )}
-    </div>
+    </section>
   );
 }

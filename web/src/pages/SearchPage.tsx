@@ -10,6 +10,7 @@ import { SearchHome } from '../features/search/SearchHome';
 import { SearchResults } from '../features/search/SearchResults';
 import { readSearch, searchHref } from '../features/search/searchUrl';
 import { useMediaQuery } from '../lib/useMediaQuery';
+import styles from './SearchPage.module.css';
 
 /** The URL is the state (doc 08): the page reads the search from it and changes it only by navigating. */
 export function SearchPage() {
@@ -46,13 +47,13 @@ export function SearchPage() {
       <title>{query.q ? `${query.q} · AwardTrace` : 'AwardTrace'}</title>
       <h1 className="visually-hidden">Search awards</h1>
       <SearchBox key={query.q ?? ''} initial={query.q ?? ''} onSearch={(q) => change({ q })} />
-      <div className="search-layout">
+      <div className={styles.layout}>
         {wide && (
-          <aside className="filters" aria-label="Filters">
+          <aside className={styles.filters} aria-label="Filters">
             {filters}
           </aside>
         )}
-        <div className="search-main">
+        <div>
           {!wide && <FiltersDrawer count={chips.length}>{filters}</FiltersDrawer>}
           <ActiveFilters chips={chips} clearHref={clearFiltersHref(query)} />
           <SearchResults

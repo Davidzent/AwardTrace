@@ -1,0 +1,24 @@
+/* Filters sit in a column on wide screens and in a drawer on narrow ones (doc 08). */
+.layout {
+  display: grid;
+  gap: var(--space-4) var(--space-8);
+  margin-top: var(--space-6);
+}
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: 16rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  /* The column stays in view while the results scroll, and scrolls on its own when it's taller than the window. The
+     padding keeps focus outlines inside the scroll box, and the negative margin keeps the column aligned. */
+  .filters {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    margin: calc(-1 * var(--space-2));
+    padding: var(--space-2);
+    overflow-y: auto;
+  }
+}

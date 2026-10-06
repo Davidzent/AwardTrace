@@ -14,6 +14,7 @@ export async function expectAccessible(page: Page) {
 
 /** Results have loaded and aren't being replaced: no skeleton, and no dimmed previous results. */
 export async function expectResultsSettled(page: Page) {
-  await expect(page.locator('.results')).toBeVisible();
-  await expect(page.locator('.results[aria-busy="true"]')).toHaveCount(0);
+  const results = page.getByRole('region', { name: 'Results' });
+  await expect(results).toBeVisible();
+  await expect(results).not.toHaveAttribute('aria-busy', 'true');
 }
