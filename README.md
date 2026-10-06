@@ -2,7 +2,7 @@
 
 AwardTrace is a search site for U.S. federal contract awards. It loads the government's USAspending data through a Kafka pipeline, searches it with Elasticsearch, and gives each award a category from a Claude classifier that's scored against the government's own product codes.
 
-**Live site:** [awardtrace.zntsns.com](https://awardtrace.zntsns.com). It runs weekdays from 8:00 to 20:00 Pacific and is stopped outside those hours to save money ([ADR 0017](docs/decisions/0017-host-runs-on-weekday-hours.md)). It holds the Department of Agriculture's contracts ([ADR 0018](docs/decisions/0018-production-holds-agriculture-only.md)).
+**Live site:** [awardtrace.zntsns.com](https://awardtrace.zntsns.com) explains the project and opens the app at [app.awardtrace.zntsns.com](https://app.awardtrace.zntsns.com) ([ADR 0019](docs/decisions/0019-landing-page-on-github-pages.md)). The app runs weekdays from 8:00 to 20:00 Pacific and is stopped outside those hours to save money ([ADR 0017](docs/decisions/0017-host-runs-on-weekday-hours.md)); outside them, the landing page can start it ([ADR 0020](docs/decisions/0020-wake-button.md)). It holds the Department of Agriculture's contracts ([ADR 0018](docs/decisions/0018-production-holds-agriculture-only.md)).
 
 ## How it works
 

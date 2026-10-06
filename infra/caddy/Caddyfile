@@ -8,8 +8,8 @@
 	}
 }
 
-# The app's own name, and its old one until awardtrace.zntsns.com points at the landing page on GitHub Pages (ADR 0019).
-{$SITE_ADDRESS:app.awardtrace.zntsns.com awardtrace.zntsns.com} {
+# The app's own name; awardtrace.zntsns.com is the landing page, on GitHub Pages (ADR 0019).
+{$SITE_ADDRESS:app.awardtrace.zntsns.com} {
 	encode zstd gzip
 
 	header {

@@ -40,8 +40,8 @@ jobs:
           .github/scripts/start-host.sh > /dev/null
           # The stack takes 3 to 5 minutes to answer after a boot.
           for _ in $(seq 60); do
-            if curl -fsS -o /dev/null --max-time 10 https://awardtrace.zntsns.com/api/v1/status; then
-              echo "The site answers at https://awardtrace.zntsns.com"
+            if curl -fsS -o /dev/null --max-time 10 https://app.awardtrace.zntsns.com/api/v1/status; then
+              echo "The app answers at https://app.awardtrace.zntsns.com"
               exit 0
             fi
             sleep 10
