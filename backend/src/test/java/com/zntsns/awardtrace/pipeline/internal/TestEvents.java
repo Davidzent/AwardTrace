@@ -39,6 +39,14 @@ final class TestEvents {
 
     static ContractTransactionIngested transaction(String awardId, String modification, String actionDate,
             String obligation, String totalObligated, String sourceFile) {
+        return transaction(awardId, modification, actionDate, obligation, totalObligated, sourceFile, "MN5KRX2W9R46",
+                "NOMADIC LAND CAMPS, LLC", "NOMADIC LAND CAMPS, LLC IDIPF000347 E40");
+    }
+
+    /** The same, with the recipient, who is also its own parent, and the award's description given. */
+    static ContractTransactionIngested transaction(String awardId, String modification, String actionDate,
+            String obligation, String totalObligated, String sourceFile, String recipientUei, String recipientName,
+            String awardDescription) {
         return new ContractTransactionIngested(
                 transactionId(awardId, modification),
                 awardId,
@@ -62,10 +70,10 @@ final class TestEvents {
                 "Forest Service",
                 "012",
                 "Department of Agriculture",
-                "MN5KRX2W9R46",
-                "NOMADIC LAND CAMPS, LLC",
-                "MN5KRX2W9R46",
-                "NOMADIC LAND CAMPS, LLC",
+                recipientUei,
+                recipientName,
+                recipientUei,
+                recipientName,
                 "BOISE",
                 "ID",
                 "USA",
@@ -76,7 +84,7 @@ final class TestEvents {
                 "F003",
                 "NATURAL RESOURCES/CONSERVATION- FOREST-RANGE FIRE SUPPRESSION/PRESUPPRESSION",
                 "MOD " + modification,
-                "NOMADIC LAND CAMPS, LLC IDIPF000347 E40");
+                awardDescription);
     }
 
     static ContractTransactionDeleted deletion(String modification, String sourceFile) {
