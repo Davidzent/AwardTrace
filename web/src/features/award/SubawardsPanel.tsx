@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { api, type Schemas } from '../../api/client';
+import { Button } from '../../components/Button';
 import { Money } from '../../components/Money';
 import { ProblemMessage } from '../../components/ProblemMessage';
 import { formatCount, formatDate } from '../../lib/format';
@@ -47,14 +48,9 @@ export function SubawardsPanel({ awardId, summary }: Props) {
             ))}
           </ol>
           {subawards.hasNextPage && (
-            <button
-              type="button"
-              className="link-button"
-              disabled={subawards.isFetchingNextPage}
-              onClick={() => void subawards.fetchNextPage()}
-            >
+            <Button variant="quiet" busy={subawards.isFetchingNextPage} onClick={() => void subawards.fetchNextPage()}>
               {subawards.isFetchingNextPage ? 'Loading' : 'Show more'}
-            </button>
+            </Button>
           )}
         </>
       )}

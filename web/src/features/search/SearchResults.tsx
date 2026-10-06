@@ -78,7 +78,7 @@ export function SearchResults({ query, results, error, updating, lastFilter, onS
       </div>
       {total === 0 ? (
         <div className="empty">
-          <p className="problem-title">No awards match.</p>
+          <p className="empty-title">No awards match.</p>
           {lastFilter ? (
             <p>
               Remove the last filter, <Link to={lastFilter.href}>{lastFilter.label}</Link>, or{' '}

@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client';
+import { Button } from '../components/Button';
+import problemStyles from '../components/ProblemMessage.module.css';
 import { StatusTile } from '../components/StatusTile';
 import {
   enrichmentCondition,
@@ -29,14 +31,14 @@ export function StatusPage() {
         <h1>Pipeline status</h1>
         <p className="muted" aria-live="polite">
           {status.dataUpdatedAt > 0 && `Updated ${ago(now - status.dataUpdatedAt)}`}{' '}
-          <button type="button" onClick={() => void status.refetch()} disabled={status.isFetching}>
+          <Button onClick={() => void status.refetch()} busy={status.isFetching}>
             Refresh
-          </button>
+          </Button>
         </p>
       </div>
 
       {status.error && (
-        <p className="problem" role="alert">
+        <p className={problemStyles.problem} role="alert">
           <strong>Status unavailable.</strong>{' '}
           {status.data ? 'Showing the last status received.' : 'The rest of the site keeps working.'}
         </p>

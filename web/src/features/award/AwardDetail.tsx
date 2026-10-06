@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router';
 import type { Schemas } from '../../api/client';
+import { Button } from '../../components/Button';
 import { CategoryBadge } from '../../components/CategoryBadge';
 import { Money } from '../../components/Money';
 import { formatDate } from '../../lib/format';
@@ -119,9 +120,9 @@ function BackLink() {
       ← Search awards
     </Link>
   ) : (
-    <button type="button" className="link-button back" onClick={() => navigate(-1)}>
+    <Button variant="quiet" className="back" onClick={() => navigate(-1)}>
       ← Back
-    </button>
+    </Button>
   );
 }
 

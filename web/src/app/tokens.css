@@ -53,6 +53,7 @@
   --color-danger: var(--red);
   --color-highlight: var(--highlight);
   --color-money-trail: var(--gold);
+  --color-backdrop: rgb(19 32 47 / 0.35);
 
   /* Type: Public Sans for everything people read; the system monospace for identifiers, which are codes */
   --font-sans: 'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -70,6 +71,7 @@
   --leading-tight: 1.2;
   --leading-normal: 1.5;
   --tracking-display: -0.02em;
+  --tracking-caps: 0.06em;
 
   /* Space, on a 4-pixel scale */
   --space-1: 0.25rem;
