@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.1</version>
+        <version>4.1.2</version>
         <relativePath/>
     </parent>
 
@@ -19,9 +19,9 @@
 
     <properties>
         <java.version>21</java.version>
-        <spring-modulith.version>2.1.1</spring-modulith.version>
-        <awssdk.version>2.57.0</awssdk.version>
-        <springdoc.version>3.1.1</springdoc.version>
+        <spring-modulith.version>2.1.2</spring-modulith.version>
+        <awssdk.version>2.57.4</awssdk.version>
+        <springdoc.version>3.2.0</springdoc.version>
         <anthropic-java.version>3.3.0</anthropic-java.version>
     </properties>
 
@@ -176,7 +176,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.15</version>
+                <version>0.8.16</version>
                 <executions>
                     <!-- Sets argLine, so unit and integration tests both record into target/jacoco.exec. -->
                     <execution>
