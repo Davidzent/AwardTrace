@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.2</version>
+        <version>4.2.0</version>
         <relativePath/>
     </parent>
 
@@ -19,10 +19,10 @@
 
     <properties>
         <java.version>21</java.version>
-        <spring-modulith.version>2.1.2</spring-modulith.version>
-        <awssdk.version>2.59.2</awssdk.version>
-        <springdoc.version>3.2.0</springdoc.version>
-        <anthropic-java.version>3.9.0</anthropic-java.version>
+        <spring-modulith.version>2.2.0</spring-modulith.version>
+        <awssdk.version>2.59.8</awssdk.version>
+        <springdoc.version>3.2.1</springdoc.version>
+        <anthropic-java.version>3.13.0</anthropic-java.version>
     </properties>
 
     <dependencyManagement>
